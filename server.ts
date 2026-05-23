@@ -299,7 +299,7 @@ function generateSimulatedNews(category: string, search: string, page: number): 
   const result: any[] = [];
   const baseMinutes = (page - 1) * 30;
 
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 3; i++) {
     const templateIndex = (i + (page - 1) * 3) % templates.length;
     const template = templates[templateIndex];
     if (!template) continue;
@@ -437,6 +437,10 @@ app.get("/api/crypto-news", async (req, res) => {
   if (isSimulated || posts.length === 0) {
     posts = generateSimulatedNews(category, search, page);
     isSimulated = true;
+  }
+
+  if (posts.length > 3) {
+    posts = posts.slice(0, 3);
   }
 
   // Optional AI dynamic summaries: If a valid Gemini intelligence key is available, enrich the top posts

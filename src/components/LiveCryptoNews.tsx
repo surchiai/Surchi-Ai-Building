@@ -294,7 +294,7 @@ function generateClientSimulatedNews(category: string, search: string, page: num
   const result: NewsPost[] = [];
   const baseMinutes = (page - 1) * 30;
 
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 3; i++) {
     const templateIndex = (i + (page - 1) * 3) % templates.length;
     const template = templates[templateIndex];
     if (!template) continue;
@@ -424,9 +424,10 @@ export default function LiveCryptoNews() {
 
   // Carousel auto rotate interval (6 seconds)
   useEffect(() => {
-    if (posts.length === 0) return;
+    const count = posts.filter(p => p.sentiment === 'bullish' || p.sentiment === 'neutral').slice(0, 4).length;
+    if (count === 0) return;
     const interval = setInterval(() => {
-      setCarouselIndex(prev => (prev + 1) % Math.min(posts.length, 4));
+      setCarouselIndex(prev => (prev + 1) % count);
     }, 6000);
     return () => clearInterval(interval);
   }, [posts]);
@@ -532,6 +533,7 @@ export default function LiveCryptoNews() {
 
   // Top trending carousel subset from current posts
   const trendingPosts = posts.filter(p => p.sentiment === 'bullish' || p.sentiment === 'neutral').slice(0, 4);
+  const activeTrendingPost = trendingPosts[carouselIndex] || trendingPosts[0];
 
   return (
     <div 
@@ -640,7 +642,7 @@ export default function LiveCryptoNews() {
       )}
 
       {/* TRENDING CAROUSEL SLIDER (Top feature) */}
-      {!loading && trendingPosts.length > 0 && (
+      {!loading && trendingPosts.length > 0 && activeTrendingPost && (
         <div className="bg-gradient-to-r from-[#010103] via-[#050512] to-[#010103] border border-cyber-purple/20 rounded-xl p-5 relative overflow-hidden text-left shadow-lg">
           <div className="absolute top-0 right-0 py-1 px-3 bg-cyber-purple/15 text-cyber-purple border-b border-l border-cyber-purple/30 text-[8px] font-mono font-black uppercase tracking-wider rounded-bl animate-pulse">
             👑 Premium Trending Signal
@@ -650,45 +652,45 @@ export default function LiveCryptoNews() {
             {/* Slide Graphic */}
             <div className="w-full lg:w-1/3 h-40 max-h-40 relative rounded-lg overflow-hidden border border-cyber-border-light shadow-md shrink-0">
               <img 
-                src={trendingPosts[carouselIndex].imageUrl} 
+                src={activeTrendingPost.imageUrl} 
                 alt="Trending cover thumbnail"
                 referrerPolicy="no-referrer"
                 loading="lazy"
                 className="w-full h-full object-cover transform hover:scale-105 transition-all duration-700 select-none brightness-90 saturate-120"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-              <span className={`absolute bottom-3 left-3 px-2 py-0.5 rounded text-[8px] font-mono font-extrabold ${getSentimentStyles(trendingPosts[carouselIndex].sentiment).bg} ${getSentimentStyles(trendingPosts[carouselIndex].sentiment).text} border ${getSentimentStyles(trendingPosts[carouselIndex].sentiment).border} uppercase tracking-wider`}>
-                {trendingPosts[carouselIndex].sentiment}
+              <span className={`absolute bottom-3 left-3 px-2 py-0.5 rounded text-[8px] font-mono font-extrabold ${getSentimentStyles(activeTrendingPost.sentiment).bg} ${getSentimentStyles(activeTrendingPost.sentiment).text} border ${getSentimentStyles(activeTrendingPost.sentiment).border} uppercase tracking-wider`}>
+                {activeTrendingPost.sentiment}
               </span>
             </div>
 
             {/* Slide Metadata text */}
             <div className="flex-1 space-y-3">
               <div className="flex items-center gap-2.5 text-[9px] font-mono text-slate-500 font-semibold uppercase">
-                <span>{trendingPosts[carouselIndex].sourceName}</span>
+                <span>{activeTrendingPost.sourceName}</span>
                 <span>&bull;</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-slate-500" />
-                  {formatTimeAgo(trendingPosts[carouselIndex].publishedAt)}
+                  {formatTimeAgo(activeTrendingPost.publishedAt)}
                 </span>
                 <span>&bull;</span>
                 <span className="text-cyber-purple">TRENDING MATRICES</span>
               </div>
               <h3 
                 className="text-white hover:text-cyber-cyan text-sm sm:text-lg font-display font-bold tracking-tight leading-snug cursor-pointer transition-colors"
-                onClick={() => window.open(trendingPosts[carouselIndex].url, '_blank')}
+                onClick={() => window.open(activeTrendingPost.url, '_blank')}
               >
-                {trendingPosts[carouselIndex].title}
+                {activeTrendingPost.title}
               </h3>
               <p className="text-slate-400 text-xs font-sans leading-relaxed">
-                {trendingPosts[carouselIndex].summary}
+                {activeTrendingPost.summary}
               </p>
 
               {/* Slider Actions row */}
               <div className="flex items-center justify-between pt-2">
                 <div className="flex items-center gap-3">
                   <a
-                    href={trendingPosts[carouselIndex].url}
+                    href={activeTrendingPost.url}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center gap-1.5 text-[10px] font-mono font-black text-cyber-cyan hover:text-cyber-neon tracking-wide uppercase transition-colors"
@@ -697,8 +699,8 @@ export default function LiveCryptoNews() {
                     <ExternalLink className="w-3 h-3 text-cyber-cyan shrink-0" />
                   </a>
                   <button
-                    onClick={() => handleVoiceRead(trendingPosts[carouselIndex])}
-                    className={`p-1.5 rounded bg-[#101030]/50 border border-cyber-purple/20 ${voiceActiveId === trendingPosts[carouselIndex].id ? 'text-cyber-neon border-cyber-purple' : 'text-slate-400 hover:text-cyber-purple'} transition-colors ml-1`}
+                    onClick={() => handleVoiceRead(activeTrendingPost)}
+                    className={`p-1.5 rounded bg-[#101030]/50 border border-cyber-purple/20 ${voiceActiveId === activeTrendingPost.id ? 'text-cyber-neon border-cyber-purple' : 'text-slate-400 hover:text-cyber-purple'} transition-colors ml-1`}
                     title="Read article aloud"
                   >
                     <Volume2 className="w-3.5 h-3.5 animate-pulse" />

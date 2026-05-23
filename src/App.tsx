@@ -3,6 +3,7 @@ import * as Icons from 'lucide-react';
 import { MODULES } from './data';
 import { AnalysisResult, ChatMessage } from './types';
 import LiveCryptoNews from './components/LiveCryptoNews';
+import TokenomicsDashboard from './components/TokenomicsDashboard';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -1240,31 +1241,35 @@ export default function App() {
                       setAboutSubTab('overview');
                       setShowAboutModal(true);
                     }}
-                    className="py-2.5 bg-[#1b1c31] hover:bg-[#25274ade] text-cyber-cyan hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1 text-[11px] font-mono select-none"
+                    className="py-2.5 bg-[#1b1c31] hover:bg-[#25274ade] text-cyber-cyan hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-[9px] font-mono select-none"
+                    title="About SURCHI Protocol"
                   >
-                    <Icons.BookOpen className="w-3.5 h-3.5" />
-                    <span>ABOUT</span>
+                    <Icons.BookOpen className="w-4 h-4 text-cyber-cyan" />
+                    <span className="font-bold">ABOUT</span>
                   </button>
                   <button
                     onClick={() => {
                       setIsMenuOpen(false);
                       setShowDonateModal(true);
                     }}
-                    className="py-2.5 bg-[#2d0f1b] hover:bg-[#4a1c2d] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/30 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1 text-[11px] font-mono select-none"
+                    className="py-2.5 bg-[#2d0f1b] hover:bg-[#4a1c2d] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/30 rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-[9px] font-mono select-none"
+                    title="Donate address details"
                   >
-                    <span className="text-xs">❤️</span>
-                    <span>DONATE</span>
+                    <Icons.Heart className="w-4 h-4 text-[#ff4b82]" />
+                    <span className="font-bold">DONATE</span>
                   </button>
                 </div>
-                <a
-                  href="https://raydium.io/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2.5 bg-[#0d2a23] hover:bg-[#123e33] text-[#00ff88] hover:text-[#39ffac] border border-[#00ff88]/30 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 text-[11px] font-mono select-none"
-                >
-                  <Icons.Coins className="w-3.5 h-3.5 animate-pulse" />
-                  <span>BUY $SURCHI</span>
-                </a>
+                <div className="w-full pt-1">
+                  <a
+                    href="https://raydium.io/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 bg-[#0d2a23]/90 hover:bg-[#123e33] text-[#00ff88] hover:text-[#39ffac] border border-[#00ff88]/30 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 text-[10.5px] font-mono font-bold select-none text-center"
+                  >
+                    <Icons.Coins className="w-3.5 h-3.5 animate-pulse" />
+                    <span>BUY $SURCHI</span>
+                  </a>
+                </div>
               </div>
 
               {/* SECTION 3: PROTOCOL HISTORY LOGS */}
@@ -1405,23 +1410,6 @@ export default function App() {
         <div className="px-4 py-6 sm:p-6 md:p-10 max-w-4xl w-full mx-auto flex-1 space-y-8 animate-fade-in">
           
 
-
-          <div className="flex justify-start">
-            <a
-              href="https://raydium.io/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border font-mono text-[10px] font-bold tracking-wider select-none transition-all duration-300 cursor-pointer ${
-                themeAccent === 'white'
-                  ? 'bg-white hover:bg-slate-100 text-slate-950 border-white shadow-[0_0_10px_rgba(255,255,255,0.25)] hover:shadow-[0_0_15px_rgba(255,255,255,0.4)]'
-                  : 'bg-[#0d2a23]/80 hover:bg-[#123e33] text-[#00ff88] hover:text-[#39ffac] border-[#00ff88]/25 shadow-[0_0_10px_rgba(0,255,136,0.08)] hover:shadow-[0_0_15px_rgba(0,255,136,0.2)]'
-              }`}
-            >
-              <Icons.Coins className={`w-3.5 h-3.5 animate-pulse ${themeAccent === 'white' ? 'text-slate-950' : 'text-[#00ff88]'}`} />
-              <span>BUY $SURCHI</span>
-              <Icons.ExternalLink className="w-3 h-3 opacity-60" />
-            </a>
-          </div>
 
             <>
               {/* Header Title Accent */}
@@ -1872,6 +1860,11 @@ export default function App() {
 
               {/* AUTOMATIC LIVE CRYPTO NEWS */}
               <LiveCryptoNews />
+
+              {/* SYSTEM TOKENOMICS DISTRIBUTION */}
+              <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
+                <TokenomicsDashboard />
+              </div>
             </div>
           )}
         </>
@@ -1895,6 +1888,7 @@ export default function App() {
               <Icons.BookOpen className="w-4 h-4 text-cyber-cyan" />
               <span>ABOUT SURCHI AI</span>
             </button>
+
             <button
               onClick={() => setShowDonateModal(true)}
               className="px-4 py-2 bg-[#2d0f1b] hover:bg-[#4a1c2d] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/30 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 text-xs font-mono select-none"
@@ -1909,524 +1903,147 @@ export default function App() {
 
       {/* FULLY AUTONOMOUS ABOUT INTELLIGENCE MODAL */}
       {showAboutModal && (
-        <div className="fixed inset-0 bg-[#020207]/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 md:p-10 z-[100] animate-fade-in select-text">
-          <div className="bg-[#0b0b1a] border border-cyber-border w-full max-w-4xl h-full max-h-[92vh] rounded-xl overflow-hidden flex flex-col shadow-[0_0_50px_rgba(124,58,237,0.2)] relative">
+        <div className="fixed inset-0 bg-[#020207]/95 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-fade-in select-text flex-col">
+          <div className="bg-[#04040a] border border-cyber-border w-full max-w-md rounded-2xl p-6 space-y-5 flex flex-col shadow-[0_0_50px_rgba(124,58,237,0.15)] relative max-h-[90vh] overflow-y-auto scrollbar-none">
             
-            {/* Corner ambient graphics */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full animate-pulse-safe"></div>
+            {/* Close Button on upper right */}
+            <button 
+              onClick={() => setShowAboutModal(false)}
+              className="absolute top-4 right-4 p-1.5 hover:bg-white/10 text-slate-400 hover:text-white rounded-lg cursor-pointer transition-colors"
+              title="Close"
+            >
+              <Icons.X className="w-5 h-5" />
+            </button>
             
-            {/* MODAL HEADER BLOCK - BIO & STATS */}
-            <div className="p-6 bg-[#0e0e24] border-b border-cyber-border relative flex flex-col md:flex-row items-center md:items-start gap-6">
-              {/* Close Button */}
+            {/* Header: Squircle logo on left, text on right */}
+            <div className="flex items-center gap-4 text-left">
+              <div className="w-16 h-16 rounded-2xl border border-cyber-border/85 overflow-hidden bg-[#0d0d1e] flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_20px_rgba(0,255,136,0.12)]">
+                <img
+                  src="https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg"
+                  alt="SURCHI AI Protocol Logo"
+                  className="w-full h-full object-cover rounded-[14px]"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="space-y-0.5">
+                <h2 className="text-xl font-black text-white tracking-wide uppercase font-display select-none flex items-center">
+                  SURCHI<span className="text-[#00ff88] font-bold">.AI</span>
+                </h2>
+                <span className="text-[9px] text-cyber-cyan font-mono tracking-widest uppercase font-extrabold block select-none">
+                  AUTONOMOUS WEB3 INTELLIGENCE PROTOCOL
+                </span>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <hr className="border-cyber-border/40" />
+
+            {/* Description Paragraph */}
+            <p className="text-xs text-slate-305 leading-relaxed font-sans text-left">
+              <strong>SURCHI</strong> is an advanced web-native autonomous AI engine that transforms sub-second market telemetry into sovereign Web3 execution. Underpinned by ultra-fast decision-making neural layers, SURCHI extracts and acts upon on-chain sentiment flow in real time.
+            </p>
+
+            {/* Metric grid card */}
+            <div className="bg-[#0b0b1a]/55 border border-cyber-border p-4 rounded-xl space-y-2.5 font-mono text-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-cyber-border/40">
+                <span className="text-slate-400 text-left">Governance Token</span>
+                <span className="font-bold text-cyber-cyan">$SURCHI</span>
+              </div>
+              <div className="flex items-center justify-between py-1 border-b border-cyber-border/40">
+                <span className="text-slate-400 text-left">Network Host</span>
+                <span className="font-bold text-white uppercase text-right">SOLANA (SOL) BLOCKCHAIN</span>
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-slate-400 text-left">Total Supply</span>
+                <span className="font-bold text-[#00ff88]">19,897,905 $SURCHI</span>
+              </div>
+            </div>
+
+            {/* Explanatory italicized label */}
+            <p className="text-[10px] text-slate-500 italic leading-relaxed text-left font-sans">
+              The native utility token <strong>$SURCHI</strong> enables hyper-threaded verification pipelines, distributes cryptographic computation tokens among edge scanning terminals, and secures consensus scoring mechanics.
+            </p>
+
+            {/* Raydium Button action link */}
+            <a
+              href="https://raydium.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 bg-[#110d24] hover:bg-[#1a1435] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/32 hover:border-[#ff4b82]/60 rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 text-xs font-mono font-bold select-none text-center shadow-[0_0_15px_rgba(255,75,130,0.06)] group"
+            >
+              <Icons.Coins className="w-4 h-4 text-[#ff4b82] group-hover:scale-110 transition-transform duration-250" />
+              <span>BUY $SURCHI ON RAYDIUM</span>
+              <Icons.ExternalLink className="w-3.5 h-3.5 opacity-70" />
+            </a>
+
+            {/* Social channels bottom outlets grid */}
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+              <a 
+                href="https://x.com/surchicoin" 
+                target="_blank" 
+                rel="noreferrer" 
+                title="Twitter / X"
+                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <Icons.Twitter className="w-4 h-4 text-cyber-cyan" />
+              </a>
+              
+              <a 
+                href="https://t.me/SurchiCommunityChat" 
+                target="_blank" 
+                rel="noreferrer" 
+                title="Telegram Chat"
+                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <Icons.Send className="w-4 h-4 text-cyber-cyan" />
+              </a>
+
+              <a 
+                href="https://discord.gg/uH2Jp3yu5h" 
+                target="_blank" 
+                rel="noreferrer" 
+                title="Discord Invite"
+                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <Icons.MessageSquareQuote className="w-4 h-4 text-cyber-cyan" />
+              </a>
+
+              <a 
+                href="https://github.com/surchiai" 
+                target="_blank" 
+                rel="noreferrer" 
+                title="GitHub"
+                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <Icons.Github className="w-4 h-4 text-cyber-cyan" />
+              </a>
+
+              <a 
+                href="https://www.surchi.xyz" 
+                target="_blank" 
+                rel="noreferrer" 
+                title="Website"
+                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <Icons.Globe className="w-4 h-4 text-cyber-cyan" />
+              </a>
+
+              <a 
+                href="mailto:Surchiecosystem@gmail.com"
+                title="Email Support"
+                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <Icons.Mail className="w-4 h-4 text-cyber-cyan" />
+              </a>
+            </div>
+
+            {/* Acknowledge CTA Button footer row */}
+            <div className="flex justify-end pt-2">
               <button 
                 onClick={() => setShowAboutModal(false)}
-                className="absolute top-4 right-4 p-2 bg-cyber-card/60 hover:bg-rose-950/40 text-slate-400 hover:text-red-400 border border-cyber-border rounded-lg cursor-pointer transition-all"
-                title="Deactivate and close modal overlay"
+                className="px-5 py-2.5 bg-[#17172b] hover:bg-[#20203c] text-slate-200 hover:text-white border border-cyber-border rounded-xl cursor-pointer font-mono text-[11px] font-bold uppercase transition-all tracking-wider select-none text-center"
               >
-                <Icons.X className="w-4.5 h-4.5" />
-              </button>
-              
-              {/* Large logo circle & badge counts */}
-              <div className="flex flex-col items-center shrink-0">
-                <div className="w-20 h-20 rounded-2xl border-2 border-cyber-neon overflow-hidden bg-[#0d0d1e] animate-pulse-safe shadow-[0_0_24px_rgba(0,255,136,0.25)] flex items-center justify-center">
-                  <img
-                    src="https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg"
-                    alt="SURCHI AI Protocol Logo"
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-                
-                {/* Followers count label */}
-                <div className="mt-2.5 bg-cyber-card border border-cyber-border/80 rounded-full px-3 py-0.5 text-[10px] font-mono text-slate-350 tracking-wider flex items-center gap-1.5 shadow-inner">
-                  <Icons.Users className="w-3 h-3 text-cyber-cyan" />
-                  <span>142 followers</span>
-                  <span className="text-slate-600">•</span>
-                  <span>230 following</span>
-                </div>
-              </div>
-              
-              {/* Title & Core Tagline Description */}
-              <div className="flex-1 text-center md:text-left space-y-2 max-w-2xl">
-                <div>
-                  <h1 className="text-lg font-black text-[#ffffff] tracking-wider uppercase font-display">SURCHI AI ENGINE</h1>
-                  <span className="text-[10px] text-cyber-neon font-mono tracking-widest uppercase font-bold block mt-0.5">Autonomous Web3 Intelligence Protocol</span>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                  Surchi AI is an AI-autonomous engine on Solana that transforms sub-second telemetry into sovereign Web3 execution through neural sentiment analysis.
-                </p>
-                
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1 text-[10px] font-mono text-slate-400">
-                  <div className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyber-green animate-pulse"></span>
-                    <span>Network: <strong className="text-cyber-green uppercase">Active Sol Node</strong></span>
-                  </div>
-                  <span className="text-slate-600">•</span>
-                  <div className="flex items-center gap-1">
-                    <span>Total Supply: <strong className="text-cyber-neon">19,897,905 $SURCHI</strong></span>
-                  </div>
-                  <span className="text-slate-600">•</span>
-                  <div className="flex items-center gap-1 font-mono">
-                    <span>Presale: <a href="https://www.pinksale.finance" target="_blank" rel="noopener noreferrer" className="text-[#f244a1] hover:text-[#ff66be] hover:underline transition-all font-semibold flex items-center gap-1">Upcoming on PinkSale.finance <Icons.ExternalLink className="w-3 h-3 inline" /></a></span>
-                  </div>
-                </div>
-
-                <div className="pt-2.5 flex justify-center md:justify-start">
-                  <a
-                    href="https://drive.google.com/file/d/1FfFQRwgX4q4WLGG08kWmQYI2z79uloe4/view?usp=drivesdk"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-100 text-slate-950 font-mono text-[10px] font-extrabold tracking-wider rounded-md select-none transition-all duration-300 shadow-[0_0_12px_rgba(255,255,255,0.25)] hover:shadow-[0_0_18px_rgba(255,255,255,0.45)] cursor-pointer"
-                  >
-                    <Icons.BookOpen className="w-3.5 h-3.5 text-slate-950" />
-                    <span>SURCHI WHITE PAPER</span>
-                    <Icons.ExternalLink className="w-3 h-3 opacity-75" />
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* MODAL WORKSPACE LINKS MATRIX - STRICTLY ICONS ONLY WITH NO TEXT DISPLAY */}
-            <div className="bg-[#03030c] p-4 border-b border-cyber-border flex flex-col gap-2.5">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 font-extrabold text-left pl-1">DECENTRALIZED PROTOCOL OUTLETS :</span>
-              
-              <div className="flex flex-wrap items-center gap-2">
-                <a 
-                  href="mailto:Surchiecosystem@gmail.com"
-                  title="Send Email (Surchiecosystem@gmail.com)"
-                  className="px-3.5 py-2 hover:py-2 bg-[#050512] hover:bg-cyber-card-light text-slate-300 hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex items-center justify-center"
-                >
-                  <Icons.Mail className="w-4 h-4 text-cyber-cyan" />
-                </a>
-
-                <a 
-                  href="https://www.surchi.xyz" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  title="Official Website (www.surchi.xyz)"
-                  className="px-3.5 py-2 bg-[#050512] hover:bg-cyber-card-light text-slate-300 hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex items-center justify-center"
-                >
-                  <Icons.Globe className="w-4 h-4 text-cyber-cyan" />
-                </a>
-
-                <a 
-                  href="https://x.com/surchicoin" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  title="Twitter / X (@surchicoin)"
-                  className="px-3.5 py-2 bg-[#050512] hover:bg-cyber-card-light text-slate-300 hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex items-center justify-center"
-                >
-                  <Icons.Twitter className="w-4 h-4 text-cyber-cyan" />
-                </a>
-                
-                <a 
-                  href="https://discord.gg/DtFYCzCUk" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  title="Discord Community Hub"
-                  className="px-3.5 py-2 bg-[#050512] hover:bg-cyber-card-light text-slate-300 hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex items-center justify-center"
-                >
-                  <Icons.MessageSquare className="w-4 h-4 text-cyber-cyan" />
-                </a>
-
-                <a 
-                  href="https://www.instagram.com/surchiai?igsh=YXlhY2VkZ2lxam9w" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  title="Instagram Page (@surchiai)"
-                  className="px-3.5 py-2 bg-[#050512] hover:bg-cyber-card-light text-slate-300 hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex items-center justify-center"
-                >
-                  <Icons.Instagram className="w-4 h-4 text-cyber-cyan" />
-                </a>
-
-                <a 
-                  href="https://github.com/surchiai" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  title="GitHub Organization Repository (surchiai)"
-                  className="px-3.5 py-2 bg-[#050512] hover:bg-cyber-card-light text-slate-300 hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex items-center justify-center"
-                >
-                  <Icons.Github className="w-4 h-4 text-cyber-cyan" />
-                </a>
-
-                <a 
-                  href="https://discord.gg/uH2Jp3yu5h" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  title="Discord Invite Protocol Node"
-                  className="px-3.5 py-2 bg-[#050512] hover:bg-cyber-card-light text-slate-355 hover:text-cyber-purple border border-cyber-border/80 rounded-lg cursor-pointer transition-all flex items-center justify-center"
-                >
-                  <Icons.MessageSquareQuote className="w-4 h-4 text-cyber-cyan" />
-                </a>
-
-                <a 
-                  href="https://t.me/SurchiCommunityChat" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  title="Telegram Chat Community Channel"
-                  className="px-3.5 py-2 bg-[#050512] hover:bg-cyber-card-light text-slate-355 hover:text-cyber-cyan border border-cyber-border/80 rounded-lg cursor-pointer transition-all flex items-center justify-center"
-                >
-                  <Icons.Send className="w-4 h-4 text-cyber-cyan" />
-                </a>
-              </div>
-            </div>
-
-            {/* TAB CONTAINER CHASSIS */}
-            <div className="flex border-b border-cyber-border bg-[#0b0b1f] overflow-x-auto scrollbar-none min-h-11">
-              {[
-                { id: 'overview', label: '1. Overview & Vision', icon: 'Compass' },
-                { id: 'architecture', label: '2. Protocol Architecture', icon: 'Layers' },
-                { id: 'utility', label: '3. Tokenomics & Utility', icon: 'Coins' },
-                { id: 'roadmap', label: '4. Protocol Roadmap', icon: 'Milestone' }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setAboutSubTab(tab.id)}
-                  className={`px-5 py-3 text-[10px] sm:text-xs font-mono font-bold tracking-wider uppercase flex items-center gap-2 border-b-2 whitespace-nowrap transition-all cursor-pointer ${
-                    aboutSubTab === tab.id
-                      ? 'border-cyber-neon text-cyber-neon bg-[#10102b]'
-                      : 'border-transparent text-slate-400 hover:text-slate-205 hover:bg-[#0c0c1e]/40'
-                  }`}
-                >
-                  <SurchiIcon name={tab.icon} className="w-3.5 h-3.5" />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* MODAL CONTENTS - SCROLLABLE COMPARTMENT */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 bg-[#04040b] scrollbar-none">
-              
-              {/* TAB CONTENT: OVERVIEW */}
-              {aboutSubTab === 'overview' && (
-                <div className="space-y-6 text-left animate-fade-in font-sans">
-                  <div className="space-y-2">
-                    <h2 className="text-base font-black text-white font-display border-b border-cyber-border/40 pb-1.5 uppercase tracking-wide">
-                      ⚡ SURCHI the Autonomous Web3 Intelligence & Execution Protocol
-                    </h2>
-                    <p className="text-xs text-slate-300 leading-relaxed font-mono">
-                      License: <strong className="text-cyber-cyan uppercase">MIT</strong> | Protocol Classification: <strong className="text-cyber-purple uppercase">Web3 AI-Powered SURCHIEcosystem</strong>
-                    </p>
-                  </div>
-
-                  <div className="bg-[#0b0b1e]/50 border border-cyber-border/60 rounded-xl p-5 space-y-3.5">
-                    <p className="text-xs text-slate-300 leading-relaxed font-mono">
-                      <strong>SURCHI</strong> is an advanced Web3 AI protocol engineered to transform how users interact with decentralized finance, crypto markets, and blockchain ecosystems. It is a self-evolving intelligence layer that observes, interprets, and executes decisions in real time.
-                    </p>
-                    <p className="text-xs text-slate-300 leading-relaxed font-mono">
-                      <strong>Overview:</strong> SURCHI operates as an AI-autonomous engine that processes sub-second market telemetry, extracts signals using neural sentiment analysis, and converts insights into sovereign on-chain execution.
-                    </p>
-                    <p className="text-xs text-slate-100 font-semibold leading-relaxed">
-                      The mission is to eliminate manual complexity in Web3 and replace it with intelligent, autonomous decision-making.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold text-cyber-neon uppercase tracking-widest font-mono border-b border-cyber-border/40 pb-1">🌐 Protocol Vision</h3>
-                    <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                      The future of Web3 is not manual—it is autonomous. SURCHI is built on the belief that:
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1 font-mono">
-                      <div className="p-4 bg-[#0d0d22] border border-cyber-border rounded-lg space-y-1.5">
-                        <span className="text-xs font-bold text-[#ffffff] block">Passive Monitoring is Obsolete</span>
-                        <p className="text-[11px] text-slate-400 leading-relaxed font-sans">Users should not need to constantly monitor charts.</p>
-                      </div>
-                      <div className="p-4 bg-[#0d0d22] border border-cyber-border rounded-lg space-y-1.5">
-                        <span className="text-xs font-bold text-[#ffffff] block">Intelligence must be Actionable</span>
-                        <p className="text-[11px] text-slate-400 leading-relaxed font-sans">Market data should be real-time, predictive, and sovereign.</p>
-                      </div>
-                      <div className="p-4 bg-[#0d0d22] border border-cyber-border rounded-lg space-y-1.5">
-                        <span className="text-xs font-bold text-[#ffffff] block">Execution must be Independent</span>
-                        <p className="text-[11px] text-slate-400 leading-relaxed font-sans">Systems should be fast, trustless, and capable of adapting without human intervention.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 pt-2">
-                    <h3 className="text-xs font-bold text-cyber-cyan uppercase tracking-widest font-mono border-b border-cyber-border/40 pb-1">🧩 Core Concept Pipeline</h3>
-                    <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                      SURCHI transforms raw blockchain data into structured intelligence through a three-stage pipeline:
-                    </p>
-                    <div className="space-y-2.5">
-                      <div className="p-4 bg-[#060613] border-l-2 border-cyber-cyan rounded-r-lg space-y-1 text-xs font-mono">
-                        <strong className="text-white block">1. Data Ingestion (Telemetry Layer)</strong>
-                        <p className="text-slate-400 font-sans leading-relaxed">Continuous collection of market price movements, liquidity flows, on-chain transactions, and social sentiment at sub-second intervals.</p>
-                      </div>
-                      <div className="p-4 bg-[#060613] border-l-2 border-cyber-purple rounded-r-lg space-y-1 text-xs font-mono">
-                        <strong className="text-white block">2. Intelligence Processing (AI Layer)</strong>
-                        <p className="text-slate-400 font-sans leading-relaxed">Advanced models detect patterns, filter noise, and predict market behavior to create "decision-grade" intelligence.</p>
-                      </div>
-                      <div className="p-4 bg-[#060613] border-l-2 border-cyber-neon rounded-r-lg space-y-1 text-xs font-mono">
-                        <strong className="text-white block">3. Autonomous Execution (Action Layer)</strong>
-                        <p className="text-slate-400 font-sans leading-relaxed">Intelligence is converted into action—executing trades, rebalancing portfolios, and triggering smart contracts without human input.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB CONTENT: ARCHITECTURE */}
-              {aboutSubTab === 'architecture' && (
-                <div className="space-y-6 text-left animate-fade-in font-sans">
-                  <div className="space-y-1">
-                    <h3 className="text-base font-black text-white font-display border-b border-cyber-border/40 pb-1.5 uppercase">
-                      🛠️ Modular Protocol Architecture & Technology Stack
-                    </h3>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-bold text-cyber-cyan uppercase font-mono tracking-wider">🔹 Specialized Layers</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      
-                      <div className="p-4 bg-[#0d0d22] border border-cyber-border rounded-xl space-y-2.5">
-                        <h4 className="text-xs font-bold text-cyber-neon uppercase font-mono flex items-center gap-1.5">
-                          <Icons.Cpu className="w-4 h-4 text-cyber-neon" fill="#03030a" />
-                          <span>AI Agent Layer</span>
-                        </h4>
-                        <p className="text-[11px] text-slate-300 leading-normal">
-                          Autonomous agents that learn and adapt. Specialized agents include:
-                        </p>
-                        <ul className="list-disc list-inside space-y-1 text-[11px] font-mono text-slate-400 pl-1">
-                          <li><strong>Scalping:</strong> High-frequency strategy execution.</li>
-                          <li><strong>Arbitrage:</strong> Detecting price discrepancies across DEXs.</li>
-                          <li><strong>Sentiment:</strong> Trading based on social and on-chain signals.</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 bg-[#0d0d22] border border-cyber-border rounded-xl space-y-2 flex flex-col justify-center">
-                        <h4 className="text-xs font-bold text-cyber-purple uppercase font-mono flex items-center gap-1.5">
-                          <Icons.Activity className="w-4 h-4 text-cyber-purple" />
-                          <span>Signal Processing Engine</span>
-                        </h4>
-                        <p className="text-[11px] text-slate-350 leading-relaxed">
-                          Validates patterns and ensures only high-confidence insights reach the execution phase.
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-[#0d0d22] border border-cyber-border rounded-xl space-y-2 flex flex-col justify-center">
-                        <h4 className="text-xs font-bold text-cyber-cyan uppercase font-mono flex items-center gap-1.5">
-                          <Icons.Workflow className="w-4 h-4 text-cyber-cyan" />
-                          <span>Execution Engine</span>
-                        </h4>
-                        <p className="text-[11px] text-slate-350 leading-relaxed">
-                          Handles smart program interactions, trade routing, and gas optimization with a focus on speed and security.
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-[#0d0d22] border border-cyber-border rounded-xl space-y-2 flex flex-col justify-center">
-                        <h4 className="text-xs font-bold text-slate-300 uppercase font-mono flex items-center gap-1.5">
-                          <Icons.Database className="w-4 h-4 text-slate-400" />
-                          <span>Data & Governance Layers</span>
-                        </h4>
-                        <p className="text-[11px] text-slate-350 leading-relaxed font-mono">
-                          <strong>Hybrid Data:</strong> Combines on-chain indexing with real-time off-chain APIs.
-                        </p>
-                        <p className="text-[11px] text-slate-350 leading-relaxed font-mono">
-                          <strong>Community Governance:</strong> Token-based voting for protocol upgrades and parameter tuning.
-                        </p>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  <div className="p-5 bg-amber-950/10 border border-amber-500/20 rounded-xl space-y-2.5">
-                    <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest font-mono flex items-center gap-1.5">
-                      <Icons.ShieldAlert className="w-4 h-4 text-amber-500" />
-                      🛡️ Security Philosophy
-                    </h3>
-                    <ul className="list-disc list-inside space-y-1.5 font-mono text-[11px] text-slate-300 pl-1">
-                      <li><strong>Non-Custodial Architecture:</strong> Users retain control over their assets.</li>
-                      <li><strong>Audited Pathways:</strong> Continuous smart contract auditing and encrypted execution.</li>
-                      <li><strong>Fail-safes:</strong> Integrated risk control algorithms to prevent cascading errors in volatile markets.</li>
-                    </ul>
-                  </div>
-
-                  <div className="p-4 bg-[#060613] rounded-lg border border-cyber-border space-y-2">
-                    <h3 className="text-xs font-bold text-white uppercase tracking-widest font-mono">💻 Core Technology Stack</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left font-mono text-[10.5px] pt-1">
-                      <div className="p-3 bg-[#030308] border border-cyber-border rounded">
-                        <strong className="text-cyber-cyan block mb-1">Blockchain</strong>
-                        <p className="text-[10px] text-slate-400 font-sans leading-normal">High-speed, scalable networks (L1s/L2s).</p>
-                      </div>
-                      <div className="p-3 bg-[#030308] border border-cyber-border rounded">
-                        <strong className="text-cyber-purple block mb-1">AI / ML</strong>
-                        <p className="text-[10px] text-slate-400 font-sans leading-normal">Neural networks for predictive sentiment and pattern recognition.</p>
-                      </div>
-                      <div className="p-3 bg-[#030308] border border-cyber-border rounded">
-                        <strong className="text-cyber-neon block mb-1">Data</strong>
-                        <p className="text-[10px] text-slate-400 font-sans leading-normal">Real-time data pipelines and decentralized indexing.</p>
-                      </div>
-                      <div className="p-3 bg-[#030308] border border-cyber-border rounded">
-                        <strong className="text-white block mb-1">Execution</strong>
-                        <p className="text-[10px] text-slate-400 font-sans leading-normal">Secure smart contract frameworks and private RPCs.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB CONTENT: UTILITY */}
-              {aboutSubTab === 'utility' && (
-                <div className="space-y-6 text-left animate-fade-in font-sans">
-                  <div className="space-y-1">
-                    <h3 className="text-base font-black text-white font-display border-b border-cyber-border/40 pb-1.5 uppercase">
-                      💎 Key Features, Use-Cases & $SUCHI Token Utility
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1 text-xs">
-                    <div className="p-5 bg-[#0d0d22] border border-cyber-border rounded-xl space-y-3">
-                      <h4 className="text-xs font-bold text-cyber-neon uppercase tracking-wider font-mono border-b border-cyber-border/20 pb-0.5">✨ Key Features</h4>
-                      <ul className="space-y-2.5 font-mono text-[11px] text-slate-300">
-                        <li className="flex items-start gap-1.5">
-                          <span className="text-cyber-neon">✓</span>
-                          <span><strong>Real-Time Intelligence:</strong> Instant reaction to market volatility.</span>
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <span className="text-cyber-neon">✓</span>
-                          <span><strong>Self-Learning System:</strong> Continuously improves based on execution outcomes.</span>
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <span className="text-cyber-neon">✓</span>
-                          <span><strong>Decentralized Execution:</strong> Trustless, verifiable actions on-chain.</span>
-                        </li>
-                        <li className="flex items-start gap-1.5">
-                          <span className="text-cyber-neon">✓</span>
-                          <span><strong>Advanced Analytics:</strong> Predictive insights that go beyond traditional technical analysis.</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="p-5 bg-[#0d0d22] border border-cyber-border rounded-xl space-y-3">
-                      <h4 className="text-xs font-bold text-cyber-purple uppercase tracking-wider font-mono border-b border-cyber-border/20 pb-0.5">🪙 Token Utility ($SUCHI)</h4>
-                      <p className="text-slate-350 leading-relaxed text-[11px] font-sans">
-                        The <strong className="text-cyber-purple">$SUCHI</strong> native token powers the autonomous ecosystem through key utilities:
-                      </p>
-                      <ul className="space-y-2 font-mono text-[11px] text-slate-300">
-                        <li className="flex items-center justify-between p-2 bg-[#04040a] rounded border border-cyber-border/40">
-                          <span>🚪 Access Tier Key</span>
-                          <span className="text-cyber-cyan font-bold">Premium AI Agents</span>
-                        </li>
-                        <li className="flex items-center justify-between p-2 bg-[#04040a] rounded border border-cyber-border/40">
-                          <span>🗳️ Governance voting</span>
-                          <span className="text-cyber-purple font-bold">Protocol Evolution</span>
-                        </li>
-                        <li className="flex items-center justify-between p-2 bg-[#04040a] rounded border border-cyber-border/40">
-                          <span>🎁 Incentives flow</span>
-                          <span className="text-cyber-neon font-bold">Contributor Rewards</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 pt-2">
-                    <h3 className="text-xs font-bold text-cyber-cyan uppercase tracking-widest font-mono border-b border-cyber-border/40 pb-1">💼 Protocol Use Case Matrix</h3>
-                    <div className="overflow-x-auto rounded-lg border border-cyber-border font-mono text-[11px]">
-                      <table className="w-full text-left border-collapse bg-[#03030c]">
-                        <thead>
-                          <tr className="bg-[#0b0b1f] text-slate-300 border-b border-cyber-border font-bold">
-                            <th className="p-3">USE CASE</th>
-                            <th className="p-3">DESCRIPTION DATA</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-cyber-border/60 text-slate-400">
-                          <tr className="hover:bg-[#060613]/80">
-                            <td className="p-3 font-bold text-white whitespace-nowrap">Smart Trading</td>
-                            <td className="p-3">AI-optimized trade execution based on live telemetry.</td>
-                          </tr>
-                          <tr className="hover:bg-[#060613]/80">
-                            <td className="p-3 font-bold text-white whitespace-nowrap">Portfolio Automation</td>
-                            <td className="p-3">Self-adjusting asset allocations and rebalancing.</td>
-                          </tr>
-                          <tr className="hover:bg-[#060613]/80">
-                            <td className="p-3 font-bold text-white whitespace-nowrap">DeFi Optimization</td>
-                            <td className="p-3">Automated yield farming and liquidity provisioning.</td>
-                          </tr>
-                          <tr className="hover:bg-[#060613]/80">
-                            <td className="p-3 font-bold text-white whitespace-nowrap">Risk Management</td>
-                            <td className="p-3">Adaptive hedging strategies to minimize exposure.</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB CONTENT: ROADMAP */}
-              {aboutSubTab === 'roadmap' && (
-                <div className="space-y-6 text-left animate-fade-in font-sans">
-                  <div className="space-y-1">
-                    <h3 className="text-base font-black text-white font-display border-b border-cyber-border/40 pb-1.5 uppercase">
-                      🗺️ Protocol Evolutionary Roadmap
-                    </h3>
-                  </div>
-
-                  {/* Horizontal Timeline cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1 font-mono text-[10px]">
-                    
-                    <div className="p-4 bg-[#0d0d22] border-t-2 border-cyber-cyan border-x border-b border-cyber-border rounded-lg space-y-1.5 flex flex-col justify-between h-40">
-                      <div>
-                        <span className="text-cyber-cyan font-bold block uppercase text-[8px]">Phase 1</span>
-                        <strong className="text-white block text-xs">Foundation</strong>
-                        <p className="text-[10px] text-slate-400 font-sans leading-normal">Core protocol architecture design. Initial AI model training and smart contract deployment.</p>
-                      </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 w-max font-sans font-bold">Done ✓</span>
-                    </div>
-
-                    <div className="p-4 bg-[#0d0d22] border-t-2 border-cyber-purple border-x border-b border-cyber-border rounded-lg space-y-1.5 flex flex-col justify-between h-40">
-                      <div>
-                        <span className="text-cyber-purple font-bold block uppercase text-[8px]">Phase 2</span>
-                        <strong className="text-white block text-xs">Intelligence</strong>
-                        <p className="text-[10px] text-slate-400 font-sans leading-normal">Signal engine deployment. Integration of real-time social and on-chain telemetry.</p>
-                      </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 w-max font-sans animate-pulse font-bold">In Flight...</span>
-                    </div>
-
-                    <div className="p-4 bg-[#0d0d22] border-t-2 border-cyber-neon border-x border-b border-cyber-border rounded-lg space-y-1.5 flex flex-col justify-between h-40">
-                      <div>
-                        <span className="text-cyber-neon font-bold block uppercase text-[8px]">Phase 3</span>
-                        <strong className="text-white block text-xs">Execution</strong>
-                        <p className="text-[10px] text-slate-400 font-sans leading-normal">Autonomous trading rollout. Multi-DEX DeFi integrations and performance optimization.</p>
-                      </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded bg-slate-500/10 text-slate-500 border border-slate-500/20 w-max font-sans">Scheduled</span>
-                    </div>
-
-                    <div className="p-4 bg-[#0d0d22] border-t-2 border-slate-400 border-x border-b border-cyber-border rounded-lg space-y-1.5 flex flex-col justify-between h-40">
-                      <div>
-                        <span className="text-slate-450 font-bold block uppercase text-[8px]">Phase 4</span>
-                        <strong className="text-white block text-xs">Expansion</strong>
-                        <p className="text-[10px] text-slate-400 font-sans leading-normal">Multi-chain support and cross-chain execution. Advanced DAO governance launch.</p>
-                      </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded bg-slate-500/10 text-slate-500 border border-slate-500/20 w-max font-sans">Scheduled</span>
-                    </div>
-
-                  </div>
-
-                  <div className="p-5 bg-indigo-950/20 border border-cyber-purple/30 rounded-xl flex items-center gap-4 text-left">
-                    <div className="p-3 rounded-lg bg-cyber-bg border border-cyber-border shrink-0 flex items-center justify-center text-cyber-purple">
-                      <Icons.Heart className="w-5 h-5 text-cyber-purple" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-white font-mono uppercase tracking-wider">🔬 Open Contribution Node</h4>
-                      <p className="text-xs text-slate-400 leading-relaxed font-sans pt-0.5">
-                        We welcome developers, AI engineers, and researchers to join in strengthening the Surchi Protocol core pipelines.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-            </div>
-
-            {/* MODAL FOOTER */}
-            <div className="p-4 bg-[#0c0c1e] border-t border-cyber-border flex items-center justify-between font-mono text-[9px] text-slate-500">
-              <span className="uppercase text-[9px]">SOLANA COGNITIVE SPECTRA SYSTEM MONITOR ACTIVE</span>
-              <button 
-                onClick={() => setShowAboutModal(false)}
-                className="px-4 py-1.5 bg-cyber-card-light hover:bg-[#1a1c38] text-zinc-350 hover:text-white border border-cyber-border rounded-lg cursor-pointer transition-colors text-xs select-none"
-              >
-                Close Logs Console
+                Acknowledge
               </button>
             </div>
 
