@@ -1,31 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { motion } from 'motion/react';
 
 export default function StakingDashboard() {
   const [stakeAmount, setStakeAmount] = useState<string>('1000');
   const [stakeDuration, setStakeDuration] = useState<number>(30); // in days
-  const [timeLeft, setTimeLeft] = useState({ days: 4, hours: 14, minutes: 32, seconds: 45 });
-
-  // Countdown clock simulator
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else if (prev.days > 0) {
-          return { days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        } else {
-          return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-        }
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  // Countdown clock simulator (Temporarily static for now)
+  const timeLeft = { days: 4, hours: 14, minutes: 32, seconds: 45 };
 
   // Calculate yield (7.3% API / APY)
   const apy = 0.073;

@@ -5,6 +5,7 @@ import { AnalysisResult, ChatMessage } from './types';
 import LiveCryptoNews from './components/LiveCryptoNews';
 import TokenomicsDashboard from './components/TokenomicsDashboard';
 import StakingDashboard from './components/StakingDashboard';
+import PartnershipModal from './components/PartnershipModal';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -707,6 +708,9 @@ export default function App() {
   // DONATE Modal state controls
   const [showDonateModal, setShowDonateModal] = useState(false);
   const [copiedDonateAddress, setCopiedDonateAddress] = useState(false);
+  
+  // Partnership Modal State
+  const [showPartnershipModal, setShowPartnershipModal] = useState(false);
   
   // Hamburger Menu open control State
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -1886,8 +1890,17 @@ export default function App() {
                 <StakingDashboard />
               </div>
 
-              {/* READ MORE DOCUMENTATION LINK BELOW STAKING SECTION */}
-              <div className="flex justify-center pt-2">
+              {/* STRATEGIC ALLIANCES & READ MORE ROW */}
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
+                <button
+                  onClick={() => setShowPartnershipModal(true)}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-mono font-bold tracking-widest text-[#00e5ff] hover:text-[#52f0ff] bg-[#051821] hover:bg-[#0a2c3d] border border-[#00e5ff]/35 hover:border-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.15)] hover:shadow-[0_0_20px_rgba(0,229,255,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase"
+                >
+                  <Icons.ShieldCheck className="w-4 h-4 shrink-0 text-[#00e5ff]" />
+                  <span>Strategic Partnerships</span>
+                  <Icons.ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#00e5ff]/80" />
+                </button>
+
                 <a
                   href="https://drive.google.com/file/d/1FGCbMPLNo-UHcVEyT68tXD5gh0MMobk9/view?usp=drivesdk"
                   target="_blank"
@@ -1930,6 +1943,17 @@ export default function App() {
               <span className="text-xs">❤️</span>
               <span>DONATE</span>
             </button>
+
+            <a
+              href="https://drive.google.com/file/d/1FfFQRwgX4q4WLGG08kWmQYI2z79uloe4/view?usp=drivesdk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-[#211505] hover:bg-[#342109] text-[#ffaa00] hover:text-[#ffca55] border border-[#ffaa00]/30 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 text-xs font-mono select-none no-underline uppercase"
+            >
+              <Icons.FileText className="w-4 h-4 text-[#ffaa00]" />
+              <span>OFFICIAL WHITEPAPER</span>
+              <Icons.ExternalLink className="w-3.5 h-3.5 text-[#ffaa00]/80" />
+            </a>
           </div>
         </footer>
 
@@ -2177,6 +2201,9 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* STRATEGIC ALLIANCE GLOBAL SYSTEM PANEL */}
+      <PartnershipModal isOpen={showPartnershipModal} onClose={() => setShowPartnershipModal(false)} />
 
       {/* Floating High-Contrast Theme Mode Switcher */}
       <button
