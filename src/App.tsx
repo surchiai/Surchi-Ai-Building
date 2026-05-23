@@ -4,6 +4,7 @@ import { MODULES } from './data';
 import { AnalysisResult, ChatMessage } from './types';
 import LiveCryptoNews from './components/LiveCryptoNews';
 import TokenomicsDashboard from './components/TokenomicsDashboard';
+import StakingDashboard from './components/StakingDashboard';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -1371,15 +1372,6 @@ export default function App() {
         {/* TOP METRICS & CONSOLE STATS BAR */}
         <header className="h-16 border-b border-cyber-border bg-[#030308]/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 md:px-10 z-20">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsMenuOpen(true)}
-              className="p-2 mr-1 hover:bg-[#1a1c38] text-cyber-cyan hover:text-cyber-neon border border-cyber-border/80 hover:border-cyber-cyan/30 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 select-none"
-              title="Open Workspace Terminal Drawer"
-            >
-              <Icons.Menu className="w-5 h-5 text-cyber-cyan" />
-              <span className="hidden sm:inline text-xs font-mono tracking-widest uppercase">MENU</span>
-            </button>
-
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded overflow-hidden border border-cyber-green flex items-center justify-center bg-cyber-card shrink-0 animate-pulse">
                 <img
@@ -1403,6 +1395,15 @@ export default function App() {
               <div className="w-2 h-2 rounded-full bg-cyber-neon animate-pulse shadow-[0_0_6px_var(--color-cyber-neon)]"></div>
               <span className="text-[#ffffff] uppercase font-bold text-[9px] tracking-wider">SECURE GRID ONLINE</span>
             </div>
+
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="p-1.5 sm:p-2 ml-1 hover:bg-[#1a1c38] text-cyber-cyan hover:text-cyber-neon border border-cyber-border/80 hover:border-cyber-cyan/30 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 select-none"
+              title="Open Workspace Terminal Drawer"
+            >
+              <Icons.Menu className="w-5 h-5 text-cyber-cyan" />
+              <span className="hidden sm:inline text-xs font-mono tracking-widest uppercase">MENU</span>
+            </button>
           </div>
         </header>
 
@@ -1414,13 +1415,16 @@ export default function App() {
             <>
               {/* Buy $SURCHI tiny button left upper side above active forensics module */}
               <div className="flex justify-start">
-                <button
-                  onClick={() => setShowDonateModal(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-extrabold tracking-widest text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_12px_rgba(0,255,136,0.18)] hover:shadow-[0_0_18px_rgba(0,255,136,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase"
+                <a
+                  href="https://raydium.io/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-extrabold tracking-widest text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_12px_rgba(0,255,136,0.18)] hover:shadow-[0_0_18px_rgba(0,255,136,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase no-underline"
                 >
                   <Icons.Coins className="w-3.5 h-3.5 text-cyber-neon shrink-0" />
-                  <span>Buy $SURCHI</span>
-                </button>
+                  <span>Buy $SURCHI on Raydium.io</span>
+                  <Icons.ExternalLink className="w-3 h-3 text-cyber-neon/70 shrink-0" />
+                </a>
               </div>
 
               {/* Header Title Accent */}
@@ -1875,6 +1879,25 @@ export default function App() {
               {/* SYSTEM TOKENOMICS DISTRIBUTION */}
               <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
                 <TokenomicsDashboard />
+              </div>
+
+              {/* SYSTEM STAKING BOARD */}
+              <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
+                <StakingDashboard />
+              </div>
+
+              {/* READ MORE DOCUMENTATION LINK BELOW STAKING SECTION */}
+              <div className="flex justify-center pt-2">
+                <a
+                  href="https://drive.google.com/file/d/1FGCbMPLNo-UHcVEyT68tXD5gh0MMobk9/view?usp=drivesdk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-mono font-bold tracking-widest text-[#00ff88] hover:text-[#52ffb0] bg-[#051a10] hover:bg-[#092b1a] border border-[#00ff88]/35 hover:border-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.15)] hover:shadow-[0_0_20px_rgba(0,255,136,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase no-underline"
+                >
+                  <Icons.BookOpen className="w-4 h-4 shrink-0 text-[#00ff88]" />
+                  <span>Read More Details</span>
+                  <Icons.ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#00ff88]/80" />
+                </a>
               </div>
             </div>
           )}
