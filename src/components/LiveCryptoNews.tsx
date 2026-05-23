@@ -39,6 +39,291 @@ const CATEGORIES = [
   { id: 'defi', label: '🌊 DeFi' }
 ];
 
+const CURATED_NEWS_IMAGES_CLIENT = [
+  "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1634973357973-f2ed255753e1?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1605792657660-596af9009e82?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1622630998477-20aa696ecb05?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1640340434855-6084b1f4901c?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1621416894569-0f39ed31d247?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1639762681057-40802193114c?q=80&w=400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop"
+];
+
+const SIMULATED_TEMPLATES_CLIENT: Record<string, { title: string; sentiment: 'bullish' | 'bearish' | 'neutral'; sourceName: string; summary: string }[]> = {
+  bitcoin: [
+    {
+      title: "Bitcoin Institutional OTC Inventories Drop to Record Lows as Spot Inflow Surges",
+      sentiment: "bullish",
+      sourceName: "Blockworks",
+      summary: "Institutional demand is aggressively drying up available over-the-counter liquidity, signaling strong potential for an upward squeeze."
+    },
+    {
+      title: "Macro Liquidation Event Flushes $310M Leveraged Longs as BTC Tests Key SMA Support",
+      sentiment: "bearish",
+      sourceName: "CoinDesk",
+      summary: "Sustained derivatives positioning triggered a cascade of rapid liquidations, momentarily cooling down over-extended bullish momentum."
+    },
+    {
+      title: "Bitcoin Mining Difficulty and Hashrate Reach Lifetime Peak; Clean Energy Mix Tops 65%",
+      sentiment: "bullish",
+      sourceName: "CoinTelegraph",
+      summary: "The network's security fundamentals are stronger than ever, combined with substantial achievements in sustainable power integration."
+    },
+    {
+      title: "Sovereign Wealth Funds Explore Direct Treasury Allocations Into Bitcoin Index Options",
+      sentiment: "bullish",
+      sourceName: "Decrypt",
+      summary: "Strategic conversations hint at sovereign interest in utilizing scarce digital assets to hedge traditional currency imbalances."
+    },
+    {
+      title: "Bitcoin Taproot Asset Transactions Accelerate, Creating Fee Pressure on Base Ledger",
+      sentiment: "neutral",
+      sourceName: "Bitcoin Magazine",
+      summary: "Inscriptions and asset issuance on Bitcoin L1 are driving significant fee rewards for miners under rising block demand."
+    }
+  ],
+  solana: [
+    {
+      title: "Firedancer Testnet Performance Validated: Sustaining 980K TPS Under High Stress Loads",
+      sentiment: "bullish",
+      sourceName: "Solana Intel",
+      summary: "Phase-two stress validation of the independent validator client proves extreme scale viability, eliminating single-point-of-failure vulnerabilities."
+    },
+    {
+      title: "Solana Aggregate DEX Volume Surpasses Combined Ethereum Layer-2 Networks and Sidechains",
+      sentiment: "bullish",
+      sourceName: "Blockworks",
+      summary: "Retail liquidity and high-velocity token swaps continue to cluster natively on Solana, driving transaction fees and network efficiency."
+    },
+    {
+      title: "Core Developers Merge Congestion Mitigation Standards into SOL Mainnet-Beta Client",
+      sentiment: "bullish",
+      summary: "Direct priority fee adjustments and localized fee markets are optimized to stabilize the ledger even during high meme-coin mint volumes.",
+      sourceName: "Decrypt"
+    },
+    {
+      title: "Solana DePIN Protocols Reallocate GPU Power Services, Disrupting Cloud Operators",
+      sentiment: "bullish",
+      summary: "Solana's fast ledger settles real-time compute hardware leases, expanding operational margins for decentralized computational grids.",
+      sourceName: "CoinTelegraph"
+    }
+  ],
+  ethereum: [
+    {
+      title: "Ethereum Blob Fee Caps Optimize Layer-2 Settlement Margins Ahead of Next Upgrade",
+      sentiment: "bullish",
+      summary: "Implementation of custom EIP gas benchmarks drastically reduces rollups' data publication overheads, bolstering EVM margin efficiency.",
+      sourceName: "CoinDesk"
+    },
+    {
+      title: "Secure State Bridges Achieve First Fully Zero-Knowledge Instant Rollup Sync",
+      sentiment: "bullish",
+      summary: "Direct cryptographic synchronity is achieved across clusters without delayed wait periods, solving fractional layer-2 liquidity issues.",
+      sourceName: "L2BEAT"
+    },
+    {
+      title: "Ethereum Validator Staking Count Surpasses 36M ETH; Yield Compounding Accelerates",
+      sentiment: "bullish",
+      summary: "More than 30% of total Ethereum supply is now actively locked in proof-of-stake hubs, drastically constricting market liquidity.",
+      sourceName: "TokenTerminal"
+    },
+    {
+      title: "Gas Consumption Metrics Fall to Historic Lows as L2 Rollup Efficiency Reaches 90%",
+      sentiment: "neutral",
+      summary: "L2 scaling success shifts the settlement demand away from Layer-1, causing nominal gas burns but maximizing consumer affordability.",
+      sourceName: "Decrypt"
+    }
+  ],
+  meme_coins: [
+    {
+      title: "Dynamic Token Bonding Multipliers Upgrade Automated Liquidity Curve Deployers",
+      sentiment: "bullish",
+      summary: "New algorithmic contract engines deter early snipe bots by scaling initial cost ratios, giving human retail launch participants a fairer edge.",
+      sourceName: "DEX Screener"
+    },
+    {
+      title: "Viral Cultural Sentiment Cohesion Drives Meme Valuations Above High-Cap VC Altcoins",
+      sentiment: "neutral",
+      summary: "Investors are dumping complex utility projects in favor of hyper-transparent, community-driven token primitives across all smart networks.",
+      sourceName: "CoinGecko"
+    },
+    {
+      title: "Meme-Centric Concentrated LP Pools Rebalance Dynamic Fees to Insulate Liquidity Providers",
+      sentiment: "bullish",
+      summary: "Liquidity routers now adjust fees programmatically up to 5% during insane slippage waves, protecting organic LP backing from toxic arbitrage.",
+      sourceName: "Uniswap Labs"
+    },
+    {
+      title: "Over-Leveraged Speculators Flushed in Sudden 20% Memecoin Corrective Downturn",
+      sentiment: "bearish",
+      summary: "Cascading liquidation triggers wiped millions of highly leveraged collateral positions across volatile dog and cat micro-assets.",
+      sourceName: "CoinGlass"
+    }
+  ],
+  ai_tokens: [
+    {
+      title: "Decentralized GPU Computing Infrastructure Protocol RENDER Announces Core API Expansion",
+      sentiment: "bullish",
+      summary: "The platform integrates direct containerized pipelines for AI engineers, creating stable institutional utility for active compute tokens.",
+      sourceName: "AI Ledger"
+    },
+    {
+      title: "AI Agent Autonomy Protocol Integrates Secure Zero-Knowledge Verification Node Network",
+      sentiment: "bullish",
+      summary: "AI systems can now independently secure Web3 resources and sign transactions with complete mathematical validation of clean actions.",
+      sourceName: "CoinTelegraph"
+    },
+    {
+      title: "Dynamic Resource Incentives Trigger Exploded Expansion of GPU Staking Node Pools",
+      sentiment: "bullish",
+      summary: "High-yield return margins motivate global server hubs to register spare units into peer-to-peer artificial intelligence clusters.",
+      sourceName: "Blockworks"
+    },
+    {
+      title: "Decentralized LLM Models Upgrade Edge nodes to Process Vector Databases on Decentralized Staking",
+      sentiment: "neutral",
+      summary: "Stakers provide local data indexes, earning fees for answering LLM queries without central datacenter tracking.",
+      sourceName: "Decrypt"
+    }
+  ],
+  defi: [
+    {
+      title: "Yield Aggregators Deploy Advanced AMM Loss-Versus-Rebalancing Safeguards",
+      sentiment: "bullish",
+      summary: "Next-gen algorithms insulate yield reserves by hedging pool exposure against rapid price moves, minimizing impermanent damage.",
+      sourceName: "DefiLlama"
+    },
+    {
+      title: "Multi-Ecosystem Lending Hub Protocol Introduces Instant Peer-to-Peer Loans",
+      sentiment: "bullish",
+      summary: "Borrowers can lock diverse assets as cross-chain guarantees, bypassing traditional single-chain capital constraints safely.",
+      sourceName: "Uniswap Labs"
+    },
+    {
+      title: "DAO-governed Decentralized Stablecoins Exceed $5B Circulating Backed Supply",
+      sentiment: "bullish",
+      summary: "Interest-rate models adapt automated fees to incentivize stability, securing peg accuracy under heavy stress environments.",
+      sourceName: "Decentral Intel"
+    },
+    {
+      title: "Concentrated Liquidity Router Integrates Zero-Knowledge Proofs for Dynamic Trading Privacy",
+      sentiment: "neutral",
+      summary: "New zero-knowledge integrations allow operators to execute block swaps without exposing raw transaction sizes to sandwich and MEV bots.",
+      sourceName: "CryptoSlate"
+    }
+  ],
+  breaking: [
+    {
+      title: "Supreme Multi-Agency Treasury Committee Finalizes Unified Crypto Operating License Rules",
+      sentiment: "neutral",
+      summary: "Global institutional hubs receive clear legal frameworks, allowing sovereign banks to house customer digital holdings directly.",
+      sourceName: "Reuters Technology"
+    },
+    {
+      title: "Major Venture Conglomerate Establishes $1.5 Billion Early-Stage Web3 Developer Grant Fund",
+      sentiment: "bullish",
+      summary: "Massive liquidity injection focuses on high-speed consumer applications, AI integration protocols, and gaming networks.",
+      sourceName: "Forbes Crypto"
+    },
+    {
+      title: "Security Firm Identifies Zero-Day Smart Contract Bridge Attack Vector; Exploits Prevented",
+      sentiment: "bearish",
+      summary: "A vulnerability was preemptively patched in leading multi-chain nodes, saving $850M from potential systemic drainage.",
+      sourceName: "CyberAlerts"
+    },
+    {
+      title: "Flash Leverage Crunch Triggers Complete Market Long Squeeze, Liquidating $480M",
+      sentiment: "bearish",
+      summary: "Macro interest rate speculation triggered a sudden re-pricing cascade, clearing leverage margins to establish a cleaner market floor.",
+      sourceName: "Bloomberg Crypto"
+    }
+  ]
+};
+
+function getThemedFallbackImageClient(title: string, category: string = "") {
+  let hash = 0;
+  const str = title + category;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % CURATED_NEWS_IMAGES_CLIENT.length;
+  return CURATED_NEWS_IMAGES_CLIENT[index];
+}
+
+function generateProceduralSummaryClient(title: string, sentiment: string): string {
+  const lower = title.toLowerCase();
+  if (lower.includes("bitcoin") || lower.includes("btc")) {
+    return "Bitcoin's current market momentum continues to dictate index dynamics, with specialists evaluating technical boundaries.";
+  }
+  if (lower.includes("solana") || lower.includes("sol")) {
+    return "Solana's network efficiency and high validator stakes support active trade depth across key decentralized liquidity pools.";
+  }
+  if (lower.includes("ethereum") || lower.includes("eth")) {
+    return "Ethereum's Layer-2 settling activity continues to lock decentralized collateral under secure smart contracts.";
+  }
+  return `Market intelligence feeds scan ongoing developer activity and volume streams in real time. Sentiment is rated as ${sentiment}.`;
+}
+
+function generateClientSimulatedNews(category: string, search: string, page: number): NewsPost[] {
+  const selectedCategory = category || "breaking";
+  let templates: { title: string; sentiment: "bullish" | "bearish" | "neutral"; sourceName: string; summary: string }[] = [];
+
+  if (selectedCategory === "breaking") {
+    templates = [
+      ...SIMULATED_TEMPLATES_CLIENT.breaking,
+      ...SIMULATED_TEMPLATES_CLIENT.bitcoin,
+      ...SIMULATED_TEMPLATES_CLIENT.solana,
+      ...SIMULATED_TEMPLATES_CLIENT.ethereum,
+    ];
+  } else {
+    templates = SIMULATED_TEMPLATES_CLIENT[selectedCategory] || SIMULATED_TEMPLATES_CLIENT.breaking;
+  }
+
+  const query = search.toLowerCase().trim();
+  if (query) {
+    templates = templates.filter(t => 
+      t.title.toLowerCase().includes(query) || 
+      t.summary.toLowerCase().includes(query) ||
+      t.sourceName.toLowerCase().includes(query)
+    );
+  }
+
+  const result: NewsPost[] = [];
+  const baseMinutes = (page - 1) * 30;
+
+  for (let i = 0; i < 12; i++) {
+    const templateIndex = (i + (page - 1) * 3) % templates.length;
+    const template = templates[templateIndex];
+    if (!template) continue;
+
+    const id = `client-sim-${selectedCategory}-${page}-${i}`;
+    const minutesAgo = baseMinutes + i * 8 + (i % 3) * 5 + 2;
+    const date = new Date(Date.now() - minutesAgo * 60 * 1000);
+
+    let title = template.title;
+    if (page > 1) {
+      const prefixes = ["REGIONAL UPDATE:", "CORE BREAKOUT:", "ANALYST UPDATE:", "TECH BULLETIN:"];
+      title = `${prefixes[i % prefixes.length]} ${title}`;
+    }
+
+    result.push({
+      id,
+      title,
+      url: "https://cryptopanic.com",
+      sourceName: template.sourceName,
+      publishedAt: date.toISOString(),
+      sentiment: template.sentiment,
+      imageUrl: getThemedFallbackImageClient(title, selectedCategory),
+      summary: template.summary || generateProceduralSummaryClient(title, template.sentiment)
+    });
+  }
+
+  return result;
+}
+
 export default function LiveCryptoNews() {
   const [posts, setPosts] = useState<NewsPost[]>([]);
   const [category, setCategory] = useState<string>('breaking');
@@ -94,11 +379,20 @@ export default function LiveCryptoNews() {
         throw new Error("Invalid posts schema received from the secure proxy");
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Quantum telemetry connection timeout');
-      // If full catastrophic front-to-back offline grid failure, load client fallback procedurally
-      if (!append) {
-        setPosts([]);
+      console.warn(`SURCHI NEWS: Secure proxy offline or static environment detected (${err.message || err}). Initializing client-side high-fidelity simulation stream.`);
+      
+      const simPosts = generateClientSimulatedNews(catId, searchVal, pageNum);
+      if (append) {
+        setPosts(prev => {
+          const combined = [...prev, ...simPosts];
+          return combined.filter((val, idx, self) => self.findIndex(t => t.id === val.id) === idx);
+        });
+      } else {
+        setPosts(simPosts);
       }
+      setIsSimulated(true);
+      // Clear error message since we recovered perfectly with client-side simulation
+      setErrorMessage('');
     } finally {
       setLoading(false);
       setLoadingMore(false);
