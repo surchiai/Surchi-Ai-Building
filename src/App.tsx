@@ -6,6 +6,7 @@ import LiveCryptoNews from './components/LiveCryptoNews';
 import TokenomicsDashboard from './components/TokenomicsDashboard';
 import StakingDashboard from './components/StakingDashboard';
 import PartnershipModal from './components/PartnershipModal';
+import SurchiIntroModal from './components/SurchiIntroModal';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -711,6 +712,9 @@ export default function App() {
   
   // Partnership Modal State
   const [showPartnershipModal, setShowPartnershipModal] = useState(false);
+  
+  // Surchi Intro Modal State
+  const [showSurchiIntroModal, setShowSurchiIntroModal] = useState(false);
   
   // Hamburger Menu open control State
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -1877,6 +1881,18 @@ export default function App() {
                 </div>
               </div>
 
+              {/* INTRODUCTORY EXPLAINER / WHAT IS SURCHI AI */}
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={() => setShowSurchiIntroModal(true)}
+                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-xs sm:text-sm font-mono font-black tracking-widest text-[#a855f7] hover:text-[#c084fc] bg-[#120721] hover:bg-[#1e0a36] border border-[#a855f7]/45 hover:border-[#c084fc] shadow-[0_0_18px_rgba(168,85,247,0.15)] hover:shadow-[0_0_25px_rgba(168,85,247,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase"
+                >
+                  <Icons.Cpu className="w-4.5 h-4.5 shrink-0 text-[#a855f7] animate-pulse" />
+                  <span>WHAT IS SURCHI AI?</span>
+                  <Icons.ChevronRight className="w-4.5 h-4.5 shrink-0 text-[#a855f7]" />
+                </button>
+              </div>
+
               {/* AUTOMATIC LIVE CRYPTO NEWS */}
               <LiveCryptoNews />
 
@@ -2204,6 +2220,9 @@ export default function App() {
 
       {/* STRATEGIC ALLIANCE GLOBAL SYSTEM PANEL */}
       <PartnershipModal isOpen={showPartnershipModal} onClose={() => setShowPartnershipModal(false)} />
+
+      {/* WHAT IS SURCHI AI DOCUMENTATION PANEL */}
+      <SurchiIntroModal isOpen={showSurchiIntroModal} onClose={() => setShowSurchiIntroModal(false)} />
 
       {/* Floating High-Contrast Theme Mode Switcher */}
       <button

@@ -533,12 +533,11 @@ export default function LiveCryptoNews() {
 
   // Top trending carousel subset from current posts
   const trendingPosts = posts.filter(p => p.sentiment === 'bullish' || p.sentiment === 'neutral').slice(0, 4);
-  const activeTrendingPost = trendingPosts[carouselIndex] || trendingPosts[0];
 
   return (
     <div 
       id="live-crypto-news-module"
-      className="w-full max-w-7xl mx-auto mt-8 font-sans transition-all select-none space-y-6 animate-fade-in"
+      className="w-full max-w-7xl mx-auto mt-4 font-sans transition-all select-none space-y-3 animate-fade-in"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -557,79 +556,73 @@ export default function LiveCryptoNews() {
           animation-play-state: paused;
         }
       `}</style>
-
+ 
       {/* Touch refresh pull-bar simulator indicator */}
       {pullProgress > 0 && (
         <div 
-          className="flex items-center justify-center p-2 text-cyber-cyan text-xs font-mono transition-transform"
+          className="flex items-center justify-center p-1.5 text-cyber-cyan text-xs font-mono transition-transform"
           style={{ transform: `scale(${pullProgress})` }}
         >
-          <RefreshCw className={`w-4 h-4 mr-2 text-cyber-cyan ${pullProgress >= 0.8 ? 'animate-spin' : ''}`} />
-          <span>{pullProgress >= 0.8 ? 'Release to Refresh Oracle news Feed...' : 'Pull down to re-sync news matrix'}</span>
+          <RefreshCw className={`w-3.5 h-3.5 mr-1.5 text-cyber-cyan ${pullProgress >= 0.8 ? 'animate-spin' : ''}`} />
+          <span className="text-[10px]">{pullProgress >= 0.8 ? 'Release with confidence...' : 'Pull down to refresh'}</span>
         </div>
       )}
-
-      {/* MAIN BANNER CONTAINER HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 bg-[#090a21] border border-cyber-cyan/30 rounded-xl shadow-[0_0_25px_rgba(0,229,255,0.06)] relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-cyber-pink/5 blur-3xl rounded-full"></div>
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-cyber-cyan/5 blur-3xl rounded-full"></div>
-        
-        {/* News logo and live telemetry status line */}
-        <div className="flex items-center gap-3.5 text-left relative z-10">
-          <div className="p-3 bg-gradient-to-br from-cyber-cyan to-cyber-purple text-[#050510] rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.25)] animate-pulse">
-            <Newspaper className="w-6 h-6" />
+ 
+      {/* SLIM MINIMIZED BANNER HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-[#070817] border border-cyber-cyan/20 rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.04)]">
+        {/* News logo and live info */}
+        <div className="flex items-center gap-2 text-left">
+          <div className="p-1 px-1.5 bg-gradient-to-br from-cyber-cyan to-cyber-purple text-[#050510] rounded text-xs">
+            <Newspaper className="w-3.5 h-3.5" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex h-2.5 w-2.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00ff88]"></span>
-              </span>
-              <h2 className="text-[#ffffff] font-display font-black text-lg sm:text-2xl uppercase tracking-widest">
-                Live Crypto News
-              </h2>
-            </div>
-            <p className="text-[10px] text-slate-500 font-mono tracking-wide uppercase mt-0.5">
-              Secure Proxy Core &bull; Secure API Tunnel Syncing &bull; 30s Clock
-            </p>
+          <div className="flex items-center gap-2">
+            <span className="flex h-1.5 w-1.5 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#00ff88]"></span>
+            </span>
+            <h2 className="text-white font-display font-black text-xs sm:text-sm uppercase tracking-wider">
+              NEWS FEED ORACLE
+            </h2>
+            <span className="text-[8px] font-mono text-slate-500 uppercase hidden md:inline">
+              &bull; Secure Tunnel Syncing
+            </span>
           </div>
         </div>
-
+ 
         {/* Live Refresh Counter & Network Switch */}
-        <div className="flex items-center gap-3 relative z-10 md:self-end">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0e0e29] border border-cyber-border rounded-lg font-mono text-[10px]">
-            <span className="text-slate-400 font-bold uppercase">NEXT MATRIX CYCLE:</span>
-            <span className="text-cyber-cyan font-black animate-pulse">{countdown}s</span>
+        <div className="flex items-center justify-between sm:justify-end gap-2 text-[9px] font-mono">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#0b0b1e] border border-cyber-border rounded">
+            <span className="text-slate-500">CYCLE:</span>
+            <span className="text-cyber-cyan font-bold">{countdown}s</span>
           </div>
           <button
             onClick={handleManualRefresh}
             disabled={loading}
-            className="p-2 sm:px-4 bg-[#141535] hover:bg-cyber-purple/25 text-cyber-cyan hover:text-cyber-neon border border-cyber-cyan/35 rounded-lg cursor-pointer transition-all flex items-center gap-2 text-[10px] font-mono select-none"
+            className="px-2.5 py-1 bg-[#10102b] hover:bg-cyber-purple/20 text-cyber-cyan border border-cyber-cyan/25 hover:border-cyber-cyan/50 rounded cursor-pointer transition-all flex items-center gap-1.5 font-bold"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-cyber-cyan ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">REFRESH SYSTEM</span>
+            <RefreshCw className={`w-3 h-3 text-cyber-cyan ${loading ? 'animate-spin' : ''}`} />
+            <span>SYNC NOW</span>
           </button>
         </div>
       </div>
-
-      {/* CONTINUOUS BREAKING NEWS TRACK TICKER */}
+ 
+      {/* CONTINUOUS BREAKING NEWS TICKER */}
       {posts.length > 0 && (
-        <div className="bg-[#10070c] border border-rose-500/20 py-2.5 px-4 rounded-xl flex items-center gap-3 overflow-hidden text-xs relative select-none">
-          <span className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#ff4b82] text-[9px] font-black uppercase text-[#050510] tracking-widest animate-pulse font-mono shadow-[0_0_8px_rgba(255,75,130,0.3)]">
-            <Flame className="w-3.5 h-3.5 text-[#050510]" />
-            BREAKING NEWS
+        <div className="bg-[#0b0509] border border-rose-500/15 py-1.5 px-3 rounded-lg flex items-center gap-2.5 overflow-hidden text-[10px] select-none">
+          <span className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#ff4b82] text-[8px] font-black uppercase text-[#050510] tracking-wider animate-pulse font-mono font-black">
+            <Flame className="w-3 h-3 text-[#050510]" />
+            LIVE TICKER
           </span>
-          <div className="relative flex-1 overflow-hidden h-4">
-            <div className="animate-ticker-marquee flex gap-12 text-[11px] font-mono text-rose-300">
-              {/* Duplicate headlines to create a beautiful gapless infinite scroll in standard ticker */}
-              <div className="flex gap-12 whitespace-nowrap">
+          <div className="relative flex-1 overflow-hidden h-3.5">
+            <div className="animate-ticker-marquee flex gap-10 text-[10px] font-mono text-rose-300">
+              <div className="flex gap-10 whitespace-nowrap">
                 {posts.map(p => (
                   <span key={p.id} className="cursor-pointer hover:underline hover:text-[#ff4b82]" onClick={() => window.open(p.url, '_blank')}>
                     &bull; {p.title.toUpperCase()} — {p.sourceName.toUpperCase()}
                   </span>
                 ))}
               </div>
-              <div className="flex gap-12 whitespace-nowrap">
+              <div className="flex gap-10 whitespace-nowrap">
                 {posts.map(p => (
                   <span key={`${p.id}-dup`} className="cursor-pointer hover:underline hover:text-[#ff4b82]" onClick={() => window.open(p.url, '_blank')}>
                     &bull; {p.title.toUpperCase()} — {p.sourceName.toUpperCase()}
@@ -640,308 +633,188 @@ export default function LiveCryptoNews() {
           </div>
         </div>
       )}
-
-      {/* TRENDING CAROUSEL SLIDER (Top feature) */}
-      {!loading && trendingPosts.length > 0 && activeTrendingPost && (
-        <div className="bg-gradient-to-r from-[#010103] via-[#050512] to-[#010103] border border-cyber-purple/20 rounded-xl p-5 relative overflow-hidden text-left shadow-lg">
-          <div className="absolute top-0 right-0 py-1 px-3 bg-cyber-purple/15 text-cyber-purple border-b border-l border-cyber-purple/30 text-[8px] font-mono font-black uppercase tracking-wider rounded-bl animate-pulse">
-            👑 Premium Trending Signal
-          </div>
-          
-          <div className="flex flex-col lg:flex-row items-center gap-5">
-            {/* Slide Graphic */}
-            <div className="w-full lg:w-1/3 h-40 max-h-40 relative rounded-lg overflow-hidden border border-cyber-border-light shadow-md shrink-0">
-              <img 
-                src={activeTrendingPost.imageUrl} 
-                alt="Trending cover thumbnail"
-                referrerPolicy="no-referrer"
-                loading="lazy"
-                className="w-full h-full object-cover transform hover:scale-105 transition-all duration-700 select-none brightness-90 saturate-120"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-              <span className={`absolute bottom-3 left-3 px-2 py-0.5 rounded text-[8px] font-mono font-extrabold ${getSentimentStyles(activeTrendingPost.sentiment).bg} ${getSentimentStyles(activeTrendingPost.sentiment).text} border ${getSentimentStyles(activeTrendingPost.sentiment).border} uppercase tracking-wider`}>
-                {activeTrendingPost.sentiment}
-              </span>
-            </div>
-
-            {/* Slide Metadata text */}
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center gap-2.5 text-[9px] font-mono text-slate-500 font-semibold uppercase">
-                <span>{activeTrendingPost.sourceName}</span>
-                <span>&bull;</span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-slate-500" />
-                  {formatTimeAgo(activeTrendingPost.publishedAt)}
-                </span>
-                <span>&bull;</span>
-                <span className="text-cyber-purple">TRENDING MATRICES</span>
-              </div>
-              <h3 
-                className="text-white hover:text-cyber-cyan text-sm sm:text-lg font-display font-bold tracking-tight leading-snug cursor-pointer transition-colors"
-                onClick={() => window.open(activeTrendingPost.url, '_blank')}
-              >
-                {activeTrendingPost.title}
-              </h3>
-              <p className="text-slate-400 text-xs font-sans leading-relaxed">
-                {activeTrendingPost.summary}
-              </p>
-
-              {/* Slider Actions row */}
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-3">
-                  <a
-                    href={activeTrendingPost.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-1.5 text-[10px] font-mono font-black text-cyber-cyan hover:text-cyber-neon tracking-wide uppercase transition-colors"
-                  >
-                    <span>EXPLORE INTEL SHEETS</span>
-                    <ExternalLink className="w-3 h-3 text-cyber-cyan shrink-0" />
-                  </a>
-                  <button
-                    onClick={() => handleVoiceRead(activeTrendingPost)}
-                    className={`p-1.5 rounded bg-[#101030]/50 border border-cyber-purple/20 ${voiceActiveId === activeTrendingPost.id ? 'text-cyber-neon border-cyber-purple' : 'text-slate-400 hover:text-cyber-purple'} transition-colors ml-1`}
-                    title="Read article aloud"
-                  >
-                    <Volume2 className="w-3.5 h-3.5 animate-pulse" />
-                  </button>
-                </div>
-                {/* Carousel Manual select controls */}
-                <div className="flex items-center gap-1.5">
-                  {trendingPosts.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCarouselIndex(idx)}
-                      className={`h-1.5 rounded-full transition-all duration-350 bg-cyber-purple ${idx === carouselIndex ? 'w-5 opacity-100 bg-cyber-neon' : 'w-1.5 opacity-35 bg-purple-700'}`}
-                      aria-label={`Slide target #${idx + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+ 
+      {/* FILTER CONTROL PANEL */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2">
+        {/* Navigation Category Select tabs */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 scrollbar-none max-w-full">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setCategory(cat.id);
+                setPage(1);
+              }}
+              className={`px-2.5 py-1 text-[10px] font-mono font-bold uppercase border rounded cursor-pointer transition-all select-none shrink-0 ${
+                category === cat.id
+                  ? 'bg-cyber-purple border-cyber-purple text-white shadow-[0_0_8px_rgba(124,58,237,0.25)]'
+                  : 'bg-[#050511] border-cyber-border text-slate-400 hover:text-white hover:border-cyber-cyan/30'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
         </div>
-      )}
-
-      {/* ADVANCED MULTI-OPTIONS CONTROLLERS PANEL */}
-      <div className="space-y-4">
-        {/* News Filters / Search Row */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          
-          {/* Navigation Category Select tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 md:pb-0 scrollbar-none max-w-full">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setCategory(cat.id);
-                  setPage(1);
-                }}
-                className={`px-3.5 py-1.5 text-xs font-mono font-black uppercase tracking-wider border rounded-lg cursor-pointer transition-all select-none shrink-0 ${
-                  category === cat.id
-                    ? 'bg-cyber-purple border-cyber-purple text-white shadow-[0_0_12px_rgba(124,58,237,0.3)]'
-                    : 'bg-[#09091b] border-cyber-border text-slate-400 hover:text-[#ffffff] hover:border-cyber-cyan/40'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Keyword and tokens Search Field Input */}
-          <div className="relative w-full md:max-w-xs shrink-0 bg-[#060611] rounded-lg border border-cyber-border focus-within:border-cyber-cyan/50 focus-within:shadow-[0_0_8px_rgba(0,229,255,0.1)] transition-all">
-            <span className="absolute left-3.5 top-2.5 text-slate-500">
-              <Search className="w-4 h-4" />
-            </span>
-            <input 
-              type="text"
-              value={search}
-              onChange={handleSearchChange}
-              placeholder="Search news signals, keywords..."
-              className="w-full bg-transparent pl-10 pr-4 py-2 text-xs font-mono text-[#ffffff] focus:outline-none placeholder:text-slate-600"
-            />
-            {search && (
-              <button 
-                onClick={() => { setSearch(''); setPage(1); }} 
-                className="absolute right-3.5 top-2 text-slate-500 hover:text-white"
-              >
-                <span className="text-xs">&times;</span>
-              </button>
-            )}
-          </div>
-
+ 
+        {/* Keyword Search Input */}
+        <div className="relative w-full md:max-w-[200px] shrink-0 bg-[#03030b] rounded border border-cyber-border focus-within:border-cyber-cyan/45 transition-all">
+          <span className="absolute left-2.5 top-1.5 text-slate-505 text-slate-500">
+            <Search className="w-3.5 h-3.5" />
+          </span>
+          <input 
+            type="text"
+            value={search}
+            onChange={handleSearchChange}
+            placeholder="Search feed keywords..."
+            className="w-full bg-transparent pl-8 pr-3 py-1 text-[10px] font-mono text-white focus:outline-none placeholder:text-slate-600 block"
+          />
+          {search && (
+            <button 
+              onClick={() => { setSearch(''); setPage(1); }} 
+              className="absolute right-2 top-0.5 text-slate-500 hover:text-white text-[11px]"
+            >
+              &times;
+            </button>
+          )}
         </div>
       </div>
-
-      {/* FEED RESULTS LEDGER PANEL CONTAINER */}
-      <div className="space-y-4">
-        
+ 
+      {/* COMPACT FEED LIST */}
+      <div className="space-y-1.5">
         {/* Loading Matrix indicator state */}
         {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-            {Array.from({ length: 6 }).map((_, idx) => (
+          <div className="space-y-1.5">
+            {Array.from({ length: 3 }).map((_, idx) => (
               <div 
                 key={idx} 
-                className="bg-[#0b0c22] border border-cyber-border rounded-xl p-4 space-y-4 animate-pulse h-80 flex flex-col justify-between"
+                className="bg-[#0b0c22]/50 border border-cyber-border rounded-lg p-3 animate-pulse flex items-center justify-between h-14"
               >
-                <div className="space-y-3">
-                  <div className="w-full h-36 bg-[#161730] rounded-lg"></div>
-                  <div className="h-2.5 w-1/3 bg-[#161730] rounded"></div>
-                  <div className="h-4 w-full bg-[#161730] rounded"></div>
-                  <div className="h-3.5 w-5/6 bg-[#161730] rounded"></div>
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-2.5 w-1/4 bg-[#161730] rounded"></div>
+                  <div className="h-3 w-3/4 bg-[#161730] rounded"></div>
                 </div>
-                <div className="h-3 w-1/2 bg-[#161730] rounded"></div>
+                <div className="h-3.5 w-10 bg-[#161730] rounded"></div>
               </div>
             ))}
           </div>
         )}
-
+ 
         {/* Failed fetch matrix fallbacks alert */}
         {!loading && errorMessage && posts.length === 0 && (
-          <div className="p-6 bg-rose-950/15 border border-rose-500/25 rounded-xl text-center space-y-3 max-w-lg mx-auto">
-            <AlertCircle className="w-8 h-8 text-[#ff4b82] mx-auto animate-bounce" />
-            <h4 className="text-sm font-bold uppercase text-white font-mono">DEX News Grid Offline</h4>
-            <p className="text-xs text-slate-400 font-sans leading-relaxed">
-              We encountered a slight quantum latency sync issue ({errorMessage}). Attempting core matrix recovery protocols.
+          <div className="p-4 bg-rose-950/15 border border-rose-500/20 rounded-lg text-center space-y-2 max-w-md mx-auto">
+            <AlertCircle className="w-5 h-5 text-[#ff4b82] mx-auto" />
+            <h4 className="text-xs font-bold uppercase text-white font-mono">DEX News Grid Offline</h4>
+            <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+              Encountered direct network latency syncing the latest node updates.
             </p>
             <button 
               onClick={handleManualRefresh}
-              className="px-4 py-2 bg-[#ff4b82]/10 border border-[#ff4b82]/35 text-[#ff4b82] hover:bg-[#ff4b82]/20 rounded-lg text-xs font-mono transition-colors"
+              className="px-3 py-1 bg-[#ff4b82]/10 border border-[#ff4b82]/30 text-[#ff4b82] hover:bg-[#ff4b82]/20 rounded text-[9px] font-mono transition-colors"
             >
               RETREAD COGNITIVE TUNNEL
             </button>
           </div>
         )}
-
+ 
         {/* Empty Search / Empty news results */}
         {!loading && posts.length === 0 && !errorMessage && (
-          <div className="p-12 text-center bg-[#070719] border border-cyber-border/60 rounded-xl space-y-4 max-w-md mx-auto flex flex-col items-center">
-            <HelpCircle className="w-10 h-10 text-slate-600 animate-pulse" />
-            <div className="space-y-1.5">
-              <h4 className="text-sm font-black text-white font-mono uppercase">Unresolved News Coordinates</h4>
-              <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                No active matching articles found in category or search results. Alter filter indices to proceed.
+          <div className="p-6 text-center bg-[#04040a] border border-cyber-border/40 rounded-lg space-y-2 max-w-sm mx-auto flex flex-col items-center justify-center">
+            <HelpCircle className="w-6 h-6 text-slate-600 animate-pulse" />
+            <div className="space-y-1 text-center">
+              <h4 className="text-xs font-black text-white font-mono uppercase">Unresolved News Coordinates</h4>
+              <p className="text-[10px] text-slate-500 font-sans leading-relaxed">
+                No active matching articles found in category or search results.
               </p>
             </div>
-            {search && (
-              <button 
-                onClick={() => { setSearch(''); }}
-                className="px-4 py-1.5 bg-[#1a1b38] border border-cyber-border rounded-lg text-xs text-cyber-cyan font-mono"
-              >
-                REFRESH FILTER MATRIX
-              </button>
-            )}
           </div>
         )}
-
-        {/* Main interactive items cards lists grid */}
+ 
+        {/* Compact list rows representing active news posts */}
         {!loading && posts.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 text-left">
+          <div className="space-y-1.5">
             {posts.map((post) => {
               const semStyle = getSentimentStyles(post.sentiment);
               return (
                 <article 
                   key={post.id}
-                  className="bg-[#0b0c22]/95 border border-cyber-cyan/15 hover:border-cyber-cyan/60 rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(0,191,255,0.08)] hover:-translate-y-1 group flex flex-col justify-between h-auto"
+                  className="bg-[#050512]/92 border border-cyber-cyan/15 hover:border-cyber-cyan/50 hover:bg-[#07071d]/98 rounded-lg p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all text-left"
                 >
-                  <div className="space-y-3">
-                    {/* Splash card element overlay */}
-                    <div className="h-36 max-h-36 w-full relative overflow-hidden bg-slate-900 border-b border-cyber-border-light select-none">
-                      <img 
-                        src={post.imageUrl} 
-                        alt={post.title}
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-all duration-500 brightness-90 saturate-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
-                      
-                      {/* Sentiment floating badge */}
-                      <span className={`absolute top-3 left-3 px-2 py-0.5 rounded text-[8.5px] font-mono font-black ${semStyle.bg} ${semStyle.text} border ${semStyle.border} uppercase shadow-lg select-none`}>
+                  {/* Left segment containing metadata tags and content title */}
+                  <div className="flex-1 space-y-1">
+                    <div className="flex flex-wrap items-center gap-1.5 text-[8.5px] font-mono text-slate-500">
+                      <span className={`px-1.5 py-0.25 rounded font-black text-[7.5px] uppercase border font-bold ${semStyle.text} ${semStyle.bg} ${semStyle.border}`}>
                         {semStyle.label}
                       </span>
-
-                      {/* Floating dynamic Voice Read trigger */}
-                      <button
-                        onClick={() => handleVoiceRead(post)}
-                        className={`absolute bottom-2.5 right-2.5 p-1.5 rounded-full ${voiceActiveId === post.id ? 'bg-[#ff4b82] text-[#050510]' : 'bg-black/60 text-slate-350 hover:bg-black/90 hover:text-white'} transition-all`}
-                        title="Read news details"
-                      >
-                        <Volume2 className="w-3.5 h-3.5" />
-                      </button>
+                      <span className="font-bold text-slate-400">{post.sourceName.toUpperCase()}</span>
+                      <span>&bull;</span>
+                      <span className="flex items-center gap-0.5">
+                        <Clock className="w-2.5 h-2.5 text-slate-500 shrink-0" />
+                        {formatTimeAgo(post.publishedAt)}
+                      </span>
                     </div>
-
-                    {/* Metadata indicators header */}
-                    <div className="px-4.5 space-y-2">
-                      <div className="flex items-center justify-between text-[9px] font-mono text-slate-500">
-                        <span className="font-bold uppercase tracking-wider">{post.sourceName}</span>
-                        <span className="flex items-center gap-1 uppercase">
-                          <Clock className="w-3 h-3 text-slate-500" />
-                          {formatTimeAgo(post.publishedAt)}
-                        </span>
-                      </div>
-
-                      {/* Header link and text title */}
-                      <h3 
-                        onClick={() => window.open(post.url, '_blank')}
-                        className="text-white group-hover:text-cyber-cyan text-sm sm:text-sm font-display font-bold leading-snug cursor-pointer line-clamp-2 select-text transition-colors"
-                      >
-                        {post.title}
-                      </h3>
-
-                      {/* AI Brief analysis text */}
-                      <p className="text-slate-400 text-xs font-sans leading-relaxed line-clamp-3 select-text bg-[#030310]/50 p-2.5 rounded border border-cyber-border-light">
-                        {post.summary}
-                      </p>
-                    </div>
+ 
+                    <h3 
+                      onClick={() => window.open(post.url, '_blank')}
+                      className="text-white hover:text-cyber-cyan text-[11.5px] md:text-xs font-bold leading-relaxed cursor-pointer select-text transition-colors block"
+                    >
+                      {post.title}
+                    </h3>
+                    
+                    {/* Small preview of description inside list item */}
+                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed select-text line-clamp-1 italic max-w-4xl">
+                      {post.summary}
+                    </p>
                   </div>
-
-                  {/* Absolute actions row footer */}
-                  <div className="px-4.5 pb-4 mt-3 pt-3 border-t border-cyber-border/40 flex items-center justify-between text-[11px] font-mono">
+ 
+                  {/* Action Segment on the right side */}
+                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                    <button
+                      onClick={() => handleVoiceRead(post)}
+                      className={`p-1 rounded ${voiceActiveId === post.id ? 'bg-[#ff4b82] text-[#050510]' : 'bg-[#0f0f22] text-slate-400 hover:text-white border border-cyber-border'} transition-all`}
+                      title="Read news details aloud"
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                    </button>
+                    
                     <a
                       href={post.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-1 font-bold text-cyber-cyan hover:text-cyber-neon"
+                      className="px-2 py-1 bg-[#0b0c1e] hover:bg-cyber-cyan/15 border border-cyber-cyan/25 hover:border-cyber-cyan rounded flex items-center gap-1 text-[8.5px] font-mono font-bold text-cyber-cyan hover:text-white transition-all no-underline"
                     >
-                      <span>EXPLORE INSIGHT</span>
-                      <ExternalLink className="w-3 h-3 text-cyber-cyan" />
+                      <span>OPEN</span>
+                      <ExternalLink className="w-2.5 h-2.5 text-cyber-cyan shrink-0" />
                     </a>
-                    {isSimulated && (
-                      <span className="text-[7.5px] font-black text-slate-600 bg-[#16172f]/40 px-1 py-0.25 rounded uppercase border border-cyber-border select-none" title="Synthesized locally based on global tickers">
-                        ⚡ AI SIM SYSTEM
-                      </span>
-                    )}
                   </div>
                 </article>
               );
             })}
           </div>
         )}
-
-        {/* Load More Matrix activation trigger */}
+ 
+        {/* Load More Trigger */}
         {!loading && posts.length > 0 && (
-          <div className="pt-6 text-center select-none pb-8">
+          <div className="pt-2 text-center select-none">
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="px-8 py-3 bg-[#0d0d1e] hover:bg-[#131435] border border-cyber-cyan/30 hover:border-cyber-cyan shadow-md text-cyber-cyan hover:text-white rounded-lg text-xs font-bold font-mono tracking-widest cursor-pointer transition-all disabled:opacity-50 select-none inline-flex items-center gap-2 uppercase"
+              className="px-5 py-1.5 bg-[#070715] hover:bg-[#0c0c26] border border-cyber-cyan/20 hover:border-cyber-cyan shadow-sm text-cyber-cyan hover:text-white rounded text-[10px] font-bold font-mono tracking-wider cursor-pointer transition-all disabled:opacity-50 inline-flex items-center gap-1.5 uppercase"
             >
               {loadingMore ? (
                 <>
-                  <RefreshCw className="w-4 h-4 text-cyber-cyan animate-spin" />
-                  <span>SYNCING NEXT DATASETS...</span>
+                  <RefreshCw className="w-3 h-3 text-cyber-cyan animate-spin" />
+                  <span>SYNCING...</span>
                 </>
               ) : (
                 <>
-                  <span>LOAD NEXT SIGNAL MATRIX</span>
-                  <ChevronRight className="w-4 h-4 text-cyber-cyan" />
+                  <span>LOAD NEXT SECURE DATASETS</span>
+                  <ChevronRight className="w-3 h-3 text-cyber-cyan" />
                 </>
               )}
             </button>
           </div>
         )}
-
+ 
       </div>
 
     </div>
