@@ -1412,6 +1412,17 @@ export default function App() {
 
 
             <>
+              {/* Buy $SURCHI tiny button left upper side above active forensics module */}
+              <div className="flex justify-start">
+                <button
+                  onClick={() => setShowDonateModal(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-extrabold tracking-widest text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_12px_rgba(0,255,136,0.18)] hover:shadow-[0_0_18px_rgba(0,255,136,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase"
+                >
+                  <Icons.Coins className="w-3.5 h-3.5 text-cyber-neon shrink-0" />
+                  <span>Buy $SURCHI</span>
+                </button>
+              </div>
+
               {/* Header Title Accent */}
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-cyber-card border border-cyber-border text-cyber-cyan text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_8px_rgba(0,229,255,0.05)]">
