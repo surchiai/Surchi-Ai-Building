@@ -62,7 +62,7 @@ export default function StakingDashboard() {
         </div>
 
         {/* RESTART COUNTDOWN BOX */}
-        <div className="md:col-span-5 p-5 bg-gradient-to-br from-[#02130e] via-[#050512] to-[#04040a] border border-cyber-neon/25 rounded-xl flex flex-col justify-center items-center text-center space-y-4 shadow-[0_0_15px_rgba(0,255,136,0.03)]">
+        <div className="md:col-span-5 p-5 bg-gradient-to-br from-cyber-neon/5 via-cyber-card-light to-cyber-card border border-cyber-neon/25 rounded-xl flex flex-col justify-center items-center text-center space-y-4 shadow-[0_0_15px_rgba(0,255,136,0.03)] transition-all">
           <div className="space-y-1">
             <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block">EVENT PROTOCOL COMMENCEMENT</span>
             <span className="text-xs font-bold font-mono text-cyber-neon uppercase tracking-wider block">CONTRACT INITIALIZATION</span>
@@ -70,25 +70,25 @@ export default function StakingDashboard() {
 
           {/* TIMER GRAPHIC */}
           <div className="flex gap-2">
-            <div className="bg-[#05130b] border border-cyber-neon/30 text-white p-3 rounded-lg min-w-[50px]">
-              <div className="text-lg sm:text-2xl font-black font-mono leading-none text-cyber-neon">
+            <div className="bg-cyber-neon/10 border border-cyber-neon/20 text-[#00ff88] p-3 rounded-lg min-w-[50px] transition-all">
+              <div className="text-lg sm:text-2xl font-black font-mono leading-none">
                 {String(timeLeft.days).padStart(2, '0')}
               </div>
               <div className="text-[8px] font-mono uppercase text-slate-500 mt-1">Days</div>
             </div>
-            <div className="bg-[#060613] border border-cyber-border text-white p-3 rounded-lg min-w-[50px]">
+            <div className="bg-cyber-card-light border border-cyber-border text-cyber-text p-3 rounded-lg min-w-[50px] transition-all">
               <div className="text-lg sm:text-2xl font-black font-mono leading-none">
                 {String(timeLeft.hours).padStart(2, '0')}
               </div>
               <div className="text-[8px] font-mono uppercase text-slate-500 mt-1">Hrs</div>
             </div>
-            <div className="bg-[#060613] border border-cyber-border text-white p-3 rounded-lg min-w-[50px]">
+            <div className="bg-cyber-card-light border border-cyber-border text-cyber-text p-3 rounded-lg min-w-[50px] transition-all">
               <div className="text-lg sm:text-2xl font-black font-mono leading-none">
                 {String(timeLeft.minutes).padStart(2, '0')}
               </div>
               <div className="text-[8px] font-mono uppercase text-slate-500 mt-1">Mins</div>
             </div>
-            <div className="bg-[#060613] border border-cyber-border text-white p-3 rounded-lg min-w-[50px]">
+            <div className="bg-cyber-card-light border border-cyber-border text-cyber-text p-3 rounded-lg min-w-[50px] transition-all">
               <div className="text-lg sm:text-2xl font-black font-mono leading-none text-cyber-cyan">
                 {String(timeLeft.seconds).padStart(2, '0')}
               </div>
@@ -99,7 +99,7 @@ export default function StakingDashboard() {
           <div className="w-full">
             <button 
               disabled={true}
-              className="w-full py-2 bg-[#092215]/50 border border-cyber-neon/35 text-cyber-neon/60 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase cursor-not-allowed"
+              className="w-full py-2 bg-cyber-neon/5 border border-cyber-neon/20 text-cyber-neon/50 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase cursor-not-allowed"
             >
               🔒 Staking Vault Offline
             </button>

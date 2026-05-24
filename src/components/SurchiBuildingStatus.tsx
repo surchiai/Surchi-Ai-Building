@@ -45,7 +45,7 @@ export default function SurchiBuildingStatus() {
   }, [activeStep]);
 
   return (
-    <div className="w-full max-w-xl mx-auto p-4.5 bg-[#03030a]/90 border border-[#a855f7]/25 hover:border-[#a855f7]/45 rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.08)] space-y-4 relative overflow-hidden select-none animate-fade-in">
+    <div className="w-full max-w-xl mx-auto p-4.5 bg-cyber-card border border-cyber-border hover:border-[#a855f7]/45 rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.08)] space-y-4 relative overflow-hidden select-none animate-fade-in">
       {/* Background ambient light */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-[#a855f7]/5 rounded-full blur-2xl pointer-events-none"></div>
       
@@ -74,7 +74,7 @@ export default function SurchiBuildingStatus() {
               key={idx} 
               className={`flex items-start justify-between gap-3 p-2 rounded-lg border transition-all text-left ${
                 isActive 
-                  ? 'bg-[#120721]/60 border-[#a855f7]/40 shadow-[0_0_12px_rgba(168,85,247,0.06)] scale-[1.01]' 
+                  ? 'bg-cyber-purple/10 border-[#a855f7]/40 shadow-[0_0_12px_rgba(168,85,247,0.06)] scale-[1.01]' 
                   : isCompleted
                   ? 'bg-transparent border-cyber-border/40 opacity-75'
                   : 'bg-transparent border-transparent opacity-35'
@@ -92,7 +92,7 @@ export default function SurchiBuildingStatus() {
                       <Icons.Loader2 className="w-2.5 h-2.5 text-[#a855f7] animate-spin" />
                     </span>
                   ) : (
-                    <span className="flex items-center justify-center w-4 h-4 rounded bg-[#0e0f24] border border-cyber-border text-slate-600 text-[9px] font-mono font-bold">
+                    <span className="flex items-center justify-center w-4 h-4 rounded bg-[#0e0e24] border border-cyber-border text-slate-600 text-[9px] font-mono font-bold">
                       {idx + 1}
                     </span>
                   )}
@@ -124,7 +124,7 @@ export default function SurchiBuildingStatus() {
                       ACTIVE
                     </span>
                     {/* Live tiny smooth indicator bar */}
-                    <div className="w-12 h-1 bg-[#2e1d4d] rounded-full overflow-hidden">
+                    <div className="w-12 h-1 bg-cyber-border rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-cyber-purple to-cyber-cyan transition-all duration-100" 
                         style={{ width: `${progress}%` }}
@@ -143,7 +143,7 @@ export default function SurchiBuildingStatus() {
       </div>
 
       {/* Active telemetry info text block */}
-      <div className="p-2 bg-[#08081a] border border-cyber-border rounded-lg text-center">
+      <div className="p-2 bg-[#08081a] border border-cyber-border rounded-lg text-center font-sans">
         <span className="font-mono text-[9px] text-slate-400 leading-none">
           {activeStep === steps.length - 1 ? (
             <span className="text-[#00ff88] font-black animate-pulse uppercase tracking-widest flex items-center justify-center gap-1.5">

@@ -1905,24 +1905,24 @@ export default function App() {
               <LiveCryptoNews />
 
               {/* SYSTEM TOKENOMICS DISTRIBUTION */}
-              <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
+              <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
                 <TokenomicsDashboard />
-              </div>
-
-              {/* SYSTEM STAKING BOARD */}
-              <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
+               </div>
+ 
+               {/* SYSTEM STAKING BOARD */}
+              <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
                 <StakingDashboard />
-              </div>
-
-              {/* ROADMAP & VISION SECTION */}
-              <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
+               </div>
+ 
+               {/* ROADMAP & VISION SECTION */}
+              <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
                 <RoadmapDashboard />
-              </div>
-
-              {/* PRODUCTS & CORE COMPONENTS SECTION */}
-              <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
+               </div>
+ 
+               {/* PRODUCTS & CORE COMPONENTS SECTION */}
+              <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
                 <ProductsDashboard />
-              </div>
+               </div>
 
               {/* STRATEGIC ALLIANCES & READ MORE ROW */}
               <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
