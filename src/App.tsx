@@ -7,6 +7,9 @@ import TokenomicsDashboard from './components/TokenomicsDashboard';
 import StakingDashboard from './components/StakingDashboard';
 import PartnershipModal from './components/PartnershipModal';
 import SurchiIntroModal from './components/SurchiIntroModal';
+import RoadmapDashboard from './components/RoadmapDashboard';
+import ProductsDashboard from './components/ProductsDashboard';
+import SurchiBuildingStatus from './components/SurchiBuildingStatus';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -1881,6 +1884,11 @@ export default function App() {
                 </div>
               </div>
 
+              {/* TELEMETRY SEQUENTIAL SYSTEM BUILDING LOADER */}
+              <div className="flex flex-col items-center justify-center gap-4 text-center">
+                <SurchiBuildingStatus />
+              </div>
+
               {/* INTRODUCTORY EXPLAINER / WHAT IS SURCHI AI */}
               <div className="flex justify-center pt-2">
                 <button
@@ -1904,6 +1912,16 @@ export default function App() {
               {/* SYSTEM STAKING BOARD */}
               <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
                 <StakingDashboard />
+              </div>
+
+              {/* ROADMAP & VISION SECTION */}
+              <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
+                <RoadmapDashboard />
+              </div>
+
+              {/* PRODUCTS & CORE COMPONENTS SECTION */}
+              <div className="border border-cyber-cyan/20 bg-[#060613]/80 rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
+                <ProductsDashboard />
               </div>
 
               {/* STRATEGIC ALLIANCES & READ MORE ROW */}

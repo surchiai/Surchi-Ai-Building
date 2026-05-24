@@ -58,6 +58,21 @@ export default function PartnershipModal({ isOpen, onClose }: PartnershipModalPr
           <path d="M35 30H45M35 70H45" stroke="#00ff88" strokeWidth="2" />
         </svg>
       )
+    },
+    {
+      name: 'cryptopanic.com',
+      url: 'https://cryptopanic.com',
+      description: 'The supreme crypto news aggregator offering immediate sentiment signals, breaking alerts, and deep market impact tracking.',
+      badge: 'News Aggregator',
+      iconTheme: '#ec4899',
+      logo: (
+        <svg className="w-10 h-10 shrink-0" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="45" fill="#140210" stroke="#ec4899" strokeWidth="2" />
+          <path d="M50 25V55" stroke="#ec4899" strokeWidth="6" strokeLinecap="round" />
+          <circle cx="50" cy="70" r="5" fill="#ec4899" />
+          <path d="M32 65C37 55 44 53 50 53C56 53 63 55 68 65" stroke="#ec4899" strokeWidth="3" strokeLinecap="round" opacity="0.6" />
+        </svg>
+      )
     }
   ];
 
@@ -208,7 +223,7 @@ export default function PartnershipModal({ isOpen, onClose }: PartnershipModalPr
               </h4>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {currentPartners.map((item, idx) => (
                 <a
                   key={idx}
