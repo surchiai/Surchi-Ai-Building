@@ -236,29 +236,31 @@ html.light .bg-\[\#0e0e24\],
 html.light .bg-\[\#090915\],
 html.light .bg-\[\#070719\],
 html.light .bg-\[\#050512\],
-html.light .bg-\[\#050514\]\/40,
+html.light .bg-\[\#050514\]/40,
 html.light .bg-\[\#03030c\],
 html.light .bg-\[\#0b0b1a\],
-html.light .bg-\[\#020207\]\/90,
-html.light .bg-\[\#020207\]\/92,
+html.light .bg-\[\#020207\]/90,
+html.light .bg-\[\#020207\]/92,
+html.light .bg-\[\#020207\],
 html.light .bg-cyber-card,
-html.light .bg-\[\#101030\]\/50,
+html.light .bg-\[\#101030\]/50,
 html.light .bg-\[\#0b0c22\],
-html.light .bg-\[\#0b0c22\]\/95,
+html.light .bg-\[\#0b0c22\]/95,
 html.light .bg-\[\#0e0e29\],
 html.light .bg-\[\#090a21\],
-html.light .bg-\[\#030310\]\/50 {
+html.light .bg-\[\#030310\]/50 {
   background-color: var(--color-cyber-pure-card) !important;
   backdrop-filter: var(--glass-blur) !important;
   -webkit-backdrop-filter: var(--glass-blur) !important;
 }
 
 html.light .bg-\[\#030308\],
-html.light .bg-\[\#030308\]\/80,
+html.light .bg-\[\#030308\]/80,
 html.light .bg-\[\#04040a\],
 html.light .bg-\[\#040409\],
 html.light .bg-\[\#0b0b1f\],
 html.light .bg-\[\#0e0e24\],
+html.light .bg-\[\#040410\],
 html.light .bg-\[\#04040b\] {
   background-color: var(--color-cyber-pure-header) !important;
   backdrop-filter: var(--glass-blur) !important;
@@ -268,7 +270,7 @@ html.light .bg-\[\#04040b\] {
 html.light .bg-\[\#1b1c31\],
 html.light .bg-cyber-card-light,
 html.light .bg-\[\#161630\],
-html.light .bg-\[\#16172f\]\/40,
+html.light .bg-\[\#16172f\]/40,
 html.light .bg-\[\#1a1b38\],
 html.light .bg-\[\#141535\],
 html.light .bg-\[\#161730\],
@@ -283,6 +285,8 @@ html.light .bg-\[\#123e33\],
 html.light .bg-\[\#0d2a23\],
 html.light .bg-\[\#1b1c31\],
 html.light .bg-\[\#1f1f45\],
+html.light .bg-\[\#060616\],
+html.light .bg-\[\#010105\],
 html.light .bg-\[\#10102b\] {
   background-color: var(--color-cyber-card-light) !important;
 }

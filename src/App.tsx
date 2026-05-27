@@ -1,5 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as Icons from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ComposedChart,
+  Bar,
+  Cell
+} from 'recharts';
 import { MODULES } from './data';
 import { AnalysisResult, ChatMessage } from './types';
 import LiveCryptoNews from './components/LiveCryptoNews';
@@ -10,6 +22,7 @@ import SurchiIntroModal from './components/SurchiIntroModal';
 import RoadmapDashboard from './components/RoadmapDashboard';
 import ProductsDashboard from './components/ProductsDashboard';
 import SurchiBuildingStatus from './components/SurchiBuildingStatus';
+import InteractiveSuite from './components/InteractiveSuite';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -123,15 +136,27 @@ function getTokenSecurityStats(address: string, marketCapValue: number, liquidit
 }
 
 // Sparkline / Area graph of price points
-function InteractiveMarketChart({ details, themeAccent, themeMode }: { details: any; themeAccent?: string; themeMode?: 'dark' | 'light' }) {
+interface CandlePoint {
+  label: string;
+  price: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  body: [number, number];
+  wick: [number, number];
+}
+
+function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: { details: any; themeAccent?: string; themeMode?: 'dark' | 'light'; livePrice: number }) {
   if (!details) return null;
 
-  const price = parseFloat(details.priceUsd) || 1.0;
+  const [viewMode, setViewMode] = useState<'candles' | 'line'>('candles');
+
+  const price = livePrice || parseFloat(details.priceUsd) || 1.0;
   const pChange = parseFloat(details.priceChange24h) || 0.0;
   const isUp = pChange >= 0;
 
-  const dataPoints: { label: string; price: number }[] = [];
-  const hours = ['24h ago', '18h ago', '12h ago', '8h ago', '4h ago', '2h ago', '1h ago', 'Now'];
+  const hours = ['24h ago', '18h ago', '12h ago', '8h ago', '4h ago', '2h ago', '1h ago', 'Live Now'];
   
   let seed = 0;
   const cleanAddr = details.address || 'DEFAULT';
@@ -139,41 +164,60 @@ function InteractiveMarketChart({ details, themeAccent, themeMode }: { details: 
     seed += cleanAddr.charCodeAt(i);
   }
 
-  // Generate 8 ticks
+  // Generate 8 candle ticks
+  const dataPoints: CandlePoint[] = [];
+  const initialBasePrice = parseFloat(details.priceUsd) || 1.0;
+  let prevClose = initialBasePrice / (1 + (pChange + Math.sin(seed) * 2) / 100);
+  if (prevClose <= 0) prevClose = initialBasePrice * 0.1;
+
   for (let i = 0; i < 8; i++) {
     const fraction = i / 7;
     const currentChange = pChange * (1 - fraction);
-    const noise = Math.sin(fraction * Math.PI * 3.5 + seed) * (Math.abs(pChange) * 0.15 + 1.2) * (1 - fraction * 0.8);
-    let historicalPrice = price / (1 + (currentChange + noise) / 100);
-    if (historicalPrice <= 0) historicalPrice = price * 0.01;
+    const noise = Math.sin(fraction * Math.PI * 3.5 + seed + i) * (Math.abs(pChange) * 0.12 + 1.0) * (1 - fraction * 0.7);
+    let closeVal = initialBasePrice / (1 + (currentChange + noise) / 100);
+    if (closeVal <= 0) closeVal = initialBasePrice * 0.01;
+
+    // Build candle metrics
+    const openVal = i === 0 
+      ? prevClose 
+      : dataPoints[i - 1].close;
+
+    let finalClose = closeVal;
+    if (i === 7) {
+      // Connect specifically with live ticking spot price
+      finalClose = price;
+    }
+
+    const candleIsUp = finalClose >= openVal;
+    
+    // Low and High
+    const hMultiplier = 1 + (0.005 + (Math.abs(Math.cos(i + seed)) % 0.01));
+    const lMultiplier = 1 - (0.005 + (Math.abs(Math.sin(i * 2 + seed)) % 0.01));
+
+    let highVal = Math.max(openVal, finalClose) * hMultiplier;
+    let lowVal = Math.max(0.00000001, Math.min(openVal, finalClose) * lMultiplier);
+
+    if (i === 7) {
+      // Ensure the active live bar high/low cover open/close cleanly with a slight padding
+      highVal = Math.max(openVal, finalClose) * 1.0025;
+      lowVal = Math.max(0.00000001, Math.min(openVal, finalClose) * 0.9975);
+    }
+
     dataPoints.push({
       label: hours[i],
-      price: historicalPrice
+      price: finalClose,
+      open: openVal,
+      high: highVal,
+      low: lowVal,
+      close: finalClose,
+      body: [Math.min(openVal, finalClose), Math.max(openVal, finalClose)],
+      wick: [lowVal, highVal],
     });
   }
 
-  const prices = dataPoints.map(d => d.price);
+  const prices = dataPoints.map(d => d.close);
   const maxPrice = Math.max(...prices) * 1.015;
   const minPrice = Math.min(...prices) * 0.985;
-  const priceRange = maxPrice - minPrice || 1.0;
-
-  const width = 500;
-  const height = 140;
-  const paddingX = 45;
-  const paddingY = 18;
-
-  const points = dataPoints.map((d, idx) => {
-    const x = paddingX + (idx / 7) * (width - paddingX * 2);
-    const y = height - paddingY - ((d.price - minPrice) / priceRange) * (height - paddingY * 2);
-    return { x, y, price: d.price, label: d.label };
-  });
-
-  let linePath = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 1; i < points.length; i++) {
-    linePath += ` L ${points[i].x} ${points[i].y}`;
-  }
-
-  const areaPath = `${linePath} L ${points[points.length - 1].x} ${height - paddingY} L ${points[0].x} ${height - paddingY} Z`;
 
   const formatPriceLabel = (val: number) => {
     if (val < 0.000001) return `$${val.toFixed(9)}`;
@@ -184,81 +228,189 @@ function InteractiveMarketChart({ details, themeAccent, themeMode }: { details: 
   };
 
   const chartColor = themeAccent === 'white' 
-    ? '#ffffff' 
+    ? (themeMode === 'light' ? '#0f172a' : '#ffffff') 
     : themeMode === 'light'
       ? (isUp ? '#16a34a' : '#dc2626')
       : (isUp ? '#00ff88' : '#ff4b82');
 
   return (
     <div id="dynamic-market-graph" className="bg-[#050512] border border-cyber-cyan/15 rounded-xl p-4 lg:p-5 text-left flex flex-col justify-between h-full space-y-3 shadow-inner">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Icons.LineChart className={`w-4 h-4 ${themeAccent === 'white' ? 'text-white' : (themeMode === 'light' ? (isUp ? 'text-emerald-600' : 'text-rose-600') : (isUp ? 'text-[#00ff88]' : 'text-[#ff4b82]'))}`} />
-          <span className="text-xs font-mono font-black uppercase text-slate-200 tracking-wider">Dynamic Market Chart</span>
+          <Icons.LineChart className={`w-4 h-4 ${themeAccent === 'white' ? 'text-cyber-neon' : (themeMode === 'light' ? (isUp ? 'text-emerald-600' : 'text-rose-600') : (isUp ? 'text-[#00ff88]' : 'text-[#ff4b82]'))}`} />
+          <span className="text-xs font-mono font-black uppercase text-slate-200 tracking-wider">
+            {viewMode === 'candles' ? 'OHLC Candlestick Feed' : 'Dynamic Market Chart'}
+          </span>
         </div>
-        <div className="flex items-center gap-1">
-          <span className={`w-2 h-2 rounded-full ${themeAccent === 'white' ? 'bg-white' : (isUp ? 'bg-[#00ff88]' : 'bg-[#ff4b82]')} animate-pulse`}></span>
-          <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest">24H DURATION TREND</span>
+        
+        <div className="flex items-center gap-2">
+          {/* Chart Type Toggle Button */}
+          <div className="flex bg-[#040410] border border-cyber-border rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode('candles')}
+              className={`px-2 py-0.5 text-[9px] font-bold rounded transition-all cursor-pointer flex items-center gap-1 ${
+                viewMode === 'candles' 
+                  ? 'bg-cyber-cyan text-black shadow-lg shadow-cyber-cyan/25' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Candlestick Chart"
+            >
+              <Icons.TrendingUp className="w-2.5 h-2.5 rotate-90" />
+              <span>Candles</span>
+            </button>
+            <button
+              onClick={() => setViewMode('line')}
+              className={`px-2 py-0.5 text-[9px] font-bold rounded transition-all cursor-pointer flex items-center gap-1 ${
+                viewMode === 'line' 
+                  ? 'bg-cyber-purple text-white shadow-lg' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Line Chart"
+            >
+              <Icons.LineChart className="w-2.5 h-2.5" />
+              <span>Line</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <span className={`w-2 h-2 rounded-full ${themeAccent === 'white' ? 'bg-cyber-neon' : (isUp ? 'bg-[#00ff88]' : 'bg-[#ff4b82]')} animate-pulse`}></span>
+            <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest">24H DURATION</span>
+          </div>
         </div>
       </div>
 
-      <div className="relative py-1">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible select-none">
-          <defs>
-            <linearGradient id={`gradArea-${details.symbol}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={chartColor} stopOpacity="0.22" />
-              <stop offset="100%" stopColor={chartColor} stopOpacity="0.00" />
-            </linearGradient>
-          </defs>
-
-          {/* Grid Guidlines */}
-          <line x1={paddingX} y1={height - paddingY} x2={width - paddingX} y2={height - paddingY} stroke="#17193a" strokeWidth="0.8" />
-          <line x1={paddingX} y1={paddingY} x2={width - paddingX} y2={paddingY} stroke="#17193a" strokeWidth="0.8" strokeDasharray="3 3" />
-          <line x1={paddingX} y1={(height)/2} x2={width - paddingX} y2={(height)/2} stroke="#17193a" strokeWidth="0.5" strokeDasharray="3 3" />
-
-          {/* Vertical bounds */}
-          <line x1={paddingX} y1={paddingY} x2={paddingX} y2={height - paddingY} stroke="#17193a" strokeWidth="0.5" />
-          <line x1={width - paddingX} y1={paddingY} x2={width - paddingX} y2={height - paddingY} stroke="#17193a" strokeWidth="0.5" />
-
-          {/* Coordinate text anchors */}
-          <text x={paddingX - 6} y={paddingY + 4} textAnchor="end" className="text-[7.5px] font-mono fill-slate-500 font-black">{formatPriceLabel(maxPrice)}</text>
-          <text x={paddingX - 6} y={height - paddingY + 3} textAnchor="end" className="text-[7.5px] font-mono fill-slate-500 font-black">{formatPriceLabel(minPrice)}</text>
-
-          {/* Shaded Area fill */}
-          <path d={areaPath} fill={`url(#gradArea-${details.symbol})`} />
-
-          {/* Core price Line path */}
-          <path d={linePath} fill="none" stroke={chartColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-
-          {/* Highlight endpoints */}
-          {points.map((pt, idx) => (
-            <g key={idx}>
-              {idx === points.length - 1 && (
-                <circle cx={pt.x} cy={pt.y} r="6" fill={chartColor} opacity="0.3" className="animate-ping" />
-              )}
-              <circle 
-                cx={pt.x} 
-                cy={pt.y} 
-                r={idx === points.length - 1 ? "4.5" : "2.5"} 
-                fill="#050512" 
-                stroke={chartColor} 
-                strokeWidth={idx === points.length - 1 ? "2.5" : "1.5"} 
+      <div className="h-44 relative bg-[#010105] border border-cyber-border/40 rounded-lg p-3 pt-6 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          {viewMode === 'candles' ? (
+            <ComposedChart data={dataPoints} margin={{ top: 5, right: 5, left: -22, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-cyber-border)" vertical={false} opacity={0.4} />
+              <XAxis 
+                dataKey="label" 
+                tick={{ fill: 'var(--color-cyber-text-muted)', fontSize: 9, fontFamily: 'monospace' }}
+                tickLine={false}
+                axisLine={false}
               />
-            </g>
-          ))}
-
-          {/* Timeline bounds */}
-          <text x={paddingX} y={height - 2} textAnchor="middle" className="text-[7px] font-mono fill-slate-500 font-bold uppercase">24h ago</text>
-          <text x={(width)/2} y={height - 2} textAnchor="middle" className="text-[7px] font-mono fill-slate-500 font-bold uppercase">12h ago</text>
-          <text x={width - paddingX} y={height - 2} textAnchor="middle" className={`text-[7px] font-mono ${themeAccent === 'white' ? 'fill-white' : 'fill-[#00ff88]'} font-bold uppercase animate-pulse`}>Now</text>
-        </svg>
+              <YAxis 
+                domain={['auto', 'auto']}
+                tick={{ fill: 'var(--color-cyber-text-muted)', fontSize: 9, fontFamily: 'monospace' }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(val) => formatPriceLabel(val)}
+              />
+              <Tooltip
+                content={({ active, payload: tourPayload, label }) => {
+                  if (active && tourPayload && tourPayload.length) {
+                    const dataPoint = tourPayload[0].payload as CandlePoint;
+                    const isUpCandle = dataPoint.close >= dataPoint.open;
+                    return (
+                      <div className="bg-[#060616] border border-cyber-cyan/40 p-2.5 rounded shadow-xl text-[9.5px] font-mono text-left space-y-1 min-w-[130px]">
+                        <p className="text-slate-500 dark:text-slate-400 font-bold mb-1 uppercase tracking-wider">{label}</p>
+                        <div className="grid grid-cols-2 gap-x-2 text-slate-800 dark:text-white">
+                          <div>
+                            <span className="text-slate-500 text-[8px] block">OPEN:</span>
+                            <span className="font-semibold">{formatPriceLabel(dataPoint.open)}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 text-[8px] block">HIGH:</span>
+                            <span className="text-emerald-600 dark:text-[#00ff88] font-semibold">{formatPriceLabel(dataPoint.high)}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 text-[8px] block">LOW:</span>
+                            <span className="text-rose-600 dark:text-[#ff4b82] font-semibold">{formatPriceLabel(dataPoint.low)}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 text-[8px] block">CLOSE:</span>
+                            <span className={`font-semibold ${isUpCandle ? 'text-emerald-600 dark:text-[#00ff88]' : 'text-rose-600 dark:text-[#ff4b82]'}`}>
+                              {formatPriceLabel(dataPoint.close)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar dataKey="wick" barSize={1.5}>
+                {dataPoints.map((entry, index) => {
+                  const isUpCandle = entry.close >= entry.open;
+                  return (
+                    <Cell 
+                      key={`wick-${index}`} 
+                      fill={isUpCandle ? '#16a34a' : '#dc2626'} 
+                      opacity={0.65}
+                    />
+                  );
+                })}
+              </Bar>
+              <Bar dataKey="body" barSize={12}>
+                {dataPoints.map((entry, index) => {
+                  const isUpCandle = entry.close >= entry.open;
+                  return (
+                    <Cell 
+                      key={`body-${index}`} 
+                      fill={isUpCandle ? '#16a34a' : '#dc2626'} 
+                    />
+                  );
+                })}
+              </Bar>
+            </ComposedChart>
+          ) : (
+            <AreaChart data={dataPoints} margin={{ top: 5, right: 5, left: -22, bottom: 0 }}>
+              <defs>
+                <linearGradient id={`gradArea-${details.symbol}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={chartColor} stopOpacity={0.4} />
+                  <stop offset="100%" stopColor={chartColor} stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-cyber-border)" vertical={false} opacity={0.4} />
+              <XAxis 
+                dataKey="label" 
+                tick={{ fill: 'var(--color-cyber-text-muted)', fontSize: 9, fontFamily: 'monospace' }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis 
+                domain={['auto', 'auto']}
+                tick={{ fill: 'var(--color-cyber-text-muted)', fontSize: 9, fontFamily: 'monospace' }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(val) => formatPriceLabel(val)}
+              />
+              <Tooltip
+                content={({ active, payload: tourPayload, label }) => {
+                  if (active && tourPayload && tourPayload.length) {
+                    const dataPoint = tourPayload[0].payload as CandlePoint;
+                    return (
+                      <div className="bg-[#060616] p-2.5 border border-cyber-cyan/40 rounded shadow-xl text-[9.5px] font-mono text-left">
+                        <p className="text-slate-500 dark:text-slate-400 font-bold mb-0.5 uppercase tracking-wider">{label}</p>
+                        <p className="text-cyber-cyan font-bold transition-all">
+                          Price: <span className="text-slate-800 dark:text-white ml-1 font-black">{formatPriceLabel(dataPoint.price)}</span>
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="price"
+                stroke={chartColor}
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill={`url(#gradArea-${details.symbol})`}
+              />
+            </AreaChart>
+          )}
+        </ResponsiveContainer>
       </div>
 
       <div className="flex flex-wrap items-center justify-between text-[9px] font-mono text-slate-400 bg-[#0c0d23]/80 p-2 border border-cyber-border/40 rounded">
         <div>
           <span className="text-slate-500 uppercase tracking-wider mr-2 font-bold">Resonance Grid:</span>
-          <span className={`${themeAccent === 'white' ? 'text-white' : 'text-[#00ff88]'} mr-2`}>MIN: {formatPriceLabel(minPrice)}</span>
-          <span className="text-amber-400">MAX: {formatPriceLabel(maxPrice)}</span>
+          <span className={`${themeAccent === 'white' ? 'text-cyber-neon font-black' : 'text-emerald-500 dark:text-[#00ff88]'} mr-2 font-bold`}>MIN: {formatPriceLabel(minPrice)}</span>
+          <span className="text-amber-500 font-bold">MAX: {formatPriceLabel(maxPrice)}</span>
         </div>
         <div className="text-[8px] font-bold text-cyber-cyan uppercase">
           Live Quote feeds synced
@@ -291,8 +443,46 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
   const [shareCopied, setShareCopied] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
+  const [livePrice, setLivePrice] = useState(() => parseFloat(details.priceUsd) || 0);
+  const [priceFlash, setPriceFlash] = useState<'up' | 'down' | null>(null);
+
+  useEffect(() => {
+    const p = parseFloat(details.priceUsd) || 0;
+    setLivePrice(p);
+    setPriceFlash(null);
+  }, [details.address, details.priceUsd]);
+
+  useEffect(() => {
+    const p = parseFloat(details.priceUsd) || 0;
+    if (p <= 0) return;
+
+    const interval = setInterval(() => {
+      setLivePrice((prev) => {
+        if (prev <= 0) return prev;
+        // Simulating active market trades causing subtle walk fluctuations (-0.18% to +0.22%)
+        const walk = (Math.random() - 0.45) * 0.004;
+        const next = prev * (1 + walk);
+        
+        if (next > prev) {
+          setPriceFlash('up');
+        } else if (next < prev) {
+          setPriceFlash('down');
+        }
+        setTimeout(() => setPriceFlash(null), 850);
+        return next;
+      });
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [details.address, details.priceUsd]);
+
+  const baseChange = parseFloat(details.priceChange24h) || 0;
+  const initialPriceUsd = parseFloat(details.priceUsd) || 1.0;
+  const currentRatio = initialPriceUsd > 0 ? (livePrice / initialPriceUsd) : 1;
+  const liveChangePercent = baseChange + (currentRatio - 1) * 100;
+
   // 1. Total Supply calculation
-  const price = parseFloat(details.priceUsd) || 0;
+  const price = livePrice || parseFloat(details.priceUsd) || 0;
   let totalSupply = 0;
   if (details.fdv && price > 0) {
     totalSupply = details.fdv / price;
@@ -581,13 +771,13 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
       <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5 pt-2 font-mono text-[10px]">
         
         {/* Col 1: Price */}
-        <div className="p-2.5 bg-[#08081a] border border-cyber-border/40 rounded-lg space-y-1">
+        <div className={`p-2.5 bg-[#08081a] border rounded-lg space-y-1 transition-all duration-300 ${priceFlash === 'up' ? 'border-[#00ff88]/50 bg-[#00ff88]/5' : priceFlash === 'down' ? 'border-rose-500/50 bg-rose-500/5' : 'border-cyber-border/40'}`}>
           <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">Current Price</span>
-          <strong className="text-cyber-cyan text-xs sm:text-sm block leading-none font-sans font-black">
-            ${details.priceUsd ? (parseFloat(details.priceUsd) < 0.01 ? parseFloat(details.priceUsd).toFixed(8) : parseFloat(details.priceUsd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })) : 'N/A'}
+          <strong className={`text-xs sm:text-sm block leading-none font-sans font-black transition-colors ${priceFlash === 'up' ? 'text-[#00ff88]' : priceFlash === 'down' ? 'text-rose-450' : 'text-cyber-cyan'}`}>
+            ${livePrice ? (livePrice < 0.01 ? livePrice.toFixed(8) : livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })) : 'N/A'}
           </strong>
-          <span className={`text-[9px] font-bold block ${details.priceChange24h >= 0 ? 'text-[#00ff88]' : 'text-rose-450'}`}>
-            {details.priceChange24h >= 0 ? '▲' : '▼'} {details.priceChange24h}%
+          <span className={`text-[9px] font-bold block ${liveChangePercent >= 0 ? 'text-[#00ff88]' : 'text-rose-450'}`}>
+            {liveChangePercent >= 0 ? '▲ +' : '▼ '}{liveChangePercent.toFixed(2)}%
           </span>
         </div>
 
@@ -684,7 +874,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
         
         {/* Dynamic Market Chart Component */}
         <div className="w-full">
-          <InteractiveMarketChart details={details} themeAccent={themeAccent} themeMode={themeMode} />
+          <InteractiveMarketChart details={details} themeAccent={themeAccent} themeMode={themeMode} livePrice={livePrice} />
         </div>
 
         {/* Safety Score Meter and Rug pull detections panel */}
@@ -960,6 +1150,7 @@ export default function App() {
   
   // Hamburger Menu open control State
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuSearchQuery, setMenuSearchQuery] = useState('');
   
   // Terminal intelligence loading & outputs
   const [loading, setLoading] = useState(false);
@@ -1399,25 +1590,33 @@ export default function App() {
       {/* Dynamic Theme Color Style Injections */}
       <style>{`
         :root {
-          ${themeAccent === 'white' && themeMode === 'dark' ? `
-            --color-cyber-neon: #ffffff !important;
-            --color-cyber-cyan: #ffffff !important;
-            --color-cyber-purple: #94a3b8 !important;
-            --color-cyber-border: #475569 !important;
-            --color-cyber-card-light: #1e293b !important;
-          ` : ''}
+          ${themeAccent === 'white' ? (
+            themeMode === 'dark' ? `
+              --color-cyber-neon: #ffffff !important;
+              --color-cyber-cyan: #ffffff !important;
+              --color-cyber-purple: #94a3b8 !important;
+              --color-cyber-border: rgba(255, 255, 255, 0.25) !important;
+              --color-cyber-card-light: #1e293b !important;
+            ` : `
+              --color-cyber-neon: #0f172a !important;
+              --color-cyber-cyan: #0f172a !important;
+              --color-cyber-purple: #475569 !important;
+              --color-cyber-border: rgba(15, 23, 42, 0.2) !important;
+              --color-cyber-card-light: #f1f5f9 !important;
+            `
+          ) : ''}
         }
         
-        ${themeAccent === 'white' && themeMode === 'dark' ? `
+        ${themeAccent === 'white' ? `
           .cyber-glow-green, .cyber-glow-purple, .cyber-glow-cyan {
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.45) !important;
+            box-shadow: ${themeMode === 'dark' ? '0 0 15px rgba(255, 255, 255, 0.15)' : '0 4px 20px rgba(15, 23, 42, 0.05)'} !important;
+            border: 1px solid ${themeMode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(15, 23, 42, 0.3)'} !important;
           }
           .text-cyber-cyan, .text-cyber-neon {
-            color: #ffffff !important;
+            color: ${themeMode === 'dark' ? '#ffffff' : '#0f172a'} !important;
           }
           .border-cyber-cyan {
-            border-color: rgba(255, 255, 255, 0.4) !important;
+            border-color: ${themeMode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(15, 23, 42, 0.2)'} !important;
           }
         ` : ''}
       `}</style>
@@ -1465,7 +1664,26 @@ export default function App() {
             {/* Modules Selector Sections */}
             <div className="flex-1 p-4 space-y-6">
               
-
+              {/* Search Inside Hamburger Menu */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={menuSearchQuery}
+                  onChange={(e) => setMenuSearchQuery(e.target.value)}
+                  placeholder="Search forensic tools..."
+                  className="w-full bg-[#050511] border border-cyber-border rounded-lg pl-9 pr-8 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_8px_rgba(0,229,255,0.15)] transition-all placeholder:text-slate-650"
+                />
+                <Icons.Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                {menuSearchQuery && (
+                  <button
+                    onClick={() => setMenuSearchQuery('')}
+                    className="absolute right-3 top-2.5 p-1 rounded hover:bg-[#111126] text-slate-500 hover:text-white transition-colors cursor-pointer"
+                    title="Clear search query"
+                  >
+                    <Icons.X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
 
               {/* SECTION 1: WORKSPACE FORENSIC MODULES */}
               <div className="space-y-2">
@@ -1473,36 +1691,49 @@ export default function App() {
                   CORE WORKSPACE MODULES
                 </h4>
                 <nav className="space-y-1">
-                  {MODULES.map(m => {
-                    const isActive = m.id === activeModuleId;
-                    return (
-                      <button
-                        key={m.id}
-                        onClick={() => {
-                          setActiveModuleId(m.id);
-                          setIsMenuOpen(false); // Close drawer on selection for fluid navigation
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left ${
-                          isActive 
-                            ? 'bg-cyber-card-light text-[#ffffff] border border-cyber-border shadow-[0_0_8px_rgba(124,58,237,0.2)]'
-                            : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50'
-                        }`}
-                      >
-                        <div className={`p-1 rounded ${
-                          isActive 
-                            ? 'text-cyber-neon bg-cyber-bg' 
-                            : 'text-slate-500 group-hover:text-cyber-cyan'
-                        }`}>
-                          <SurchiIcon name={m.icon} className="w-4 h-4" />
-                        </div>
-                        <span className="truncate">{m.name}</span>
-                        {isActive && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
-                        )}
-                      </button>
+                  {(() => {
+                    const filtered = MODULES.filter(m => 
+                      m.name.toLowerCase().includes(menuSearchQuery.toLowerCase()) || 
+                      m.description.toLowerCase().includes(menuSearchQuery.toLowerCase())
                     );
-                  })}
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="text-center py-4 text-[10px] text-slate-500 font-mono">
+                          No forensic tools matching.
+                        </div>
+                      );
+                    }
+                    return filtered.map(m => {
+                      const isActive = m.id === activeModuleId;
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => {
+                            setActiveModuleId(m.id);
+                            setIsMenuOpen(false); // Close drawer on selection for fluid navigation
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
+                            isActive 
+                              ? 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
+                              : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                          }`}
+                        >
+                          <div className={`p-1 rounded ${
+                            isActive 
+                              ? 'text-cyber-neon bg-cyber-bg' 
+                              : 'text-slate-500 group-hover:text-cyber-cyan'
+                          }`}>
+                            <SurchiIcon name={m.icon} className="w-4 h-4" />
+                          </div>
+                          <span className="truncate">{m.name}</span>
+                          {isActive && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
+                          )}
+                        </button>
+                      );
+                    });
+                  })()}
                 </nav>
               </div>
 
@@ -2029,54 +2260,14 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Specialized Smart Contract generator download layout */}
-                    {activeModuleId === 'smart_contract_generator' && (
-                      <div className="mb-4 bg-[#050511] p-3.5 rounded-lg border border-cyber-border flex items-center justify-between text-xs leading-none">
-                        <span className="text-cyber-green font-semibold">🧬 Compiled Solidity Code Standard Ready</span>
-                        <button
-                          onClick={() => {
-                            const blob = new Blob([currentResult.content], { type: 'text/plain' });
-                            const url = URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = `${formInputs.name || 'Contract'}.sol`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                          }}
-                          className="px-2.5 py-1.5 bg-cyber-purple hover:bg-indigo-600 text-[#ffffff] font-mono rounded text-[10px] cursor-pointer"
-                        >
-                          Download .sol File
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Report raw markdown style text rendering */}
-                    <div className="prose prose-invert prose-xs max-w-none text-xs leading-relaxed space-y-4">
-                      {currentResult.content.split('\n').map((line, idx) => {
-                        // Custom syntax checks
-                        const isHeading = line.startsWith('###') || line.startsWith('##') || line.startsWith('#');
-                        const isBullet = line.trim().startsWith('*') || line.trim().startsWith('-');
-                        const isWarning = line.includes('🔴') || line.includes('💀');
-                        const isSafe = line.includes('✅');
-
-                        let renderClass = 'text-slate-300 font-sans';
-                        if (isHeading) renderClass = 'text-sm font-black text-[#ffffff] mt-5 mb-2 border-b border-cyber-border/50 pb-1 font-display tracking-wide uppercase';
-                        else if (line.includes('**')) renderClass = 'text-slate-200 mt-1 font-sans';
-                        else if (isBullet) renderClass = 'text-slate-300 pl-4 mt-1 font-sans';
-                        
-                        // Treat contract-related output styled as monospace block
-                        if (line.includes('pragma solidity') || line.includes('contract ') || activeModuleId === 'smart_contract_generator' || line.includes('function ') || line.includes('emit ')) {
-                          renderClass = 'text-cyber-cyan font-mono bg-cyber-bg px-2 py-0.5 rounded-sm block select-text overflow-x-auto';
-                        }
-
-                        return (
-                          <p key={idx} className={`${renderClass} leading-relaxed`}>
-                            {line.replace(/###|##|#/g, '')}
-                          </p>
-                        );
-                      })}
-                    </div>
+                    <InteractiveSuite
+                      activeModuleId={activeModuleId}
+                      payload={currentResult.payload || {}}
+                      content={currentResult.content}
+                      themeAccent={themeAccent}
+                      themeMode={themeMode}
+                      onRefresh={(ovPayload) => handleRunAnalysis(undefined, ovPayload)}
+                    />
 
                     {/* Citations Footer panel */}
                     {currentResult.citations && currentResult.citations.length > 0 && (
@@ -2695,6 +2886,19 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Floating Accent Theme Switcher */}
+      <button
+        onClick={() => setThemeAccent(prev => prev === 'preset' ? 'white' : 'preset')}
+        className={`fixed bottom-6 right-20 z-50 w-12 h-12 rounded-full bg-cyber-card border-2 border-cyber-border text-white flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 shadow-[0_8px_32px_rgba(0,0,0,0.5)] active:scale-95 group select-none hover:border-cyber-cyan ${
+          themeAccent === 'white' 
+            ? 'hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] border-white/60' 
+            : 'hover:shadow-[0_0_20px_rgba(0,229,255,0.4)]'
+        }`}
+        title={themeAccent === 'preset' ? 'Switch to Sleek Monochrome White Accent' : 'Switch to Preset Neon Accent'}
+      >
+        <Icons.Palette className={`w-5.5 h-5.5 transition-transform duration-300 group-hover:scale-115 ${themeAccent === 'white' ? 'text-cyber-neon' : 'text-cyber-cyan'}`} />
+      </button>
 
       {/* Floating High-Contrast Theme Mode Switcher */}
       <button
