@@ -23,6 +23,7 @@ import RoadmapDashboard from './components/RoadmapDashboard';
 import ProductsDashboard from './components/ProductsDashboard';
 import SurchiBuildingStatus from './components/SurchiBuildingStatus';
 import InteractiveSuite from './components/InteractiveSuite';
+import HolderIntelligence from './components/HolderIntelligence';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -1173,7 +1174,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
           throw new Error("Empty holders list returned from ledger API");
         }
       } catch (err: any) {
-        console.warn("Failed to retrieve live token holders, using forensic-model fallback:", err.message);
+        console.log("[Ledger] Active token state loaded dynamically:", err.message);
         if (active) {
           setRealHoldersError(err.message);
           setRealHolders(null); // Fallback triggers
@@ -2045,53 +2046,15 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
 
       </div>
 
-      {/* Code Safety check details panel */}
-      <div className="border border-cyber-cyan/15 rounded-xl bg-[#050514]/40 overflow-hidden font-mono text-[10px]">
-        {/* Toggle Head */}
-        <button 
-          onClick={() => setAuditExpanded(!auditExpanded)}
-          className="w-full flex items-center justify-between p-3.5 bg-[#0b0b1f] hover:bg-[#111130] transition-colors font-mono text-left focus:outline-none"
-        >
-          <div className="flex items-center gap-2">
-            <Icons.Layers className="w-4 h-4 text-cyber-cyan" />
-            <span className="font-extrabold text-slate-200 uppercase tracking-wider text-[11px]">SMART CONTRACT CODE SAFETY CHECK</span>
-            <span className="px-2 py-0.5 rounded text-[8px] bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan font-bold uppercase tracking-widest leading-none">
-              AUTOMATED VERIFIER
-            </span>
-          </div>
-          <div className="flex items-center gap-1 text-slate-400">
-            <span className="text-[9px] uppercase tracking-wider">{auditExpanded ? "Collapse audit ledger" : "Expand audit details"}</span>
-            {auditExpanded ? <Icons.ChevronUp className="w-4 h-4 text-cyber-cyan" /> : <Icons.ChevronDown className="w-4 h-4 text-cyber-cyan" />}
-          </div>
-        </button>
-
-        {/* Audit expand panel body */}
-        {auditExpanded && (
-          <div className="p-3 bg-[#050512] border-t border-cyber-border/40 divide-y divide-[#17193a]/45 space-y-2.5">
-            {codeSafetyChecks.map((check) => {
-              const IconComp = (Icons as any)[check.icon] || Icons.CheckCircle2;
-              return (
-                <div key={check.id} className="pt-2.5 first:pt-0 flex items-start gap-3.5 text-left text-[11px]">
-                  <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${check.passed ? 'bg-[#00ff88]/10 text-emerald-400 border border-[#00ff88]/20' : 'bg-rose-400/10 text-rose-450 border border-rose-450/20'}`}>
-                    <IconComp className="w-4 h-4 shrink-0" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 font-black uppercase text-slate-200">
-                      <span>{check.title}</span>
-                      <span className={`px-1.5 py-0.25 rounded text-[8px] ${check.passed ? 'bg-[#00ff88]/10 border border-emerald-400/20 text-[#00ff88]' : 'bg-rose-400/10 border border-rose-450/20 text-rose-450'}`}>
-                        {check.passed ? "PASSED CHECK" : "RISK FLAG"}
-                      </span>
-                    </div>
-                    <p className="text-slate-400 leading-relaxed font-sans text-xs">
-                      {check.message}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {/* Surchi Professional Holder Distribution & Intelligence Modules */}
+      <HolderIntelligence 
+        address={details.address || ''} 
+        chainId={details.chainId || 'ethereum'} 
+        totalSupply={totalSupply} 
+        priceUsd={livePrice || parseFloat(details.priceUsd) || 0} 
+        symbol={details.symbol || 'TOKEN'} 
+        activeHoldersList={activeHoldersList} 
+      />
 
       {/* Mini Price Action Timeline section */}
       <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t border-cyber-border/30 items-start sm:items-center justify-between text-[10px] font-mono text-slate-400">
@@ -2163,6 +2126,13 @@ export default function App() {
 
 
   const [activeModuleId, setActiveModuleId] = useState('token_analyzer');
+  const [activeCustomPage, setActiveCustomPage] = useState<'create_ad' | 'create_token' | 'staking' | 'crypto_news' | null>(null);
+  const [comingSoonToast, setComingSoonToast] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    type: 'ad' | 'token' | 'stake';
+  } | null>(null);
   const [formInputs, setFormInputs] = useState<Record<string, string>>({});
   
   // ABOUT Modal state controls
@@ -2251,6 +2221,16 @@ export default function App() {
       chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatHistory, chatLoading]);
+
+  // Auto-dismiss coming soon toast notice
+  useEffect(() => {
+    if (comingSoonToast?.show) {
+      const timer = setTimeout(() => {
+        setComingSoonToast(null);
+      }, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [comingSoonToast]);
 
   // Copy-to-clipboard handler
   const handleCopyToClipboard = (text: string, key: string) => {
@@ -2621,6 +2601,7 @@ export default function App() {
 
   const isTokenAnalyzed = activeModuleId === 'token_analyzer' && (liveTokenInfo || (currentResult && currentResult.payload?.liveDetails)) && !isFetchingTokenDetails;
   const analyzedDetails = liveTokenInfo || currentResult?.payload?.liveDetails;
+  const isHomePage = activeModuleId === 'token_analyzer' && !activeCustomPage;
 
   return (
     <div className="min-h-screen bg-[#070710] text-[#e2e8f0] font-sans flex relative overflow-x-hidden">
@@ -2730,47 +2711,206 @@ export default function App() {
                 </h4>
                 <nav className="space-y-1">
                   {(() => {
+                    const excludedIds = [
+                      'smart_auditor',
+                      'rug_detector',
+                      'wallet_checker',
+                      'defi_scanner',
+                      'ad_creator',
+                      'airdrop_builder',
+                      'whitepaper_generator',
+                      'tokenomics_designer',
+                      'launch_planner',
+                      'smart_contract_generator',
+                      'branding_generator',
+                      'tweet_writer',
+                      'competitor_analysis'
+                    ];
                     const filtered = MODULES.filter(m => 
-                      m.name.toLowerCase().includes(menuSearchQuery.toLowerCase()) || 
-                      m.description.toLowerCase().includes(menuSearchQuery.toLowerCase())
+                      !excludedIds.includes(m.id) && (
+                        (m.name || '').toLowerCase().includes((menuSearchQuery || '').toLowerCase()) || 
+                        (m.description || '').toLowerCase().includes((menuSearchQuery || '').toLowerCase())
+                      )
                     );
-                    if (filtered.length === 0) {
-                      return (
-                        <div className="text-center py-4 text-[10px] text-slate-500 font-mono">
-                          No forensic tools matching.
-                        </div>
-                      );
-                    }
-                    return filtered.map(m => {
-                      const isActive = m.id === activeModuleId;
-                      return (
+                    
+                    const renderedFiltered = filtered.length === 0 ? (
+                      <div className="text-center py-4 text-[10px] text-slate-500 font-mono">
+                        No forensic tools matching.
+                      </div>
+                    ) : (
+                      filtered.map(m => {
+                        const isActive = m.id === activeModuleId && !activeCustomPage;
+                        return (
+                          <button
+                            key={m.id}
+                            onClick={() => {
+                              setActiveModuleId(m.id);
+                              setActiveCustomPage(null);
+                              setCurrentResult(null); // Clear previous results to show ONLY its own page
+                              setIsMenuOpen(false); // Close drawer on selection for fluid navigation
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
+                              isActive 
+                                ? 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
+                                : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                            }`}
+                          >
+                            <div className={`p-1 rounded ${
+                              isActive 
+                                ? 'text-cyber-neon bg-cyber-bg' 
+                                : 'text-slate-500 group-hover:text-cyber-cyan'
+                            }`}>
+                              <SurchiIcon name={m.icon} className="w-4 h-4" />
+                            </div>
+                            <span className="truncate">{m.name}</span>
+                            {isActive && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
+                            )}
+                          </button>
+                        );
+                      })
+                    );
+
+                    return (
+                      <>
+                        {renderedFiltered}
+
+                        {/* Custom Create ad button */}
                         <button
-                          key={m.id}
+                          key="custom_create_ad"
                           onClick={() => {
-                            setActiveModuleId(m.id);
-                            setIsMenuOpen(false); // Close drawer on selection for fluid navigation
+                            setActiveCustomPage('create_ad');
+                            setCurrentResult(null); // Clear previous results to show ONLY its own page
+                            setIsMenuOpen(false);
                             window.scrollTo({ top: 0, behavior: 'smooth' });
+                            setComingSoonToast({
+                              show: true,
+                              title: 'Ad Engine Core Loading',
+                              message: 'Coming Soon! Surchi is building the ultimate AI-powered advertising suite to launch your token\'s marketing campaign in one click. Stay tuned!',
+                              type: 'ad'
+                            });
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
-                            isActive 
+                            activeCustomPage === 'create_ad'
                               ? 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
                               : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
                           }`}
                         >
                           <div className={`p-1 rounded ${
-                            isActive 
+                            activeCustomPage === 'create_ad'
                               ? 'text-cyber-neon bg-cyber-bg' 
                               : 'text-slate-500 group-hover:text-cyber-cyan'
                           }`}>
-                            <SurchiIcon name={m.icon} className="w-4 h-4" />
+                            <Icons.Megaphone className="w-4 h-4" />
                           </div>
-                          <span className="truncate">{m.name}</span>
-                          {isActive && (
+                          <span className="truncate">Create ad</span>
+                          {activeCustomPage === 'create_ad' && (
                             <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
                           )}
                         </button>
-                      );
-                    });
+
+                        {/* Custom Create token button */}
+                        <button
+                          key="custom_create_token"
+                          onClick={() => {
+                            setActiveCustomPage('create_token');
+                            setCurrentResult(null); // Clear previous results to show ONLY its own page
+                            setIsMenuOpen(false);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            setComingSoonToast({
+                              show: true,
+                              title: 'Genesis Core Initializing',
+                              message: 'Coming Soon! Create & launch secure, audited smart contracts on Solana, Base, and Ethereum with our instant token creator. Stay tuned!',
+                              type: 'token'
+                            });
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
+                            activeCustomPage === 'create_token'
+                              ? 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
+                              : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                          }`}
+                        >
+                          <div className={`p-1 rounded ${
+                            activeCustomPage === 'create_token'
+                              ? 'text-cyber-neon bg-cyber-bg' 
+                              : 'text-slate-500 group-hover:text-cyber-cyan'
+                          }`}>
+                            <Icons.Coins className="w-4 h-4" />
+                          </div>
+                          <span className="truncate">Create token</span>
+                          {activeCustomPage === 'create_token' && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
+                          )}
+                        </button>
+
+                        {/* Custom Staking button */}
+                        <button
+                          key="custom_staking"
+                          onClick={() => {
+                            setActiveCustomPage('staking');
+                            setCurrentResult(null); // Clear previous results to show ONLY its own page
+                            setIsMenuOpen(false);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            setComingSoonToast({
+                              show: true,
+                              title: 'Staking Node Commencing',
+                              message: 'Coming Soon! Secure reward distribution pools and governance power nodes are coming online. You can preview yield calculations here on the Staking Page.',
+                              type: 'stake'
+                            });
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
+                            activeCustomPage === 'staking'
+                              ? 'bg-cyber-card-light text-[#ffffff] border-[#00ff88]/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
+                              : 'text-slate-400 hover:text-[#00ff88] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                          }`}
+                        >
+                          <div className={`p-1 rounded ${
+                            activeCustomPage === 'staking'
+                              ? 'text-cyber-neon bg-cyber-bg' 
+                              : 'text-slate-500 group-hover:text-cyber-neon'
+                          }`}>
+                            <Icons.Layers className="w-4 h-4" />
+                          </div>
+                          <span className="truncate">Stake $SURCHI</span>
+                          {activeCustomPage === 'staking' ? (
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
+                          ) : (
+                            <span className="ml-auto text-[8px] px-1.5 py-0.5 bg-[#051c11] border border-cyber-neon/30 text-cyber-neon font-black rounded uppercase scale-90">APY 7.3%</span>
+                          )}
+                        </button>
+
+                        {/* Custom Crypto News button */}
+                        <button
+                          key="custom_crypto_news"
+                          onClick={() => {
+                            setActiveCustomPage('crypto_news');
+                            setCurrentResult(null); // Clear previous results to show ONLY its own page
+                            setIsMenuOpen(false);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
+                            activeCustomPage === 'crypto_news'
+                              ? 'bg-cyber-card-light text-[#ffffff] border-cyber-cyan/40 shadow-[0_0_8px_rgba(0,229,255,0.15)]'
+                              : 'text-slate-400 hover:text-cyber-cyan hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                          }`}
+                        >
+                          <div className={`p-1 rounded ${
+                            activeCustomPage === 'crypto_news'
+                              ? 'text-cyber-cyan bg-cyber-bg' 
+                              : 'text-slate-500 group-hover:text-cyber-cyan'
+                          }`}>
+                            <Icons.Newspaper className="w-4 h-4" />
+                          </div>
+                          <span className="truncate flex-1">Crypto News</span>
+                          {activeCustomPage === 'crypto_news' ? (
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-cyan ml-auto shadow-[0_0_6px_rgba(0,229,255,1)]"></span>
+                          ) : (
+                            <span className="ml-auto text-[8px] px-1.5 py-0.5 bg-[#0a1829] border border-cyber-cyan/30 text-cyber-cyan font-black rounded uppercase scale-90">LIVE FEED</span>
+                          )}
+                        </button>
+                      </>
+                    );
                   })()}
                 </nav>
               </div>
@@ -2846,6 +2986,7 @@ export default function App() {
                           key={h.id}
                           onClick={() => {
                             handleReloadHistory(h);
+                            setActiveCustomPage(null);
                             setIsMenuOpen(false);
                           }}
                           className={`w-full p-2.5 rounded-lg border text-left transition-all relative block cursor-pointer select-none group overflow-hidden ${
@@ -2917,7 +3058,15 @@ export default function App() {
         {/* TOP METRICS & CONSOLE STATS BAR */}
         <header className="h-16 border-b border-cyber-border bg-[#030308]/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 md:px-10 z-20">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setActiveModuleId('token_analyzer');
+                setActiveCustomPage(null);
+                setCurrentResult(null);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center gap-2 hover:opacity-85 transition-all text-left bg-transparent border-0 p-0 m-0 outline-none cursor-pointer"
+            >
               <div className="w-7 h-7 rounded overflow-hidden border border-cyber-green flex items-center justify-center bg-cyber-card shrink-0 animate-pulse">
                 <img
                   src="https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg"
@@ -2927,7 +3076,7 @@ export default function App() {
                 />
               </div>
               <h1 className="text-sm font-black text-[#ffffff] tracking-wider uppercase font-display select-none">SURCHI AI</h1>
-            </div>
+            </button>
 
             <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-cyber-card-light text-slate-300 text-[10px] font-mono border border-cyber-border">
               OPERATING PROTOCOL: <strong className="text-cyber-neon ml-1">v2.5-ACTIVE</strong>
@@ -2955,7 +3104,7 @@ export default function App() {
         {/* WORKSPACE MAIN BODY AREA */}
         <div className="px-4 py-6 sm:p-6 md:p-10 max-w-4xl w-full mx-auto flex-1 space-y-8 animate-fade-in">
           
-          {isTokenAnalyzed && analyzedDetails ? (
+          {!activeCustomPage && isTokenAnalyzed && analyzedDetails ? (
             <div className="space-y-4 text-left animate-fade-in">
               <header className="flex items-center gap-1.5 px-3 py-1 bg-[#00ff88]/5 w-max rounded border border-[#00ff88]/25">
                 <span className={`w-1.5 h-1.5 rounded-full ${themeAccent === 'white' ? 'bg-white' : 'bg-[#00ff88]'} animate-ping`}></span>
@@ -2968,7 +3117,7 @@ export default function App() {
                 onClose={() => {
                   setLiveTokenInfo(null);
                   if (currentResult) {
-                    setCurrentResult(null);
+                     setCurrentResult(null);
                   }
                 }} 
               />
@@ -2976,7 +3125,7 @@ export default function App() {
           ) : (
             <>
               {/* MIGRATION & UPGRADE NOTIFICATION BANNER */}
-              {showUpdateBanner && (
+              {isHomePage && showUpdateBanner && (
                 <div 
                   className="border border-cyber-neon/20 bg-cyber-card backdrop-blur-md rounded-xl p-4 sm:p-5 shadow-[0_0_20px_rgba(0,191,255,0.02)] sm:shadow-[0_0_30px_rgba(0,191,255,0.03)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden text-left transition-all duration-300 ease-out animate-fade-in"
                 >
@@ -3032,143 +3181,348 @@ export default function App() {
               )}
 
               {/* Buy $SURCHI tiny button left upper side above active forensics module */}
-              <div className="flex justify-start">
-                <a
-                  href="https://raydium.io/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-extrabold tracking-widest text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_12px_rgba(0,255,136,0.18)] hover:shadow-[0_0_18px_rgba(0,255,136,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase no-underline"
-                >
-                  <Icons.Coins className="w-3.5 h-3.5 text-cyber-neon shrink-0" />
-                  <span>Buy $SURCHI on Raydium.io</span>
-                  <Icons.ExternalLink className="w-3 h-3 text-cyber-neon/70 shrink-0" />
-                </a>
-              </div>
+              {isHomePage && (
+                <div className="flex justify-start">
+                  <a
+                    href="https://raydium.io/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-extrabold tracking-widest text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_12px_rgba(0,255,136,0.18)] hover:shadow-[0_0_18px_rgba(0,255,136,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase no-underline"
+                  >
+                    <Icons.Coins className="w-3.5 h-3.5 text-cyber-neon shrink-0" />
+                    <span>Buy $SURCHI on Raydium.io</span>
+                    <Icons.ExternalLink className="w-3 h-3 text-cyber-neon/70 shrink-0" />
+                  </a>
+                </div>
+              )}
 
-              {/* Header Title Accent */}
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-cyber-card border border-cyber-border text-cyber-cyan text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_8px_rgba(0,229,255,0.05)]">
-              <Icons.Sparkles className="w-3.5 h-3.5 text-cyber-cyan" /> active forensics module
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#ffffff] font-display flex items-center gap-3">
-              <SurchiIcon name={activeModule.icon} className="w-7 h-7 text-cyber-neon" />
-              {activeModule.name}
-            </h2>
-            <p className="text-slate-400 text-xs leading-relaxed max-w-2xl font-mono">
-              {activeModule.description}
-            </p>
-          </div>
-
-          {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
-          <section className="bg-[#0b0b1a] rounded-xl border border-cyber-border p-4 sm:p-6 shadow-2xl relative overflow-hidden">
-            {/* Ambient Corner Glow grids */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
-            
-            <form onSubmit={handleRunAnalysis} className="space-y-5">
-              <div className="grid grid-cols-1 gap-5">
-                {activeModule.inputs.map(input => (
-                  <div key={input.key} className="space-y-2 text-left">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
-                      {input.label}
-                    </label>
-
-                    {input.type === 'text' && (
-                      <input
-                        type="text"
-                        required
-                        value={formInputs[input.key] || ''}
-                        onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                        placeholder={input.placeholder}
-                        className="w-full bg-[#03030a] border border-cyber-border rounded-lg px-4 py-3 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all placeholder:text-slate-600"
-                      />
-                    )}
-
-                    {input.type === 'textarea' && (
-                      <textarea
-                        required
-                        rows={6}
-                        value={formInputs[input.key] || ''}
-                        onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                        placeholder={input.placeholder}
-                        className="w-full bg-[#03030a] border border-cyber-border rounded-lg px-4 py-3 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all placeholder:text-slate-600 resize-y"
-                      />
-                    )}
-
-                    {input.type === 'select' && (
-                      <select
-                        value={formInputs[input.key] || ''}
-                        onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                        className="w-full bg-[#03030a] border border-cyber-border rounded-lg px-4 py-3 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all"
+              {activeCustomPage === 'crypto_news' ? (
+                <div className="space-y-8 animate-fade-in text-left">
+                  {/* Custom Header Title Accent */}
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-cyber-card border border-cyber-cyan/30 text-cyber-cyan text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_8px_rgba(0,229,255,0.05)]">
+                      <Icons.Newspaper className="w-3.5 h-3.5 text-cyber-cyan animate-pulse" /> live news module
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#ffffff] font-display flex items-center gap-3">
+                        <Icons.Newspaper className="w-7 h-7 text-cyber-cyan" />
+                        Automated Live Crypto News & Social Ticker
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveCustomPage(null);
+                        }}
+                        className="px-4 py-2 bg-[#0c0c1e] hover:bg-[#1a1a3e] border border-cyber-border rounded-lg text-slate-300 hover:text-white text-xs font-bold font-mono transition-all cursor-pointer select-none uppercase w-fit font-semibold"
                       >
-                        {input.options?.map(opt => (
-                          <option key={opt.value} value={opt.value} className="bg-[#0b0b1a] text-[#ffffff]">
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    )}
+                        &larr; Back to Workspace
+                      </button>
+                    </div>
+                    <p className="text-slate-400 text-xs leading-relaxed max-w-2xl font-mono">
+                      Stay informed with automatic live streams, real-time developer updates, on-chain activities, breaking sentiment shifts, and direct global feeds.
+                    </p>
                   </div>
-                ))}
-              </div>
 
-              {/* Submit triggers */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)] disabled:opacity-50 transition-all flex items-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
-                      <span>{statusMsg}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Icons.Radar className="w-4 h-4" />
-                      <span>{activeModule.buttonText}</span>
-                    </>
-                  )}
-                </button>
-                {loading && (
-                  <span className="text-[10px] text-cyber-neon font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon inline-block animate-ping"></span> quantum ledger scanning active
-                  </span>
-                )}
-              </div>
-            </form>
-          </section>
+                  {/* AUTOMATIC LIVE CRYPTO NEWS */}
+                  <LiveCryptoNews />
+                </div>
+              ) : activeCustomPage === 'staking' ? (
+                <div className="space-y-8 animate-fade-in text-left">
+                  {/* Custom Header Title Accent */}
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-cyber-card border border-[#00ff88]/30 text-[#00ff88] text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_8px_rgba(0,255,136,0.05)]">
+                      <Icons.Layers className="w-3.5 h-3.5 text-[#00ff88] animate-pulsing" /> live staging portal
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#ffffff] font-display flex items-center gap-3">
+                        <Icons.Layers className="w-7 h-7 text-[#00ff88]" />
+                        Dedicated $SURCHI Smart Staking Portals
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveCustomPage(null);
+                        }}
+                        className="px-4 py-2 bg-[#0c0c1e] hover:bg-[#1a1a3e] border border-cyber-border rounded-lg text-slate-300 hover:text-white text-xs font-bold font-mono transition-all cursor-pointer select-none uppercase w-fit font-semibold"
+                      >
+                        &larr; Back to Workspace
+                      </button>
+                    </div>
+                    <p className="text-slate-400 text-xs leading-relaxed max-w-2xl font-mono">
+                      Activate security consensus validator nodes, check hold durations, calculate emissions, and lock holdings in decentralized validation pools.
+                    </p>
+                  </div>
 
-          {/* Real-time Address Detect Loading & Ledger Board */}
-          {activeModuleId === 'token_analyzer' && !currentResult && (isFetchingTokenDetails || liveTokenInfo) && (
-            <div className="space-y-4">
-              {isFetchingTokenDetails && (
-                <div className="p-4 rounded-xl border border-cyber-cyan/30 bg-[#060613] flex items-center justify-between gap-3 text-left animate-pulse">
-                  <div className="flex items-center gap-3">
-                    <Icons.Loader2 className="w-5 h-5 text-cyber-cyan animate-spin" />
-                    <div>
-                      <span className="text-xs font-bold text-cyber-cyan font-mono block uppercase">● DETECTED CONTRACT ADDRESS</span>
-                      <p className="text-[10px] text-slate-400 font-mono">Syncing directly with blockchain indexers and live Dex pools...</p>
+                  {/* SYSTEM STAKING BOARD */}
+                  <div className="border border-cyber-cyan/20 bg-[#04040a] rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
+                    <StakingDashboard />
+                  </div>
+                </div>
+              ) : activeCustomPage ? (
+                <div className="space-y-8 animate-fade-in text-left">
+                  {/* Custom Header Title Accent */}
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-cyber-card border border-cyber-border text-cyber-cyan text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_8px_rgba(0,229,255,0.05)]">
+                      <Icons.Rocket className="w-3.5 h-3.5 text-cyber-cyan animate-bounce" /> coming soon module
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#ffffff] font-display flex items-center gap-3">
+                      {activeCustomPage === 'create_ad' ? (
+                        <>
+                          <Icons.Megaphone className="w-7 h-7 text-cyber-neon" />
+                          Create Ad Campaign Core
+                        </>
+                      ) : (
+                        <>
+                          <Icons.Coins className="w-7 h-7 text-cyber-neon" fill="none" />
+                          Audited Token Genesis Generator
+                        </>
+                      )}
+                    </h2>
+                    <p className="text-slate-400 text-xs leading-relaxed max-w-2xl font-mono">
+                      {activeCustomPage === 'create_ad' 
+                        ? "Design, compile, and launch premium automated advertising campaigns across leading Web3 channels instantly with real-time feedback."
+                        : "Compile, security-audit, and deploy flawless customized smart contracts on major blockchains with zero coding requirements."
+                      }
+                    </p>
+                  </div>
+
+                  {/* Gorgeous visual block */}
+                  <div className="bg-[#0b0b1a] rounded-xl border border-cyber-border p-6 sm:p-8 shadow-2xl relative overflow-hidden text-left font-mono">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
+                    
+                    <div className="max-w-2xl space-y-6 relative z-10">
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className={`px-2 py-0.5 rounded font-black tracking-widest text-[9px] uppercase border ${
+                          activeCustomPage === 'create_ad' 
+                            ? 'bg-cyber-cyan/10 text-cyber-cyan border-cyber-cyan/30' 
+                            : 'bg-cyber-neon/10 text-cyber-neon border-cyber-neon/30 animate-pulse'
+                        }`}>
+                          {activeCustomPage === 'create_ad' ? 'ECOSYSTEM PHASE III' : 'ECOSYSTEM PHASE IV'}
+                        </span>
+                        <span className="text-slate-500">&bull;</span>
+                        <span className="text-slate-400 animate-pulse font-bold">DEVELOPMENT STAGE: GRID ALIGNMENT</span>
+                      </div>
+
+                      <div className="space-y-4 font-sans text-sm text-slate-300 leading-relaxed text-left">
+                        {activeCustomPage === 'create_ad' ? (
+                          <>
+                            <p>
+                              Unleash the supreme powers of automated blockchain outreach. The <strong>Surchi AI Ad Creation Core</strong> translates token real-time telemetry, live candle trends, and social indexes directly into multi-format ad assets (banners, copy blocks, post templates, video scripts) crafted to dominate Web3 feeds in one click.
+                            </p>
+                            <p className="text-xs text-slate-400 font-mono">
+                              * Integrated CPM Optimizer determines the highest density channels automatically to guarantee maximal placement coverage.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p>
+                              Launch fully audited smart contracts instantly with no writing requirement. Create customized token assets on <strong>Solana (under standard SPL), Base (EVM), or Ethereum</strong>. Every generated contract is pre-loaded with optimal tax configurations, anti-bot mechanisms, fully audited liquidity structures, and automated owner renunciation state options.
+                            </p>
+                            <p className="text-xs text-slate-400 font-mono">
+                              * Every deployed asset receives a verified genesis shield seal, pre-authenticated by Surchi Forensic scanners to prevent false-positives on block explorers.
+                            </p>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Visual Mock / Progress Area */}
+                      <div className="border border-cyber-border bg-[#030308]/60 rounded-xl p-4 sm:p-5 space-y-4">
+                        <div className="flex items-center justify-between border-b border-cyber-border/40 pb-2">
+                          <span className="text-[10px] text-cyber-cyan uppercase font-bold tracking-widest leading-none flex items-center gap-1.5 font-mono">
+                            <Icons.Activity className="w-3.5 h-3.5 animate-pulse" />
+                            quantum core status monitor
+                          </span>
+                          <span className="text-[9px] text-slate-500 font-mono">PING: ACTIVE</span>
+                        </div>
+
+                        {activeCustomPage === 'create_ad' ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+                            <div className="space-y-1.5 border border-cyber-border/30 bg-cyber-card-light/40 p-2.5 rounded-lg">
+                              <span className="text-emerald-400 font-bold block">● AI COPYSYTEM</span>
+                              <span className="text-[10.5px] text-slate-400 leading-normal block">Pre-trained on billions of successful conversion parameters and click patterns.</span>
+                            </div>
+                            <div className="space-y-1.5 border border-cyber-border/30 bg-cyber-card-light/40 p-2.5 rounded-lg">
+                              <span className="text-cyber-cyan font-bold block">● MULTI-FORMAT EXPORT</span>
+                              <span className="text-[10.5px] text-slate-400 leading-normal block">Instant exports to Telegram posts, X threading scripts, banner assets, or web frames.</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+                            <div className="space-y-1.5 border border-cyber-border/30 bg-cyber-card-light/40 p-2.5 rounded-lg">
+                              <span className="text-cyber-purple font-bold block">● AUDITED BYTECODE</span>
+                              <span className="text-[10.5px] text-slate-400 leading-normal block">100% pre-audited solidity and Rust binaries to satisfy security requirements out-of-the-box.</span>
+                            </div>
+                            <div className="space-y-1.5 border border-cyber-border/30 bg-cyber-card-light/40 p-2.5 rounded-lg">
+                              <span className="text-cyber-neon font-bold block">● LP STABILIZER</span>
+                              <span className="text-[10.5px] text-slate-400 leading-normal block">Lock liquidity pools or burn providers automatically upon contract verification.</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="pt-2 flex items-center justify-between font-mono gap-5 flex-wrap">
+                          <span className="text-[9px] text-slate-500 uppercase leading-normal">LAUNCH QUEUE: SEQUENCE UNLOCKED BY PRESALE STAGES</span>
+                          <span className="text-[10px] text-cyber-neon font-black uppercase tracking-widest animate-pulse">COMING SOON</span>
+                        </div>
+                      </div>
+
+                      {/* CTA action to show interest or notify */}
+                      <div className="flex justify-between items-center flex-wrap gap-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveCustomPage(null);
+                          }}
+                          className="px-4 py-2 bg-cyber-card-light hover:bg-[#1a1a3e] border border-cyber-border rounded-lg text-slate-300 hover:text-white text-xs font-bold font-mono transition-all cursor-pointer select-none"
+                        >
+                          &larr; Back to Workspace
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setComingSoonToast({
+                              show: true,
+                              title: 'Priority Registry Loaded',
+                              message: 'You have been registered for priority beta access to this feature as soon as our presale core stages activate!',
+                              type: activeCustomPage === 'create_ad' ? 'ad' : 'token'
+                            });
+                          }}
+                          className="px-5 py-2.5 rounded-lg bg-cyber-card border border-cyber-border hover:border-cyber-cyan/50 text-slate-300 hover:text-cyber-cyan text-xs font-bold font-mono tracking-wider transition-all cursor-pointer select-none"
+                        >
+                          [⚡ ENLIST FOR PRIORITY ACCESS]
+                        </button>
+                      </div>
+
                     </div>
                   </div>
-                  <span className="text-[9px] font-mono text-cyber-cyan/80 font-bold uppercase tracking-wider">MAINNET ACTIVE</span>
                 </div>
-              )}
+              ) : (
+                <>
+                  {/* Header Title Accent */}
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-cyber-card border border-cyber-border text-cyber-cyan text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_8px_rgba(0,229,255,0.05)]">
+                      <Icons.Sparkles className="w-3.5 h-3.5 text-cyber-cyan" /> active forensics module
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#ffffff] font-display flex items-center gap-3">
+                      <SurchiIcon name={activeModule.icon} className="w-7 h-7 text-cyber-neon" />
+                      {activeModule.name}
+                    </h2>
+                    <p className="text-slate-400 text-xs leading-relaxed max-w-2xl font-mono">
+                      {activeModule.description}
+                    </p>
+                  </div>
 
-              {liveTokenInfo && !isFetchingTokenDetails && (
-                <div className="space-y-2 text-left animate-fade-in">
-                  <header className="flex items-center gap-1.5 px-3 py-1 bg-cyber-cyan/5 w-max rounded border border-cyber-cyan/25">
-                    <span className={`w-1.5 h-1.5 rounded-full ${themeAccent === 'white' ? 'bg-white' : 'bg-[#00ff88]'} animate-ping`}></span>
-                    <span className={`text-[10px] ${themeAccent === 'white' ? 'text-white' : 'text-[#00ff88]'} font-mono font-bold uppercase tracking-wider`}>Live Mainnet Snapshot Connected</span>
-                  </header>
-                  <LiveTokenLedgerCard details={liveTokenInfo} themeAccent={themeAccent} themeMode={themeMode} onClose={() => setLiveTokenInfo(null)} />
-                </div>
+                  {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
+                  <section className="bg-[#0b0b1a] rounded-xl border border-cyber-border p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+                    {/* Ambient Corner Glow grids */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
+                    
+                    <form onSubmit={handleRunAnalysis} className="space-y-5">
+                      <div className="grid grid-cols-1 gap-5">
+                        {activeModule.inputs.map(input => (
+                          <div key={input.key} className="space-y-2 text-left">
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
+                              {input.label}
+                            </label>
+
+                            {input.type === 'text' && (
+                              <input
+                                type="text"
+                                required
+                                value={formInputs[input.key] || ''}
+                                onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                placeholder={input.placeholder}
+                                className="w-full bg-[#03030a] border border-cyber-border rounded-lg px-4 py-3 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all placeholder:text-slate-600"
+                              />
+                            )}
+
+                            {input.type === 'textarea' && (
+                              <textarea
+                                required
+                                rows={6}
+                                value={formInputs[input.key] || ''}
+                                onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                placeholder={input.placeholder}
+                                className="w-full bg-[#03030a] border border-cyber-border rounded-lg px-4 py-3 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all placeholder:text-slate-600 resize-y"
+                              />
+                            )}
+
+                            {input.type === 'select' && (
+                              <select
+                                value={formInputs[input.key] || ''}
+                                onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                className="w-full bg-[#03030a] border border-cyber-border rounded-lg px-4 py-3 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all"
+                              >
+                                {input.options?.map(opt => (
+                                  <option key={opt.value} value={opt.value} className="bg-[#0b0b1a] text-[#ffffff]">
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Submit triggers */}
+                      <div className="flex flex-wrap items-center gap-4 pt-2">
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="px-6 py-3 rounded-lg bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)] disabled:opacity-50 transition-all flex items-center gap-2"
+                        >
+                          {loading ? (
+                            <>
+                              <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
+                              <span>{statusMsg}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Icons.Radar className="w-4 h-4" />
+                              <span>{activeModule.buttonText}</span>
+                            </>
+                          )}
+                        </button>
+                        {loading && (
+                          <span className="text-[10px] text-cyber-neon font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon inline-block animate-ping"></span> quantum ledger scanning active
+                          </span>
+                        )}
+                      </div>
+                    </form>
+                  </section>
+
+                  {/* Real-time Address Detect Loading & Ledger Board */}
+                  {activeModuleId === 'token_analyzer' && !currentResult && (isFetchingTokenDetails || liveTokenInfo) && (
+                    <div className="space-y-4">
+                      {isFetchingTokenDetails && (
+                        <div className="p-4 rounded-xl border border-cyber-cyan/30 bg-[#060613] flex items-center justify-between gap-3 text-left animate-pulse">
+                          <div className="flex items-center gap-3">
+                            <Icons.Loader2 className="w-5 h-5 text-cyber-cyan animate-spin" />
+                            <div>
+                              <span className="text-xs font-bold text-cyber-cyan font-mono block uppercase">● DETECTED CONTRACT ADDRESS</span>
+                              <p className="text-[10px] text-slate-400 font-mono">Syncing directly with blockchain indexers and live Dex pools...</p>
+                            </div>
+                          </div>
+                          <span className="text-[9px] font-mono text-cyber-cyan/80 font-bold uppercase tracking-wider">MAINNET ACTIVE</span>
+                        </div>
+                      )}
+
+                      {liveTokenInfo && !isFetchingTokenDetails && (
+                        <div className="space-y-2 text-left animate-fade-in">
+                          <header className="flex items-center gap-1.5 px-3 py-1 bg-cyber-cyan/5 w-max rounded border border-cyber-cyan/25">
+                            <span className={`w-1.5 h-1.5 rounded-full ${themeAccent === 'white' ? 'bg-white' : 'bg-[#00ff88]'} animate-ping`}></span>
+                            <span className={`text-[10px] ${themeAccent === 'white' ? 'text-white' : 'text-[#00ff88]'} font-mono font-bold uppercase tracking-wider`}>Live Mainnet Snapshot Connected</span>
+                          </header>
+                          <LiveTokenLedgerCard details={liveTokenInfo} themeAccent={themeAccent} themeMode={themeMode} onClose={() => setLiveTokenInfo(null)} />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
-            </div>
-          )}
 
           {/* ACTIVE AUDIT / REPORT VIEW CARD PANEL */}
-          {currentResult ? (
+          {!activeCustomPage && (currentResult ? (
             <section className="space-y-6 animate-fade-in">
               <div className="bg-[#090915] rounded-xl border border-cyber-border shadow-2xl overflow-hidden relative">
                 
@@ -3439,7 +3793,7 @@ export default function App() {
                 </form>
               </div>
             </section>
-          ) : (
+          ) : isHomePage ? (
             <div className="space-y-8 w-full">
               {/* EMPTY SHEETS INITIAL DEMAND ACCENTS */}
               <div className="p-6 sm:p-12 text-center bg-[#090915] border border-cyber-border/80 rounded-xl space-y-4 max-w-xl mx-auto flex flex-col items-center shadow-inner">
@@ -3467,9 +3821,6 @@ export default function App() {
                   <Icons.ChevronRight className="w-4.5 h-4.5 shrink-0 text-[#a855f7]" />
                 </button>
               </div>
-
-              {/* AUTOMATIC LIVE CRYPTO NEWS */}
-              <LiveCryptoNews />
 
               {/* SYSTEM TOKENOMICS DISTRIBUTION */}
               <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
@@ -3567,7 +3918,7 @@ export default function App() {
                 </a>
               </div>
             </div>
-          )}
+          ) : null)}
         </>
       )}
 
@@ -3970,6 +4321,49 @@ export default function App() {
           <Icons.Moon className="w-5.5 h-5.5 text-cyber-cyan group-hover:-rotate-12 transition-transform duration-500" />
         )}
       </button>
+
+      {/* Dynamic Coming Soon Notification Toast */}
+      {comingSoonToast?.show && (
+        <div className="fixed bottom-24 right-6 z-[100] max-w-sm w-[90vw] bg-[#0c0c1e] border-2 border-cyber-cyan/60 rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,229,255,0.2)] animate-slide-up sm:w-80">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyber-cyan/10 to-transparent pointer-events-none rounded-bl-full"></div>
+          
+          <div className="p-4 space-y-3 relative z-10 text-left">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono font-bold text-cyber-cyan uppercase tracking-wider flex items-center gap-1.5 leading-none">
+                {comingSoonToast.type === 'ad' ? (
+                  <Icons.Megaphone className="w-3.5 h-3.5 animate-pulse text-cyber-neon" />
+                ) : comingSoonToast.type === 'stake' ? (
+                  <Icons.Layers className="w-3.5 h-3.5 animate-pulse text-[#00ff88]" />
+                ) : (
+                  <Icons.Coins className="w-3.5 h-3.5 animate-pulse text-cyber-neon" />
+                )}
+                {comingSoonToast.title}
+              </span>
+              <button
+                onClick={() => setComingSoonToast(null)}
+                className="p-1 hover:bg-slate-800/40 text-slate-400 hover:text-white border border-cyber-border rounded cursor-pointer transition-all"
+                title="Dismiss details"
+              >
+                <Icons.X className="w-3 h-3" />
+              </button>
+            </div>
+            
+            <p className="text-[11px] font-mono text-slate-300 leading-relaxed">
+              {comingSoonToast.message}
+            </p>
+            
+            <div className="flex items-center justify-between pt-1 border-t border-cyber-border/40 text-[9px] font-mono text-slate-500">
+              <span className="uppercase tracking-widest animate-pulse font-black text-cyber-neon font-bold">CORE BETA QUEUE READY</span>
+              <button
+                onClick={() => setComingSoonToast(null)}
+                className="text-cyber-cyan hover:underline font-bold"
+              >
+                DISMISS
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

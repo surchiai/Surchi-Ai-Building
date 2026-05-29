@@ -21,17 +21,36 @@ export const MODULES: ModuleConfig[] = [
   {
     id: 'smart_auditor',
     name: 'Smart Contract Auditor',
-    description: 'Paste any Solidity smart contract. Instantly check for reentrancy, overflow, access flaws, gas cost optimizations, and security vectors.',
+    description: 'Provide any token contract address to perform dynamic deep security checks, honeypot audits, freeze/mint checks, and multi-chain risk diagnostics.',
     icon: 'ShieldAlert',
     inputs: [
       {
-        key: 'contractCode',
-        label: 'Solidity Code Source',
-        type: 'textarea',
-        placeholder: '// Paste Solidity code here...\ncontract SecureToken {\n   // ...\n}'
+        key: 'address',
+        label: 'Contract Address (CA)',
+        type: 'text',
+        placeholder: 'e.g., 0x2170ed0880ac9a755fd29b2688956bd959f933f8 or Solana/Base CA...'
+      },
+      {
+        key: 'chainId',
+        label: 'Target Chain Network',
+        type: 'select',
+        placeholder: 'Select target blockchain network...',
+        options: [
+          { label: 'Ethereum', value: 'ethereum' },
+          { label: 'Solana', value: 'solana' },
+          { label: 'BNB Chain', value: 'binance-smart-chain' },
+          { label: 'Base', value: 'base' },
+          { label: 'Arbitrum One', value: 'arbitrum' },
+          { label: 'Polygon', value: 'polygon' },
+          { label: 'Avalanche', value: 'avalanche' },
+          { label: 'Sui', value: 'sui' },
+          { label: 'Tron', value: 'tron' },
+          { label: 'Bitcoin (BRC-20/Runes)', value: 'bitcoin' }
+        ],
+        defaultValue: 'ethereum'
       }
     ],
-    buttonText: 'Execute Audit Pipeline',
+    buttonText: 'Execute Deep Security Scan',
     statusText: 'Auditing Security Vectors...',
     accentColor: 'purple'
   },
@@ -341,23 +360,6 @@ export const MODULES: ModuleConfig[] = [
     buttonText: 'Build Brand Identity',
     statusText: 'Synthesizing Branding Manifestos...',
     accentColor: 'cyan'
-  },
-  {
-    id: 'market_sentiment',
-    name: 'Market Sentiment Scanner',
-    description: 'Scrape recent social channels, online forums, fear gauges, and news indices to calculate overall market sentiment.',
-    icon: 'Compass',
-    inputs: [
-      {
-        key: 'topic',
-        label: 'Target Token or Trending Narrative',
-        type: 'text',
-        placeholder: 'e.g., Solana DeFi summer, Ethereum Gas update, SURCHI...'
-      }
-    ],
-    buttonText: 'Scan Live Market Sentiment',
-    statusText: 'Scanning Web Indices with Grounding...',
-    accentColor: 'green'
   },
   {
     id: 'tweet_writer',

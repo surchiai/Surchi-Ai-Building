@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as Icons from 'lucide-react';
+import AISmartAuditor from './AISmartAuditor';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -116,8 +117,8 @@ interface CandlePriceDataPoint {
 
 function TokenAnalyzerDashboard({ payload, content }: SubComponentProps) {
   const score = parseSecurityScore(content);
-  const ticker = payload.token || 'SURCHI';
-  const name = payload.name || 'Surchi Token';
+  const ticker = payload?.token || 'SURCHI';
+  const name = payload?.name || 'Surchi Token';
   const [timeframe, setTimeframe] = useState<'7D' | '30D' | '90D'>('30D');
   const [viewMode, setViewMode] = useState<'line' | 'candles'>('candles');
 
@@ -415,92 +416,22 @@ function TokenAnalyzerDashboard({ payload, content }: SubComponentProps) {
 
 // 2. SMART CONTRACT AUDITOR
 function SmartAuditorDashboard({ payload, content }: SubComponentProps) {
-  const score = parseSecurityScore(content);
-  const severity = score > 80 ? 'LOW' : score > 50 ? 'MEDIUM' : 'CRITICAL';
-  const severityColor = score > 80 ? 'text-cyber-green border-cyber-green/35 bg-cyber-green/10' : score > 50 ? 'text-amber-500 border-amber-500/30 bg-amber-500/10' : 'text-rose-500 border-rose-500/30 bg-rose-500/10';
+  const address = payload?.address || payload?.contractCode || '';
+  const chainId = payload?.chainId || 'ethereum';
+  const live = (payload as any)?.liveDetails || {};
+  const symbol = payload?.symbol || live.symbol || 'TOKEN';
+  const totalSupply = parseFloat(payload?.totalSupply || live.totalSupply) || 120000000;
+  const priceUsd = parseFloat(payload?.priceUsd || live.priceUsd) || 0.15;
 
   return (
-    <div className="bg-[#04040a] rounded-xl border border-cyber-border p-4 sm:p-6 space-y-6 text-[#ffffff] font-mono text-left select-text">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-cyber-border pb-4">
-        <div>
-          <span className="text-[10px] text-cyber-purple tracking-widest uppercase font-bold block">security diagnostic report</span>
-          <h3 className="text-base font-bold text-white uppercase flex items-center gap-2">
-            <Icons.ShieldAlert className="w-5 h-5 text-cyber-purple" />
-            Automated Forensic Smart Contract Audit
-          </h3>
-        </div>
-        <span className={`text-[10px] font-bold px-3 py-1 rounded border uppercase ${severityColor}`}>
-          RISK STATE: {severity}
-        </span>
-      </div>
-
-      {/* Radial Security Score HUD */}
-      <div className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-cyber-card border border-cyber-border rounded-xl">
-        <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
-          <svg className="w-full h-full transform -rotate-90">
-            <circle cx="56" cy="56" r="48" stroke="#101026" strokeWidth="8" fill="transparent" />
-            <circle
-              cx="56"
-              cy="56"
-              r="48"
-              stroke={score > 80 ? '#00ff88' : score > 50 ? '#ffb300' : '#ff3333'}
-              strokeWidth="8"
-              fill="transparent"
-              strokeDasharray={2 * Math.PI * 48}
-              strokeDashoffset={2 * Math.PI * 48 * (1 - score / 100)}
-              className="transition-all duration-1000"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-black font-display">{score}</span>
-            <span className="text-[8px] text-slate-500 uppercase tracking-widest font-extrabold">RATING</span>
-          </div>
-        </div>
-
-        <div className="flex-1 space-y-3">
-          <h4 className="text-xs font-bold text-[#ffffff] uppercase tracking-wider">Vulnerability Forensic Checklist</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-2 p-2 bg-[#080814] rounded border border-cyber-border/30">
-              <Icons.CheckCircle2 className="w-3.5 h-3.5 text-cyber-green" />
-              <span>Reentrancy Vectors: <strong>PASSED</strong></span>
-            </div>
-            <div className="flex items-center gap-2 p-2 bg-[#080814] rounded border border-cyber-border/30">
-              <Icons.AlertTriangle className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-              <span>Honeypot Logic: <strong>SUSPICIOUS</strong></span>
-            </div>
-            <div className="flex items-center gap-2 p-2 bg-[#080814] rounded border border-cyber-border/30">
-              <Icons.CheckCircle2 className="w-3.5 h-3.5 text-cyber-green" />
-              <span>Overflow Protections: <strong>PASSED</strong></span>
-            </div>
-            <div className="flex items-center gap-2 p-2 bg-[#080814] rounded border border-cyber-border/30">
-              <Icons.CheckCircle2 className="w-3.5 h-3.5 text-cyber-green" />
-              <span>Ownership centralisation: <strong>CLEAN</strong></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Downloadable Certificate Button */}
-      <div className="flex items-center justify-between bg-cyber-bg p-3.5 rounded-lg border border-cyber-border">
-        <span className="text-xs text-slate-400">Formal Audit Certificate Sheet generated in YAML format</span>
-        <button
-          onClick={() => {
-            const fileContent = `SURCHI FORENSIC SMART CONTRACT AUDIT\n---------------------------------\nTIMESTAMP: ${new Date().toLocaleString()}\nCALCULATED SAFETY INDEX: ${score}/100\nRISK ASSESSMENT STATE: ${severity}\n\nREENTRANCY: PASSED\nHONEYPOT RISK: SUSPICIOUS\nOVERFLOW METRICS: PASSED\nADMIN KEYS: CLEARED\n\nOFFICIAL AUDIT REPORT PROTOCOL.`;
-            const blob = new Blob([fileContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Surchi_Audit_Report_${Date.now()}.txt`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          }}
-          className="px-3 py-1.5 bg-cyber-purple hover:bg-indigo-600 rounded text-[10px] font-bold tracking-widest uppercase cursor-pointer text-white flex items-center gap-1.5 shadow-[0_0_12px_rgba(168,85,247,0.2)]"
-        >
-          <Icons.Download className="w-3.5 h-3.5" />
-          <span>Download Certificate</span>
-        </button>
-      </div>
+    <div className="space-y-6">
+      <AISmartAuditor 
+        address={address}
+        chainId={chainId}
+        symbol={symbol}
+        totalSupply={totalSupply}
+        priceUsd={priceUsd}
+      />
     </div>
   );
 }
@@ -575,7 +506,7 @@ function RugDetectorDashboard({ payload, content }: SubComponentProps) {
 
 // 4. WALLET RISK CHECKER
 function WalletCheckerDashboard({ payload }: SubComponentProps) {
-  const address = payload.address || '0x71C...3a5b';
+  const address = payload?.address || '0x71C...3a5b';
   const [approvalsCleared, setApprovalsCleared] = useState(false);
 
   return (
@@ -651,7 +582,7 @@ function WalletCheckerDashboard({ payload }: SubComponentProps) {
 
 // 5. DEFI PROTOCOL SCANNER
 function DefiScannerDashboard({ payload }: SubComponentProps) {
-  const protocolName = payload.protocolName || 'Surchi Protocol';
+  const protocolName = payload?.protocolName || 'Surchi Protocol';
   const [chain, setChain] = useState('Solana');
 
   return (
@@ -718,8 +649,8 @@ interface AdCreatorProps {
 }
 
 function AdCreatorDashboard({ payload, onRefresh }: AdCreatorProps) {
-  const projectName = payload.projectName || 'Surchi Premium Suite';
-  const ticker = payload.ticker || 'SURCHI';
+  const projectName = payload?.projectName || 'Surchi Premium Suite';
+  const ticker = payload?.ticker || 'SURCHI';
   const [headingText, setHeadingText] = useState(`THE GALAXY'S MOST ADVANCED FORENSIC SUITE`);
   const [accentTone, setAccentTone] = useState('#00ff88');
 
@@ -814,7 +745,7 @@ function AdCreatorDashboard({ payload, onRefresh }: AdCreatorProps) {
 
 // 7. AIRDROP BUILDER
 function AirdropBuilderDashboard({ payload }: SubComponentProps) {
-  const pool = payload.supply || '5,000,000';
+  const pool = payload?.supply || '5,000,000';
   const [distPercent, setDistPercent] = useState(50);
   const [airdropExecuted, setAirdropExecuted] = useState(false);
 
@@ -921,7 +852,7 @@ function AirdropBuilderDashboard({ payload }: SubComponentProps) {
 
 // 8. WHITEPAPER GENERATOR
 function WhitepaperGeneratorDashboard({ payload, content }: SubComponentProps) {
-  const projectName = payload.projectName || 'Surchi Cryptosphere';
+  const projectName = payload?.projectName || 'Surchi Cryptosphere';
   const [editableText, setEditableText] = useState(content);
 
   // Keep state in sync with updated content prop if generated again
@@ -1079,8 +1010,8 @@ function LaunchPlannerDashboard() {
 
 // 10. SMART CONTRACT GENERATOR
 function SmartContractGeneratorDashboard({ payload }: SubComponentProps) {
-  const symbol = payload.symbol || 'SURCHI';
-  const name = payload.name || 'Surchi Token';
+  const symbol = payload?.symbol || 'SURCHI';
+  const name = payload?.name || 'Surchi Token';
   const [taxRate, setTaxRate] = useState(2);
   const [burnRate, setBurnRate] = useState(1);
   const [antiBot, setAntiBot] = useState(true);
@@ -1178,7 +1109,7 @@ contract ${name.replace(/\s+/g, '')} is ERC20, Ownable {
 
 // 11. PROJECT NAMING & BRANDING
 function BrandingGeneratorDashboard({ payload }: SubComponentProps) {
-  const vibe = payload.vibe || 'Cyberpunk';
+  const vibe = payload?.vibe || 'Cyberpunk';
   const [domainQuery, setDomainQuery] = useState('');
   const [domainStatus, setDomainStatus] = useState<'IDLE' | 'PINGING' | 'AVAILABLE' | 'TAKEN'>('IDLE');
   const { copiedKey, triggerCopy } = useCopy();
@@ -1261,49 +1192,797 @@ function BrandingGeneratorDashboard({ payload }: SubComponentProps) {
 }
 
 // 12. MARKET SENTIMENT SCANNER
-function MarketSentimentDashboard({ payload }: SubComponentProps) {
-  const topic = payload.topic || 'Web3 narratives';
+function MarketSentimentDashboard({ payload, content }: SubComponentProps) {
+  const [activeChain, setActiveChain] = useState<'solana' | 'bitcoin' | 'ethereum' | 'base' | 'bsc'>('solana');
+  const [alertStates, setAlertStates] = useState<Record<string, boolean>>({
+    push: false,
+    telegram: false,
+    email: false,
+    inapp: true
+  });
+  
+  // Community scanner states
+  const [communityTarget, setCommunityTarget] = useState('');
+  const [isScanningTrust, setIsScanningTrust] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [trustScore, setTrustScore] = useState<{
+    score: number;
+    totalAudited: number;
+    botPrevalence: number;
+    socialActivity: number;
+    verdict: string;
+    submitted: string;
+  } | null>(null);
+
+  const topicContext = payload?.topic || '';
+
+  // 5 Networks configuration datasets
+  const chainDatasets: Record<typeof activeChain, {
+    chainName: string;
+    symbol: string;
+    sentimentLevel: 'Extremely Bullish' | 'Bullish' | 'Neutral' | 'Bearish' | 'Extremely Bearish';
+    score: number;
+    fearGreed: number;
+    socialVolume: number; // in thousand
+    volumeChange24h: number;
+    newsImpact: 'positive' | 'negative' | 'neutral';
+    topKeywords: string[];
+    timeline: { name: string; score: number; volume: number }[];
+    trendingTokens: { symbol: string; sentiment: number; change: string; isUp: boolean; velocity: number }[];
+    whaleAlerts: { id: string; msg: string; age: string; size: string; type: 'inflow' | 'outflow' | 'transfer' }[];
+  }> = {
+    solana: {
+      chainName: 'Solana L1 Ledger',
+      symbol: 'SOL',
+      sentimentLevel: 'Extremely Bullish',
+      score: 87,
+      fearGreed: 76,
+      socialVolume: 342.5,
+      volumeChange24h: 34.8,
+      newsImpact: 'positive',
+      topKeywords: ['#SolanaSummer', 'AI Agent Staking', '$SURCHI', 'Raydium Vaults', 'Firedancer V2'],
+      timeline: [
+        { name: '05/16', score: 72, volume: 140 },
+        { name: '05/17', score: 74, volume: 165 },
+        { name: '05/18', score: 78, volume: 190 },
+        { name: '05/19', score: 75, volume: 210 },
+        { name: '05/20', score: 81, volume: 270 },
+        { name: '05/21', score: 85, volume: 320 },
+        { name: '05/22', score: 87, volume: 342 }
+      ],
+      trendingTokens: [
+        { symbol: topicContext ? topicContext.substring(0,6).toUpperCase() : '$SURCHI', sentiment: 94, change: '+24.5%', isUp: true, velocity: 92 },
+        { symbol: '$SOL', sentiment: 88, change: '+8.42%', isUp: true, velocity: 85 },
+        { symbol: '$WIF', sentiment: 75, change: '+12.3%', isUp: true, velocity: 74 },
+        { symbol: '$BONK', sentiment: 52, change: '-2.15%', isUp: false, velocity: 41 },
+        { symbol: '$JUP', sentiment: 81, change: '+5.60%', isUp: true, velocity: 68 }
+      ],
+      whaleAlerts: [
+        { id: 'sol-w1', msg: 'Core Validator 4 Stake locked 250,000 SOL (~$42.5M)', age: '2m ago', size: '$42.5M', type: 'transfer' },
+        { id: 'sol-w2', msg: 'Super Whale Wallet 93fC...2B swapped 15,000 SOL for $SURCHI', age: '5m ago', size: '$2.55M', type: 'inflow' },
+        { id: 'sol-w3', msg: 'Solana Treasury Vault deployed $10M developer incentive grants', age: '14m ago', size: '$10.0M', type: 'transfer' },
+        { id: 'sol-w4', msg: '120,000 SOL transferred from Kraken to Private Cold Storage Wallet', age: '28m ago', size: '$20.4M', type: 'outflow' }
+      ]
+    },
+    bitcoin: {
+      chainName: 'Bitcoin Sovereign Core',
+      symbol: 'BTC',
+      sentimentLevel: 'Bullish',
+      score: 74,
+      fearGreed: 68,
+      socialVolume: 785.1,
+      volumeChange24h: 12.3,
+      newsImpact: 'positive',
+      topKeywords: ['ETF Inflows', 'Halving Floor Metrics', 'Taproot Acceleration', 'Sovereign Reserves'],
+      timeline: [
+        { name: '05/16', score: 62, volume: 550 },
+        { name: '05/17', score: 65, volume: 610 },
+        { name: '05/18', score: 66, volume: 590 },
+        { name: '05/19', score: 69, volume: 680 },
+        { name: '05/20', score: 71, volume: 720 },
+        { name: '05/21', score: 72, volume: 760 },
+        { name: '05/22', score: 74, volume: 785 }
+      ],
+      trendingTokens: [
+        { symbol: topicContext ? topicContext.substring(0,6).toUpperCase() : '$STX', sentiment: 82, change: '+5.42%', isUp: true, velocity: 79 },
+        { symbol: '$BTC', sentiment: 76, change: '+1.80%', isUp: true, velocity: 65 },
+        { symbol: '$ORDI', sentiment: 68, change: '+8.20%', isUp: true, velocity: 71 },
+        { symbol: '$SATS', sentiment: 49, change: '-1.50%', isUp: false, velocity: 52 },
+        { symbol: '$CKB', sentiment: 73, change: '+11.2%', isUp: true, velocity: 80 }
+      ],
+      whaleAlerts: [
+        { id: 'btc-w1', msg: 'BlackRock Spot ETF wallet added 1,420 BTC into custody node', age: '1m ago', size: '$94.5M', type: 'inflow' },
+        { id: 'btc-w2', msg: 'Dormant coinbase allocation wallet from 2011 transferred 50 BTC', age: '12m ago', size: '$3.32M', type: 'transfer' },
+        { id: 'btc-w3', msg: '950 BTC deposited from Binance to private multisig wallet', age: '25m ago', size: '$63.2M', type: 'outflow' }
+      ]
+    },
+    ethereum: {
+      chainName: 'Ethereum EVM Core',
+      symbol: 'ETH',
+      sentimentLevel: 'Neutral',
+      score: 54,
+      fearGreed: 51,
+      socialVolume: 512.8,
+      volumeChange24h: -4.5,
+      newsImpact: 'neutral',
+      topKeywords: ['Blob Fees Gas Cap', 'EVM L2 Fractions', 'Restaking Yield Hubs', 'Secured zkBridge'],
+      timeline: [
+        { name: '05/16', score: 58, volume: 490 },
+        { name: '05/17', score: 56, volume: 510 },
+        { name: '05/18', score: 55, volume: 480 },
+        { name: '05/19', score: 52, volume: 460 },
+        { name: '05/20', score: 53, volume: 530 },
+        { name: '05/21', score: 55, volume: 520 },
+        { name: '05/22', score: 54, volume: 512 }
+      ],
+      trendingTokens: [
+        { symbol: topicContext ? topicContext.substring(0,6).toUpperCase() : '$PEPE', sentiment: 84, change: '+14.5%', isUp: true, velocity: 88 },
+        { symbol: '$ETH', sentiment: 56, change: '+0.42%', isUp: true, velocity: 50 },
+        { symbol: '$LDO', sentiment: 51, change: '+1.80%', isUp: true, velocity: 45 },
+        { symbol: '$UNI', sentiment: 42, change: '-4.20%', isUp: false, velocity: 59 },
+        { symbol: '$ENS', sentiment: 71, change: '+8.90%', isUp: true, velocity: 76 }
+      ],
+      whaleAlerts: [
+        { id: 'eth-w1', msg: '4,500 ETH (~$13.5M) unlocked from EigenLayer restaking hub', age: '4m ago', size: '$13.5M', type: 'transfer' },
+        { id: 'eth-w2', msg: 'Whale deposited 2,200 ETH to Uniswap v3 concentrated LP pool', age: '9m ago', size: '$6.60M', type: 'inflow' },
+        { id: 'eth-w3', msg: 'Genesis multisig transferred 1,800 ETH to Coinbase validation center', age: '35m ago', size: '$5.40M', type: 'outflow' }
+      ]
+    },
+    base: {
+      chainName: 'Base Layer 2 Hub',
+      symbol: 'BASE',
+      sentimentLevel: 'Bullish',
+      score: 79,
+      fearGreed: 70,
+      socialVolume: 198.4,
+      volumeChange24h: 41.2,
+      newsImpact: 'positive',
+      topKeywords: ['Smart Account gasless', 'Onchain Summer Phase', 'Aerodrome Deep Pools', 'Farcaster Ecosystem'],
+      timeline: [
+        { name: '05/16', score: 68, volume: 110 },
+        { name: '05/17', score: 71, volume: 125 },
+        { name: '05/18', score: 74, volume: 150 },
+        { name: '05/19', score: 72, volume: 142 },
+        { name: '05/20', score: 76, volume: 168 },
+        { name: '05/21', score: 77, volume: 184 },
+        { name: '05/22', score: 79, volume: 198 }
+      ],
+      trendingTokens: [
+        { symbol: topicContext ? topicContext.substring(0,6).toUpperCase() : '$AERO', sentiment: 89, change: '+18.2%', isUp: true, velocity: 84 },
+        { symbol: '$BRETT', sentiment: 81, change: '+9.50%', isUp: true, velocity: 78 },
+        { symbol: '$DEGEN', sentiment: 74, change: '+4.20%', isUp: true, velocity: 69 },
+        { symbol: '$TOSHI', sentiment: 58, change: '-2.31%', isUp: false, velocity: 51 },
+        { symbol: '$COIN', sentiment: 65, change: '+5.10%', isUp: true, velocity: 55 }
+      ],
+      whaleAlerts: [
+        { id: 'base-w1', msg: 'Heavy bridging event: 8,000,000 USDC bridged from Ethereum to Base L2', age: '3m ago', size: '$8.00M', type: 'inflow' },
+        { id: 'base-w2', msg: '3,500,000 $AERO locked permanently inside Aerodrome vote-escrow vault', age: '15m ago', size: '$4.12M', type: 'transfer' },
+        { id: 'base-w3', msg: '1,500 ETH swapped for Brett on Base DEX router under 0.1% slip tolerance', age: '41m ago', size: '$4.50M', type: 'transfer' }
+      ]
+    },
+    bsc: {
+      chainName: 'BNB Smart Chain EVM',
+      symbol: 'BNB',
+      sentimentLevel: 'Neutral',
+      score: 52,
+      fearGreed: 49,
+      socialVolume: 215.3,
+      volumeChange24h: 1.5,
+      newsImpact: 'neutral',
+      topKeywords: ['BNB Chain Storage Greenfield', 'PancakeSwap MultiRouter', 'Parallel Execution Staging', 'BSC Meme Battle'],
+      timeline: [
+        { name: '05/16', score: 55, volume: 190 },
+        { name: '05/17', score: 54, volume: 205 },
+        { name: '05/18', score: 52, volume: 188 },
+        { name: '05/19', score: 51, volume: 175 },
+        { name: '05/20', score: 50, volume: 220 },
+        { name: '05/21', score: 53, volume: 212 },
+        { name: '05/22', score: 52, volume: 215 }
+      ],
+      trendingTokens: [
+        { symbol: topicContext ? topicContext.substring(0,6).toUpperCase() : '$FLOKI', sentiment: 72, change: '+3.50%', isUp: true, velocity: 74 },
+        { symbol: '$BNB', sentiment: 58, change: '+1.10%', isUp: true, velocity: 49 },
+        { symbol: '$BABYDOGE', sentiment: 48, change: '-1.82%', isUp: false, velocity: 53 },
+        { symbol: '$BAKE', sentiment: 62, change: '+4.20%', isUp: true, velocity: 60 },
+        { symbol: '$CAKE', sentiment: 51, change: '+0.51%', isUp: true, velocity: 42 }
+      ],
+      whaleAlerts: [
+        { id: 'bsc-w1', msg: '12,000 BNB (~$7.2M) withdrawn from Binance hot wallet to unknown cold storage', age: '8m ago', size: '$7.20M', type: 'outflow' },
+        { id: 'bsc-w2', msg: 'PancakeSwap Router v3 added $2.4M BNB-USDT liquidity pool depth', age: '18m ago', size: '$2.40M', type: 'transfer' },
+        { id: 'bsc-w3', msg: 'Whale address 0xef41...33d1 swapped $650K BUSD for $FLOKI in single batch', age: '52m ago', size: '$0.65M', type: 'transfer' }
+      ]
+    }
+  };
+
+  const activeData = chainDatasets[activeChain];
+  const [whaleAlerts, setWhaleAlerts] = useState(activeData.whaleAlerts);
+
+  // Sync whale alerts list when active chain changes, or random incoming pings
+  useEffect(() => {
+    setWhaleAlerts(activeData.whaleAlerts);
+  }, [activeChain]);
+
+  // Real-time styled whale alerts generator (prepends a random alert every 7 seconds)
+  useEffect(() => {
+    const alertPool = [
+      { id: 'gen-1', msg: 'Smart Money Wallet 0x71...ea4b loaded 1,450,000 $SURCHI from decentralized swapper pools', size: '~$250K', type: 'inflow' },
+      { id: 'gen-2', msg: 'Legendary Trader Vault unlocked 4,500,000 $USDC from margin hedges', size: '$4.5M', type: 'transfer' },
+      { id: 'gen-3', msg: 'Liquidity Router injected $1.2M initial backing into trending meme curve contract', size: '$1.2M', type: 'inflow' },
+      { id: 'gen-4', msg: 'MeV Arbitrage Bot swept 350 ETH across multi-router pools, netting $12K profit', size: '$1.1M', type: 'transfer' },
+      { id: 'gen-5', msg: 'Systemic Whale deposited 80,000 SOL into Liquid Staking validation nodes', size: '$13.6M', type: 'inflow' }
+    ];
+
+    const interval = setInterval(() => {
+      const randomAlert = alertPool[Math.floor(Math.random() * alertPool.length)];
+      setWhaleAlerts(prev => {
+        const uniqueId = `sim-gen-${Date.now()}`;
+        const isExists = prev.some(a => a.msg === randomAlert.msg);
+        if (isExists) return prev;
+        const newAlert = {
+          id: uniqueId,
+          msg: randomAlert.msg,
+          age: 'Just now',
+          size: randomAlert.size,
+          type: randomAlert.type as 'inflow' | 'outflow' | 'transfer'
+        };
+        return [newAlert, ...prev.slice(0, 4)];
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Community scan execution trigger
+  const handleVerifyTrust = () => {
+    if (!communityTarget.trim()) return;
+    setIsScanningTrust(true);
+    setScanProgress(0);
+    setTrustScore(null);
+
+    // Progressive loading simulation
+    const timer = setInterval(() => {
+      setScanProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(timer);
+          setIsScanningTrust(false);
+          // Generate realistic result based on target input
+          let computedScore = 74;
+          let botRatio = 18;
+          let socialAct = 81;
+          let verdict = 'Passed - Moderate Organic Engagement';
+
+          const lower = communityTarget.toLowerCase();
+          if (lower.includes('scam') || lower.includes('rug') || lower.includes('bot') || lower.length < 5) {
+            computedScore = 32;
+            botRatio = 74;
+            socialAct = 29;
+            verdict = 'Failed - Suspicious Bot Activity & High Core Concentration';
+          } else if (lower.includes('surchi') || lower.includes('solana') || lower.includes('official')) {
+            computedScore = 93;
+            botRatio = 7;
+            socialAct = 95;
+            verdict = 'Excellent - Pristine Organic Community Metrics';
+          }
+
+          setTrustScore({
+            score: computedScore,
+            totalAudited: Math.floor(1420 + Math.random() * 8500),
+            botPrevalence: botRatio,
+            socialActivity: socialAct,
+            verdict,
+            submitted: communityTarget
+          });
+          return 100;
+        }
+        return prev + 12;
+      });
+    }, 300);
+  };
+
+  // Helpers for visual styles
+  const getLevelColor = (level: string) => {
+    if (level.includes('Extremely Bullish')) return 'text-cyber-green bg-cyber-green/10 border-cyber-green/20';
+    if (level.includes('Bullish')) return 'text-[#00ff88] bg-[#00ff88]/10 border-[#00ff88]/20';
+    if (level.includes('Neutral')) return 'text-cyber-cyan bg-cyber-cyan/10 border-cyber-cyan/20';
+    if (level.includes('Bearish')) return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+    return 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+  };
+
+  const getChainColorTheme = () => {
+    if (activeChain === 'solana') return '#00ff88';
+    if (activeChain === 'bitcoin') return '#f7931a';
+    if (activeChain === 'base') return '#0052ff';
+    if (activeChain === 'ethereum') return '#627eea';
+    return '#ff4b82';
+  };
+
+  const currentThemeColor = getChainColorTheme();
 
   return (
     <div className="bg-[#04040a] rounded-xl border border-cyber-border p-4 sm:p-6 space-y-6 text-[#ffffff] font-mono text-left select-text">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-cyber-border pb-4">
+      
+      {/* 1. COMPONENT HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cyber-border pb-4 w-full">
         <div>
-          <span className="text-[10px] text-cyber-green tracking-widest uppercase font-bold block">quantum social web scanning indices</span>
+          <span className="text-[10px] text-cyber-cyan tracking-widest uppercase font-bold block">AI-Powered Crypto Intelligence Engine</span>
           <h3 className="text-base font-bold text-white uppercase flex items-center gap-2">
-            <Icons.Compass className="w-5 h-5 text-cyber-green" />
-            Recent Sentiment Radar for {topic}
+            <Icons.Compass className="w-5 h-5" style={{ color: currentThemeColor }} />
+            Market Sentiment Analyzer Hub
           </h3>
+          {topicContext && (
+            <span className="text-[10px] text-cyber-purple animate-pulse mt-0.5 block">
+              💡 Target Context active: Analyzing Hype & Sentiment for &quot;{topicContext}&quot;
+            </span>
+          )}
         </div>
-        <span className="text-xs bg-cyber-green/10 text-cyber-green font-bold px-3 py-1 rounded border border-cyber-green/30">
-          RADAR: STABLE
-        </span>
+        
+        {/* Multi-chain selection tabs */}
+        <div className="flex flex-wrap items-center gap-1.5 bg-[#080814] p-1 border border-cyber-border rounded-lg">
+          {(['solana', 'bitcoin', 'ethereum', 'base', 'bsc'] as const).map(c => (
+            <button
+              key={c}
+              onClick={() => setActiveChain(c)}
+              className="px-2.5 py-1 text-[9px] font-bold rounded cursor-pointer transition-all select-none font-mono uppercase"
+              style={{
+                backgroundColor: activeChain === c ? `${getChainColorTheme()}15` : 'transparent',
+                color: activeChain === c ? getChainColorTheme() : '#64748b',
+                border: activeChain === c ? `1px solid ${getChainColorTheme()}35` : '1px solid transparent'
+              }}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-3">
-          <h4 className="text-xs font-bold text-slate-300 uppercase">Fear & Greed Ledger Gauge</h4>
-          <div className="relative pt-2">
-            <div className="h-4 w-full bg-gradient-to-r from-red-500 via-amber-500 to-cyber-green rounded-full overflow-hidden border border-cyber-border">
-              <div className="h-full w-1 bg-white absolute top-0 animate-pulse shadow-[0_0_10px_#fff]" style={{ left: '72%' }}></div>
-            </div>
-            <div className="flex justify-between items-center mt-2.5 text-xs">
-              <span className="text-red-500 font-bold">FEAR</span>
-              <span className="text-cyber-green font-bold">72% GREED</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-2 text-xs">
-          <h4 className="font-bold text-slate-350 uppercase">Emerging Keywords Analytics</h4>
-          <div className="flex flex-wrap gap-2 pt-1">
-            {['#SolanaSeason', 'AI Agent Staking', '#ForensicAudits', 'Airdrops', 'Presale'].map(tag => (
-              <span key={tag} className="px-2.5 py-1 bg-cyber-bg border border-cyber-border text-slate-355 rounded-md font-mono text-[9px] hover:border-cyber-cyan cursor-pointer transition-colors">
-                {tag}
+      {/* 2. DYNAMIC SCORE METRICS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        {/* Sentiment Gauge Card */}
+        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl flex flex-col justify-between text-left space-y-1 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none filter blur-2xl opacity-15"
+               style={{ background: `radial-gradient(circle, ${currentThemeColor} 0%, transparent 70%)` }} />
+          <div>
+            <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest block">QUANTUM EMOTION INDEX</span>
+            <div className="flex items-baseline gap-2 mt-1.5">
+              <span className="text-3xl font-black" style={{ color: currentThemeColor }}>{activeData.score} <span className="text-xs text-slate-400">/ 100</span></span>
+              <span className={`text-[8px] font-bold px-2 py-0.5 rounded border inline-block ${getLevelColor(activeData.sentimentLevel)}`}>
+                {activeData.sentimentLevel.toUpperCase()}
               </span>
-            ))}
+            </div>
+          </div>
+          <div className="pt-2">
+            <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden border border-cyber-border">
+              <div className="h-full rounded-full transition-all duration-1000" 
+                   style={{ width: `${activeData.score}%`, backgroundColor: currentThemeColor }} />
+            </div>
+            <div className="flex justify-between text-[9px] text-slate-500 mt-1 uppercase">
+              <span>Extremely Bearish</span>
+              <span>Extremely Bullish</span>
+            </div>
           </div>
         </div>
+
+        {/* Fear & Greed Gauge */}
+        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left flex flex-col justify-between space-y-1 relative">
+          <div>
+            <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest block">FEAR & GREED INDEX STATE</span>
+            <div className="flex items-baseline gap-1.5 mt-1.5">
+              <span className="text-3xl font-black text-white">{activeData.fearGreed} <span className="text-xs text-slate-450 text-slate-500">/ 100</span></span>
+              <span className="text-xs text-cyber-cyan font-bold">
+                {activeData.fearGreed > 60 ? 'GREED ZONE' : activeData.fearGreed < 40 ? 'FEAR ZONE' : 'NEUTRAL INDEX'}
+              </span>
+            </div>
+          </div>
+          <div className="pt-2">
+            <div className="h-2 w-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full relative overflow-hidden border border-cyber-border">
+              <div className="h-full w-1.5 bg-white border border-black absolute top-0 animate-ping" style={{ left: `${activeData.fearGreed}%` }}></div>
+              <div className="h-full w-1.5 bg-white border border-black absolute top-0" style={{ left: `${activeData.fearGreed}%` }}></div>
+            </div>
+            <div className="flex justify-between text-[9px] text-slate-500 mt-1 uppercase">
+              <span className="text-red-500">FEAR</span>
+              <span className="text-yellow-500">MKT AXIS</span>
+              <span className="text-green-500">GREED</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Social Buzz Stats */}
+        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left flex flex-col justify-between space-y-1 h-36">
+          <div>
+            <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest block">SOCIAL DISCOURSE VOLUME</span>
+            <div className="flex items-baseline gap-1 mt-1.5">
+              <span className="text-2xl font-black text-cyber-purple">{activeData.socialVolume}K</span>
+              <span className="text-xs text-cyber-green font-bold flex items-center ml-1">
+                <Icons.TrendingUp className="w-3.5 h-3.5 mr-0.5 text-cyber-green" />
+                +{activeData.volumeChange24h}%
+              </span>
+            </div>
+          </div>
+          <div className="text-[10px] text-slate-400 font-sans leading-relaxed">
+            Scanning 24H streams across <span className="text-white font-mono font-bold">Twitter, Discord, Telegram & Reddit</span>.
+          </div>
+        </div>
+
       </div>
+
+      {/* 3. CHART & HEATMAP ROW */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        {/* Sentiment Timeline Chart */}
+        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-2 md:col-span-2">
+          <div className="flex justify-between items-center pb-1">
+            <h4 className="text-xs font-bold text-slate-300 uppercase flex items-center gap-1.5">
+              <Icons.History className="w-4 h-4 text-cyber-cyan" />
+              7-Day Sentiment Timeline Spectrum
+            </h4>
+            <span className="text-[9px] text-slate-500 font-bold">INTERVAL: 24H ITERATIONS</span>
+          </div>
+
+          <div className="h-44 bg-[#020207] border border-cyber-border/40 rounded-lg relative overflow-hidden p-2 pt-4 min-h-[176px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={activeData.timeline} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="sentimentHistoryGlow" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={currentThemeColor} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={currentThemeColor} stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#101024" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fill: '#64748b', fontSize: 9, fontFamily: 'monospace' }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis 
+                  domain={[30, 100]}
+                  tick={{ fill: '#64748b', fontSize: 9, fontFamily: 'monospace' }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  content={({ active, payload: tPayload, label }) => {
+                    if (active && tPayload && tPayload.length) {
+                      const value = tPayload[0].value;
+                      return (
+                        <div className="bg-[#060616] p-2 border border-cyber-cyan/30 rounded text-[9px] font-mono text-left space-y-0.5 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+                          <p className="text-slate-450 text-slate-500 uppercase">{label}</p>
+                          <p className="font-bold text-white">Sentiment: <span style={{ color: currentThemeColor }}>{value}/100</span></p>
+                          <p className="text-[#c084fc]">Query Load: <span className="text-slate-200">{tPayload[0].payload.volume}K pings</span></p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="score"
+                  stroke={currentThemeColor}
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#sentimentHistoryGlow)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Social Sentiment Heatmap */}
+        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-2.5">
+          <h4 className="text-xs font-bold text-slate-300 uppercase flex items-center gap-1.5">
+            <Icons.Globe className="w-4 h-4 text-cyber-purple" />
+            Social Platform Heatmap
+          </h4>
+          <div className="space-y-3 pt-1">
+            
+            <div className="space-y-1">
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-slate-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-[#1da1f2] rounded-full"></span>
+                  Twitter / X Nodes
+                </span>
+                <span className="text-cyber-green font-bold">84% Positive</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-cyber-border/40">
+                <div className="h-full bg-cyber-green" style={{ width: '84%' }} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-slate-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-[#ff4500] rounded-full"></span>
+                  Reddit Crypto Subs
+                </span>
+                <span className="text-cyber-cyan font-bold">68% Bullish</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-cyber-border/40">
+                <div className="h-full bg-cyber-cyan" style={{ width: '68%' }} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-slate-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-[#0088cc] rounded-full"></span>
+                  Telegram Communities
+                </span>
+                <span className="text-[#00ff88] font-bold">75% FOMO</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-cyber-border/40">
+                <div className="h-full bg-[#00ff88]" style={{ width: '75%' }} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-slate-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-[#5865f2] rounded-full"></span>
+                  Discord Dev Spheres
+                </span>
+                <span className="text-[#c084fc] font-bold">91% Hype</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-cyber-border/40">
+                <div className="h-full bg-[#c084fc]" style={{ width: '91%' }} />
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* 4. REAL-TIME WHALE LOG & TRENDING TOKENS LIST */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* Whale Activity Alert Ticker Log */}
+        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-3 relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-center border-b border-cyber-border/40 pb-2 mb-2">
+              <h4 className="text-xs font-bold text-[#ffffff] uppercase font-display flex items-center gap-1.5">
+                <span className="flex h-1.5 w-1.5 relative shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff4b82] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#ff4b82]"></span>
+                </span>
+                Whale Activity Logs (Live Stream)
+              </h4>
+              <span className="text-[8px] font-mono text-slate-500 select-none">WEBSOCKET PING: ACTIVE</span>
+            </div>
+
+            <div className="space-y-2 min-h-[170px]">
+              {whaleAlerts.map((w, index) => (
+                <div key={w.id} className="p-2 bg-[#020207] rounded border border-cyber-border/40 text-[10px] flex justify-between items-start gap-4 hover:border-cyber-cyan/35 transition-colors animate-fade-in">
+                  <div className="flex items-start gap-2">
+                    <span className="text-[9px] px-1 bg-cyber-bg border border-cyber-border shrink-0 select-none rounded text-slate-500 font-bold uppercase font-mono">
+                      {w.type === 'inflow' ? '📥 BUY' : w.type === 'outflow' ? '📤 SELL' : '🔄 SYNC'}
+                    </span>
+                    <p className="text-slate-200 leading-normal font-sans text-[10.5px] select-text">
+                      {w.msg}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-bold text-cyber-green block select-none">{w.size}</span>
+                    <span className="text-[8px] text-slate-500 block font-mono font-normal">{w.age}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="text-[9px] text-slate-500 mt-2 text-center pt-1 border-t border-cyber-border/30">
+            * Whale alert scanner runs continuously tracking heavy wallet transactions (balances &gt; $200k USD).
+          </div>
+        </div>
+
+        {/* Token-Specific Sentiments & Meme coin hype tracker */}
+        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-3 flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-center border-b border-cyber-border/40 pb-2 mb-2">
+              <h4 className="text-xs font-bold text-slate-300 uppercase flex items-center gap-1.5">
+                <Icons.Activity className="w-4 h-4" style={{ color: currentThemeColor }} />
+                Trending Token Sentiment & Velocity Index
+              </h4>
+              <span className="text-[8px] font-mono text-slate-500">MAPPING {activeData.symbol} ASSETS</span>
+            </div>
+
+            <div className="space-y-3">
+              {activeData.trendingTokens.map((t, idx) => (
+                <div key={idx} className="space-y-1">
+                  <div className="flex justify-between items-center text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9.5px] font-black text-white">{t.symbol}</span>
+                      <span className={`text-[8.5px] font-bold ${t.isUp ? 'text-cyber-green' : 'text-rose-500 bg-rose-950/20 px-1 rounded'}`}>
+                        {t.change}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] text-slate-450 text-slate-500 font-bold">HYPE VELOCITY:</span>
+                      <span className="text-[#00ff88] font-bold text-[10px]">{t.sentiment}%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-cyber-border/40">
+                    <div className="h-full rounded-full" 
+                         style={{ 
+                           width: `${t.sentiment}%`, 
+                           backgroundColor: currentThemeColor,
+                           boxShadow: `0 0 6px ${currentThemeColor}60`
+                         }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-[8.5px] text-slate-500 leading-normal pt-2 border-t border-cyber-border/30 mt-2">
+            AI velocity indexes social posts, hashtags, and trading momentum changes over a rolling 4-hour slot.
+          </div>
+        </div>
+
+      </div>
+
+      {/* 5. COMMUNITY TRUST SCANNER PORTAL */}
+      <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-3">
+        <div className="border-b border-cyber-border/40 pb-2">
+          <h4 className="text-xs font-bold text-slate-200 uppercase flex items-center gap-1.5">
+            <Icons.Users className="w-4 h-4 text-cyber-cyan" />
+            Interactive Community Legitimacy Scanner
+          </h4>
+          <span className="text-[9.5px] text-slate-500 block">Detect community manipulation, bot ratios, and Sybil accounts before investing</span>
+        </div>
+
+        {/* Input area */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={communityTarget}
+              onChange={(e) => setCommunityTarget(e.target.value)}
+              placeholder="Enter Telegram username, Twitter handle, or URL (e.g., @surchi_ai or t.me/surchi)..."
+              className="w-full bg-[#030308] border border-cyber-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-cyber-cyan select-text font-mono"
+            />
+          </div>
+          <button
+            onClick={handleVerifyTrust}
+            disabled={isScanningTrust}
+            className="px-5 py-2 bg-cyber-cyan hover:bg-[#00b5cc] text-black rounded text-[10px] font-bold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_12px_rgba(0,229,255,0.25)] select-none shrink-0"
+          >
+            {isScanningTrust ? (
+              <>
+                <Icons.RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>SCANNING NETWORK...</span>
+              </>
+            ) : (
+              <>
+                <Icons.SearchCode className="w-3.5 h-3.5" />
+                <span>VERIFY TRUST TARGET</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Progressive bar or Result panels */}
+        {isScanningTrust && (
+          <div className="space-y-1.5 p-3.5 bg-[#03030a] rounded-lg border border-cyber-cyan/30 animate-pulse">
+            <div className="flex justify-between text-[10px]">
+              <span className="text-cyber-cyan font-bold select-none">[QUANTUM SYBIL SCANNING: ACTIVE]</span>
+              <span>{scanProgress}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-cyber-border/40">
+              <div className="h-full bg-cyber-cyan rounded-full" style={{ width: `${scanProgress}%` }} />
+            </div>
+            <p className="text-[9px] text-slate-500">Decrypting group membership nodes, analyzing comment engagement vectors, verifying unique metadata signatures...</p>
+          </div>
+        )}
+
+        {trustScore && !isScanningTrust && (
+          <div className="p-4 bg-[#03030a] rounded-lg border border-cyber-cyan/25 text-xs animate-fade-in grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <div className="flex flex-col justify-center items-center border-r border-cyber-border/40 pr-4">
+              <span className="text-[10px] text-slate-500 uppercase tracking-widest font-black">LEGITIMACY RANK</span>
+              <span className="text-4xl font-black text-cyber-neon mt-1" style={{ textShadow: '0 0 10px rgba(0,255,136,0.3)' }}>
+                {trustScore.score} <span className="text-xs text-slate-450 text-slate-500 font-normal">/ 100</span>
+              </span>
+              <span className="text-[8.5px] mt-2 px-2 py-0.5 rounded bg-cyber-green/10 border border-cyber-green/20 text-cyber-green font-bold text-center">
+                {trustScore.score > 60 ? 'PASSED CLEAN' : 'SUSPICIOUS SIGNAL'}
+              </span>
+            </div>
+
+            <div className="space-y-2 md:col-span-2 text-left">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] text-slate-400 font-bold uppercase select-mono">Target: {trustScore.submitted}</span>
+                <span className="text-[9px] text-slate-550 text-slate-500">Node Samples analyzed: {trustScore.totalAudited} wallets</span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 pt-1 text-[10.5px]">
+                <div className="p-2 bg-cyber-card border border-cyber-border rounded">
+                  <span className="text-[9px] text-slate-504 text-slate-500 block">BOT PREVALENCE RATIO</span>
+                  <span className="font-bold text-white mt-0.5 block">{trustScore.botPrevalence}% <span className="text-[8.5px] text-amber-500 font-normal ml-1">({trustScore.botPrevalence > 30 ? 'HIGH RATIO' : 'NOMINAL'})</span></span>
+                </div>
+                
+                <div className="p-2 bg-cyber-card border border-cyber-border rounded">
+                  <span className="text-[9px] text-slate-504 text-slate-500 block">ORGANIC ACTIVITY RATIO</span>
+                  <span className="font-bold text-cyber-cyan mt-0.5 block">{trustScore.socialActivity}% <span className="text-[8.5px] text-cyber-green font-normal ml-1">({trustScore.socialActivity > 70 ? 'ENGAGED' : 'LIGHT'})</span></span>
+                </div>
+              </div>
+
+              <div className="p-2 bg-[#050514] border border-cyber-border/60 rounded">
+                <span className="text-[9px] text-slate-500 block">AI FORENSIC DIAGNOSTICIANS SUMMARY:</span>
+                <p className="text-[10px] text-slate-300 font-sans mt-0.5 leading-relaxed italic pr-2">
+                  &quot;{trustScore.verdict}. The member graph corresponds with typical growth milestones. No sybil attacks flagged.&quot;
+                </p>
+              </div>
+            </div>
+
+          </div>
+        )}
+      </div>
+
+      {/* 6. AI ALERTS PORTAL */}
+      <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-4">
+        <div className="border-b border-cyber-border/40 pb-2">
+          <h4 className="text-xs font-bold text-slate-200 uppercase flex items-center gap-1.5">
+            <Icons.Bell className="w-4 h-4 text-cyber-purple" />
+            AI Intelligence Pulse Alerts (Push & Setup Hooks)
+          </h4>
+          <span className="text-[9.5px] text-slate-500 block">Setup decentralized webhooks to ping your workspace immediately during extreme hype spikes or high-volume dumps</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          
+          <button
+            onClick={() => setAlertStates(prev => ({ ...prev, inapp: !prev.inapp }))}
+            className="p-3 bg-[#030308] border rounded-lg text-center flex flex-col justify-between items-center space-y-2 cursor-pointer transition-all select-none"
+            style={{ borderColor: alertStates.inapp ? '#00ff88' : '#11112a' }}
+          >
+            <Icons.Layers className="w-5 h-5" style={{ color: alertStates.inapp ? '#00ff88' : '#64748b' }} />
+            <div className="text-center">
+              <span className="text-[10px] text-white block font-bold">In-App Terminal</span>
+              <span className="text-[8px] text-slate-500 block uppercase mt-0.5">{alertStates.inapp ? '🔔 active' : '🔕 muted'}</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setAlertStates(prev => ({ ...prev, push: !prev.push }))}
+            className="p-3 bg-[#030308] border rounded-lg text-center flex flex-col justify-between items-center space-y-2 cursor-pointer transition-all select-none"
+            style={{ borderColor: alertStates.push ? '#00e5ff' : '#11112a' }}
+          >
+            <Icons.Activity className="w-5 h-5 animate-pulse" style={{ color: alertStates.push ? '#00e5ff' : '#64748b' }} />
+            <div className="text-center">
+              <span className="text-[10px] text-white block font-bold">Browser Push</span>
+              <span className="text-[8px] text-slate-500 block uppercase mt-0.5">{alertStates.push ? '🔔 active' : '🔕 muted'}</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setAlertStates(prev => ({ ...prev, telegram: !prev.telegram }))}
+            className="p-3 bg-[#030308] border rounded-lg text-center flex flex-col justify-between items-center space-y-2 cursor-pointer transition-all select-none"
+            style={{ borderColor: alertStates.telegram ? '#c084fc' : '#11112a' }}
+          >
+            <Icons.Send className="w-5 h-5" style={{ color: alertStates.telegram ? '#c084fc' : '#64748b' }} />
+            <div className="text-center">
+              <span className="text-[10px] text-white block font-bold">Telegram bot</span>
+              <span className="text-[8px] text-slate-500 block uppercase mt-0.5">{alertStates.telegram ? '🔔 setup' : '🔕 muted'}</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setAlertStates(prev => ({ ...prev, email: !prev.email }))}
+            className="p-3 bg-[#030308] border rounded-lg text-center flex flex-col justify-between items-center space-y-2 cursor-pointer transition-all select-none"
+            style={{ borderColor: alertStates.email ? '#ff4b82' : '#11112a' }}
+          >
+            <Icons.Bell className="w-5 h-5" style={{ color: alertStates.email ? '#ff4b82' : '#64748b' }} />
+            <div className="text-center">
+              <span className="text-[10px] text-white block font-bold">Email Digest</span>
+              <span className="text-[8px] text-slate-500 block uppercase mt-0.5">{alertStates.email ? '🔔 daily' : '🔕 muted'}</span>
+            </div>
+          </button>
+
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -1352,7 +2031,7 @@ function TweetWriterDashboard({ content, onRefresh }: TweetWriterProps) {
 
 // 14. COMPETITOR AUTOMATION ANALYST
 function CompetitorAnalysisDashboard({ payload }: SubComponentProps) {
-  const projectName = payload.projectName || 'My Secure Protocol';
+  const projectName = payload?.projectName || 'My Secure Protocol';
 
   return (
     <div className="bg-[#04040a] rounded-xl border border-cyber-border p-4 sm:p-6 space-y-6 text-[#ffffff] font-mono text-left select-text">
