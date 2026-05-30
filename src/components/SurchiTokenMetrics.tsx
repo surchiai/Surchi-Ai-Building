@@ -12,7 +12,12 @@ interface TokenMetrics {
   dexId: string;
 }
 
-export function SurchiTokenMetrics() {
+interface SurchiTokenMetricsProps {
+  onPriceClick?: () => void;
+  onMetricsFetched?: (metrics: TokenMetrics) => void;
+}
+
+export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched }: SurchiTokenMetricsProps = {}) {
   const [metrics, setMetrics] = useState<TokenMetrics>({
     priceUsd: 0,
     marketCap: 0,
@@ -62,7 +67,7 @@ export function SurchiTokenMetrics() {
 
           const bestPair = surchiPairs[0];
 
-          setMetrics({
+          const loadedMetrics: TokenMetrics = {
             priceUsd: parseFloat(bestPair.priceUsd || '0'),
             marketCap: bestPair.marketCap || 0,
             volume24h: bestPair.volume?.h24 || 0,
@@ -71,10 +76,15 @@ export function SurchiTokenMetrics() {
             pairAddress: bestPair.pairAddress || '',
             chainId: bestPair.chainId || 'solana',
             dexId: bestPair.dexId || 'raydium',
-          });
+          };
+
+          setMetrics(loadedMetrics);
+          if (onMetricsFetched) {
+            onMetricsFetched(loadedMetrics);
+          }
         } else {
           // No active valid pairs matching SURCHI found
-          setMetrics({
+          const inactiveMetrics: TokenMetrics = {
             priceUsd: 0,
             marketCap: 0,
             volume24h: 0,
@@ -83,10 +93,14 @@ export function SurchiTokenMetrics() {
             pairAddress: '',
             chainId: '',
             dexId: '',
-          });
+          };
+          setMetrics(inactiveMetrics);
+          if (onMetricsFetched) {
+            onMetricsFetched(inactiveMetrics);
+          }
         }
       } else {
-        setMetrics({
+        const inactiveMetrics: TokenMetrics = {
           priceUsd: 0,
           marketCap: 0,
           volume24h: 0,
@@ -95,12 +109,16 @@ export function SurchiTokenMetrics() {
           pairAddress: '',
           chainId: '',
           dexId: '',
-        });
+        };
+        setMetrics(inactiveMetrics);
+        if (onMetricsFetched) {
+          onMetricsFetched(inactiveMetrics);
+        }
       }
     } catch (error) {
       console.error('Failed to retrieve $SURCHI metrics:', error);
       // Fail safely to inactive state - never fabricate fake parameters
-      setMetrics({
+      const faultMetrics: TokenMetrics = {
         priceUsd: 0,
         marketCap: 0,
         volume24h: 0,
@@ -109,7 +127,11 @@ export function SurchiTokenMetrics() {
         pairAddress: '',
         chainId: '',
         dexId: '',
-      });
+      };
+      setMetrics(faultMetrics);
+      if (onMetricsFetched) {
+        onMetricsFetched(faultMetrics);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -147,7 +169,9 @@ export function SurchiTokenMetrics() {
     <div className="w-full relative font-sans text-left">
       {/* Unified Single-Row Dashboard Card */}
       <div 
-        className={`relative group bg-gradient-to-r from-[#040921] via-[#020514] to-[#01020a] border ${pulseGlow ? 'border-cyber-cyan/90 shadow-[0_0_20px_rgba(0,229,255,0.25)]' : 'border-cyber-cyan/30 hover:border-cyber-cyan/50'} rounded-xl px-3 sm:px-4 py-2 backdrop-blur-md transition-all duration-300 hover:shadow-[0_4px_30px_rgba(0,229,255,0.12)] overflow-hidden`}
+        onClick={onPriceClick}
+        className={`relative group bg-cyber-card border ${pulseGlow ? 'border-cyber-cyan/90 shadow-[0_0_20px_rgba(0,229,255,0.25)]' : 'border-cyber-cyan/30 hover:border-cyber-cyan/50'} rounded-xl px-3 sm:px-4 py-2 backdrop-blur-md transition-all duration-300 hover:shadow-[0_4px_30px_rgba(0,229,255,0.12)] overflow-hidden ${onPriceClick ? 'cursor-pointer active:scale-[0.995]' : ''}`}
+        title={onPriceClick ? "Activate Surchi Token Live Market analytics separate page" : undefined}
       >
         {/* Subtle Cyber Neon glow background accent */}
         <div className="absolute top-0 right-0 w-24 h-24 bg-cyber-cyan/3 rounded-full blur-xl pointer-events-none group-hover:bg-cyber-cyan/5 transition-all duration-300"></div>
@@ -158,16 +182,16 @@ export function SurchiTokenMetrics() {
           <div className="flex flex-col gap-2 py-0.5 shrink-0">
             {/* SURCHI Price & Status Container */}
             <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5 text-[8px] font-mono font-bold text-slate-400 tracking-widest uppercase select-none">
+              <div className="flex items-center gap-1.5 text-[8px] font-mono font-bold text-cyber-text-muted tracking-widest uppercase select-none">
                 <span>$SURCHI PRICE</span>
-                <Icons.TrendingUp className="w-2.5 h-2.5 text-[#00ff88]" />
+                <Icons.TrendingUp className="w-2.5 h-2.5 text-emerald-600 dark:text-[#00ff88]" />
               </div>
               
               <div className="flex items-center gap-2">
                 {loading ? (
-                  <div className="h-5 w-16 bg-slate-800/60 rounded animate-pulse"></div>
+                  <div className="h-5 w-16 bg-cyber-card-light/60 rounded animate-pulse"></div>
                 ) : (
-                  <span className="text-base sm:text-lg font-mono font-black tracking-tight text-white inline-block">
+                  <span className="text-base sm:text-lg font-mono font-black tracking-tight text-cyber-text inline-block">
                     {formatPrice(metrics.priceUsd)}
                   </span>
                 )}
@@ -179,11 +203,11 @@ export function SurchiTokenMetrics() {
                       <span className={`absolute inline-flex h-full w-full rounded-full ${metrics.isListed ? 'bg-cyber-green' : 'bg-slate-500'} opacity-75 ${metrics.isListed ? 'animate-ping' : ''}`}></span>
                       <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${metrics.isListed ? 'bg-cyber-green' : 'bg-slate-500'}`}></span>
                     </span>
-                    <span className={`text-[7.5px] font-mono font-black tracking-wider px-1.5 py-0.5 rounded leading-none ${metrics.isListed ? 'bg-cyber-green/12 text-cyber-green border border-cyber-green/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}`}>
+                    <span className={`text-[7.5px] font-mono font-black tracking-wider px-1.5 py-0.5 rounded leading-none ${metrics.isListed ? 'bg-cyber-green/12 text-cyber-green border border-cyber-green/20' : 'bg-slate-500/10 text-cyber-text-muted border border-slate-500/20'}`}>
                       {metrics.isListed ? 'LIVE' : 'NOT LISTED'}
                     </span>
                     {metrics.isListed && (
-                      <span className={`text-[7.5px] font-mono font-bold ${metrics.priceChange24h >= 0 ? 'text-cyber-green' : 'text-rose-450'}`}>
+                      <span className={`text-[7.5px] font-mono font-bold ${metrics.priceChange24h >= 0 ? 'text-cyber-green' : 'text-rose-605'}`}>
                         {metrics.priceChange24h >= 0 ? '+' : ''}{metrics.priceChange24h.toFixed(2)}%
                       </span>
                     )}
@@ -193,18 +217,18 @@ export function SurchiTokenMetrics() {
             </div>
 
             {/* Market Cap - Aligned perfectly on a single line matching the premium terminal design */}
-            <div className="flex items-center gap-2 text-xs font-mono select-none">
-              <span className="text-[8px] font-black text-slate-400 tracking-widest uppercase">MCAP</span>
+            <div className="flex items-center gap-2 text-xs font-mono select-none font-bold">
+              <span className="text-[8px] font-black text-cyber-text-muted tracking-widest uppercase">MCAP</span>
               <Icons.Layers className="w-2.5 h-2.5 text-cyber-cyan/85 shrink-0" />
               {loading ? (
-                <div className="h-3.5 w-12 bg-slate-800/40 rounded animate-pulse"></div>
+                <div className="h-3.5 w-12 bg-cyber-card-light/40 rounded animate-pulse"></div>
               ) : (
-                <span className="text-xs sm:text-sm font-black text-white tracking-tight leading-none">
+                <span className="text-xs sm:text-sm font-black text-cyber-text tracking-tight leading-none">
                   {formatLargeNum(metrics.marketCap)}
                 </span>
               )}
               {!loading && (
-                <span className={`text-[6.5px] font-sans font-extrabold uppercase px-1 py-0.5 rounded leading-none ${metrics.isListed ? 'text-cyber-cyan/90 bg-cyber-cyan/8' : 'text-slate-405 bg-slate-500/10'}`}>
+                <span className={`text-[6.5px] font-sans font-extrabold uppercase px-1 py-0.5 rounded leading-none ${metrics.isListed ? 'text-cyber-cyan/90 bg-cyber-cyan/8' : 'text-cyber-text-muted bg-slate-500/10'}`}>
                   {metrics.isListed ? 'FULLY DILUTED' : 'PENDING'}
                 </span>
               )}
@@ -215,22 +239,22 @@ export function SurchiTokenMetrics() {
           <div className="flex flex-row items-center gap-2 sm:gap-3 shrink-0 ml-auto">
             
             {/* 24H Volume Compact Indicator Widget */}
-            <div className="px-2.5 py-1 bg-[#070f22]/70 border border-cyber-cyan/15 rounded-lg flex items-center gap-2">
-              <div className="p-0.5 rounded bg-[#051710] border border-cyber-green/10 shrink-0">
+            <div className="px-2.5 py-1 bg-cyber-card-light border border-cyber-cyan/15 rounded-lg flex items-center gap-2">
+              <div className="p-0.5 rounded bg-emerald-500/10 border border-cyber-green/10 shrink-0">
                 <Icons.Activity className="w-3 h-3 text-cyber-green" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-[7.5px] font-mono font-bold text-slate-400 tracking-widest uppercase block leading-none select-none">
+                <span className="text-[7.5px] font-mono font-bold text-cyber-text-muted tracking-widest uppercase block leading-none select-none">
                   VOLUME
                 </span>
                 {loading ? (
-                  <div className="h-3 w-10 bg-slate-800/40 rounded animate-pulse"></div>
+                  <div className="h-3 w-10 bg-cyber-card-light/40 rounded animate-pulse"></div>
                 ) : (
                   <div>
-                    <div className="text-xs font-mono font-black text-white tracking-tight leading-none">
+                    <div className="text-xs font-mono font-black text-cyber-text tracking-tight leading-none">
                       {formatLargeNum(metrics.volume24h)}
                     </div>
-                    <span className="text-[6.5px] font-sans text-slate-500 uppercase block font-semibold leading-none mt-0.5 select-none text-left">
+                    <span className="text-[6.5px] font-sans text-cyber-text-muted uppercase block font-semibold leading-none mt-0.5 select-none text-left">
                       {metrics.isListed ? '24H SWAPS' : 'Inactive'}
                     </span>
                   </div>
@@ -241,14 +265,14 @@ export function SurchiTokenMetrics() {
             {/* Quick Refresh Icon with dynamic status */}
             <div className="flex items-center gap-1.5 pl-0.5 shrink-0">
               {lastUpdated && (
-                <span className="text-[7px] font-mono text-slate-500 hidden xl:inline tracking-wider select-none">
+                <span className="text-[7px] font-mono text-cyber-text-muted hidden xl:inline tracking-wider select-none">
                   CALIBRATED: {lastUpdated.toLocaleTimeString()}
                 </span>
               )}
               <button
-                onClick={() => fetchSurchiMetrics(true)}
+                onClick={(e) => { e.stopPropagation(); fetchSurchiMetrics(true); }}
                 disabled={loading || refreshing}
-                className="p-1 rounded-lg bg-[#0a1226]/80 text-cyber-cyan hover:text-white border border-cyber-cyan/15 hover:border-cyber-cyan disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center shrink-0"
+                className="p-1 rounded-lg bg-cyber-card-light text-cyber-cyan hover:text-cyber-text border border-cyber-cyan/15 hover:border-cyber-cyan disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center shrink-0"
                 title="Synchronise on-chain telemetry tools"
               >
                 <Icons.RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />

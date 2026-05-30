@@ -25,6 +25,7 @@ import SurchiBuildingStatus from './components/SurchiBuildingStatus';
 import InteractiveSuite from './components/InteractiveSuite';
 import HolderIntelligence from './components/HolderIntelligence';
 import { SurchiTokenMetrics } from './components/SurchiTokenMetrics';
+import SurchiLivePortal from './components/SurchiLivePortal';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -2127,7 +2128,13 @@ export default function App() {
 
 
   const [activeModuleId, setActiveModuleId] = useState('token_analyzer');
-  const [activeCustomPage, setActiveCustomPage] = useState<'create_ad' | 'create_token' | 'staking' | 'crypto_news' | null>(null);
+  const [activeCustomPage, setActiveCustomPage] = useState<'create_ad' | 'create_token' | 'staking' | 'crypto_news' | 'surchi_live' | null>(null);
+  const [surchiMetrics, setSurchiMetrics] = useState({
+    priceUsd: 0,
+    marketCap: 0,
+    volume24h: 0,
+    isListed: false,
+  });
   const [comingSoonToast, setComingSoonToast] = useState<{
     show: boolean;
     title: string;
@@ -3184,7 +3191,20 @@ export default function App() {
               {/* Project Token Metrics Dashboard for $SURCHI */}
               {isHomePage && (
                 <div className="w-full animate-fade-in">
-                  <SurchiTokenMetrics />
+                  <SurchiTokenMetrics 
+                    onPriceClick={() => {
+                      setActiveCustomPage('surchi_live');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    onMetricsFetched={(metrics) => {
+                      setSurchiMetrics({
+                        priceUsd: metrics.priceUsd,
+                        marketCap: metrics.marketCap,
+                        volume24h: metrics.volume24h,
+                        isListed: metrics.isListed,
+                      });
+                    }}
+                  />
                 </div>
               )}
 
@@ -3204,7 +3224,16 @@ export default function App() {
                 </div>
               )}
 
-              {activeCustomPage === 'crypto_news' ? (
+              {activeCustomPage === 'surchi_live' ? (
+                <SurchiLivePortal 
+                  onClose={() => setActiveCustomPage(null)}
+                  isTokenLive={surchiMetrics.isListed}
+                  tokenPrice={surchiMetrics.priceUsd}
+                  marketCap={surchiMetrics.marketCap}
+                  volume24h={surchiMetrics.volume24h}
+                  themeMode={themeMode}
+                />
+              ) : activeCustomPage === 'crypto_news' ? (
                 <div className="space-y-8 animate-fade-in text-left">
                   {/* Custom Header Title Accent */}
                   <div className="space-y-2">
