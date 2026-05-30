@@ -4004,13 +4004,19 @@ export default function App() {
 
       {/* FULLY AUTONOMOUS ABOUT INTELLIGENCE MODAL */}
       {showAboutModal && (
-        <div className="fixed inset-0 bg-[#020207]/95 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-fade-in select-text flex-col">
-          <div className="bg-[#04040a] border border-cyber-border w-full max-w-md rounded-2xl p-6 space-y-5 flex flex-col shadow-[0_0_50px_rgba(124,58,237,0.15)] relative max-h-[90vh] overflow-y-auto scrollbar-none">
+        <div className={`fixed inset-0 ${themeMode === 'light' ? 'bg-slate-900/60' : 'bg-[#020207]/95'} backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-fade-in select-text flex-col`}>
+          <div className={`w-full max-w-md rounded-2xl p-6 space-y-5 flex flex-col relative max-h-[90vh] overflow-y-auto scrollbar-none ${
+            themeMode === 'light' 
+              ? 'bg-white border border-slate-200 shadow-[0_10px_50px_rgba(15,23,42,0.15)] text-slate-800' 
+              : 'bg-[#04040a] border border-cyber-border shadow-[0_0_50px_rgba(124,58,237,0.15)] text-white'
+          }`}>
             
             {/* Close Button on upper right */}
             <button 
               onClick={() => setShowAboutModal(false)}
-              className="absolute top-4 right-4 p-1.5 hover:bg-white/10 text-slate-400 hover:text-white rounded-lg cursor-pointer transition-colors"
+              className={`absolute top-4 right-4 p-1.5 rounded-lg cursor-pointer transition-colors ${
+                themeMode === 'light' ? 'hover:bg-slate-100 text-slate-400 hover:text-slate-705' : 'hover:bg-white/10 text-slate-400 hover:text-white'
+              }`}
               title="Close"
             >
               <Icons.X className="w-5 h-5" />
@@ -4018,7 +4024,9 @@ export default function App() {
             
             {/* Header: Squircle logo on left, text on right */}
             <div className="flex items-center gap-4 text-left">
-              <div className="w-16 h-16 rounded-2xl border border-cyber-border/85 overflow-hidden bg-[#0d0d1e] flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_20px_rgba(0,255,136,0.12)]">
+              <div className={`w-16 h-16 rounded-2xl border overflow-hidden flex items-center justify-center p-0.5 shrink-0 ${
+                themeMode === 'light' ? 'border-slate-200 bg-slate-50' : 'border-cyber-border/85 bg-[#0d0d1e] shadow-[0_0_20px_rgba(0,255,136,0.12)]'
+              }`}>
                 <img
                   src="https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg"
                   alt="SURCHI Protocol Logo"
@@ -4026,37 +4034,43 @@ export default function App() {
                   referrerPolicy="no-referrer"
                 />
               </div>
-              <div className="space-y-0.5">
-                <h2 className="text-xl font-black text-white tracking-wide uppercase font-display select-none flex items-center">
+              <div className="space-y-0.5 text-left">
+                <h2 className={`text-xl font-black tracking-wide uppercase font-display select-none flex items-center leading-none ${
+                  themeMode === 'light' ? 'text-slate-900' : 'text-white'
+                }`}>
                   SURCHI
                 </h2>
-                <span className="text-[9px] text-cyber-cyan font-mono tracking-widest uppercase font-extrabold block select-none">
+                <span className={`text-[9.5px] font-mono tracking-wide uppercase font-extrabold block select-none ${
+                  themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-cyan'
+                }`}>
                   AUTONOMOUS WEB3 INTELLIGENCE PROTOCOL
                 </span>
               </div>
             </div>
 
             {/* Divider */}
-            <hr className="border-cyber-border/40" />
+            <hr className={themeMode === 'light' ? 'border-slate-200' : 'border-cyber-border/40'} />
 
             {/* Description Paragraph */}
-            <p className="text-xs text-slate-305 leading-relaxed font-sans text-left">
-              <strong>SURCHI</strong> is an advanced web-native autonomous AI engine that transforms sub-second market telemetry into sovereign Web3 execution. Underpinned by ultra-fast decision-making neural layers, SURCHI extracts and acts upon on-chain sentiment flow in real time.
+            <p className={`text-xs leading-relaxed font-sans text-left ${themeMode === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
+              <strong className={themeMode === 'light' ? 'text-slate-950' : 'text-white'}>SURCHI</strong> is an advanced web-native autonomous AI engine that transforms sub-second market telemetry into sovereign Web3 execution. Underpinned by ultra-fast decision-making neural layers, SURCHI extracts and acts upon on-chain sentiment flow in real time.
             </p>
 
             {/* Metric grid card */}
-            <div className="bg-[#0b0b1a]/55 border border-cyber-border p-4 rounded-xl space-y-2.5 font-mono text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-cyber-border/40">
-                <span className="text-slate-400 text-left">Governance Token</span>
-                <span className="font-bold text-cyber-cyan">$SURCHI</span>
+            <div className={`p-4 rounded-xl space-y-2.5 font-mono text-xs text-left ${
+              themeMode === 'light' ? 'bg-slate-50 border border-slate-200' : 'bg-[#0b0b1a]/55 border border-cyber-border'
+            }`}>
+              <div className={`flex items-center justify-between pb-2 border-b ${themeMode === 'light' ? 'border-slate-200' : 'border-cyber-border/40'}`}>
+                <span className={themeMode === 'light' ? 'text-slate-500' : 'text-slate-400'}>Governance Token</span>
+                <span className={`font-bold ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-cyan'}`}>$SURCHI</span>
               </div>
-              <div className="flex items-center justify-between py-1 border-b border-cyber-border/40">
-                <span className="text-slate-400 text-left">Network Host</span>
-                <span className="font-bold text-white uppercase text-right">SOLANA (SOL) BLOCKCHAIN</span>
+              <div className={`flex items-center justify-between py-1 border-b ${themeMode === 'light' ? 'border-slate-200' : 'border-cyber-border/40'}`}>
+                <span className={themeMode === 'light' ? 'text-slate-500' : 'text-slate-400'}>Network Host</span>
+                <span className={`font-bold uppercase text-right ${themeMode === 'light' ? 'text-slate-800' : 'text-white'}`}>SOLANA (SOL) BLOCKCHAIN</span>
               </div>
               <div className="flex items-center justify-between pt-2">
-                <span className="text-slate-400 text-left">Total Supply</span>
-                <span className="font-bold text-[#00ff88]">19,897,905 $SURCHI</span>
+                <span className={themeMode === 'light' ? 'text-slate-500' : 'text-slate-400'}>Total Supply</span>
+                <span className={`font-bold ${themeMode === 'light' ? 'text-emerald-600' : 'text-[#00ff88]'}`}>19,897,905 $SURCHI</span>
               </div>
             </div>
 
@@ -4070,9 +4084,13 @@ export default function App() {
               href="https://raydium.io/"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-3 bg-[#110d24] hover:bg-[#1a1435] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/32 hover:border-[#ff4b82]/60 rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 text-xs font-mono font-bold select-none text-center shadow-[0_0_15px_rgba(255,75,130,0.06)] group"
+              className={`w-full py-3 rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 text-xs font-mono font-bold select-none text-center ${
+                themeMode === 'light'
+                  ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-800 border border-rose-200 shadow-sm'
+                  : 'bg-[#110d24] hover:bg-[#1a1435] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/32 hover:border-[#ff4b82]/60 shadow-[0_0_15px_rgba(255,75,130,0.06)]'
+              } group`}
             >
-              <Icons.Coins className="w-4 h-4 text-[#ff4b82] group-hover:scale-110 transition-transform duration-250" />
+              <Icons.Coins className={`w-4 h-4 ${themeMode === 'light' ? 'text-rose-500' : 'text-[#ff4b82]'} group-hover:scale-110 transition-transform duration-250`} />
               <span>BUY $SURCHI</span>
               <Icons.ExternalLink className="w-3.5 h-3.5 opacity-70" />
             </a>
@@ -4084,9 +4102,13 @@ export default function App() {
                 target="_blank" 
                 rel="noreferrer" 
                 title="Twitter / X"
-                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+                className={`w-10 h-10 border rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                  themeMode === 'light'
+                    ? 'border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 text-indigo-600 hover:text-indigo-800 shadow-sm'
+                    : 'border-cyber-border hover:border-slate-500 bg-[#050512] hover:bg-[#090924] text-cyber-cyan hover:text-white'
+                }`}
               >
-                <Icons.Twitter className="w-4 h-4 text-cyber-cyan" />
+                <Icons.Twitter className="w-4 h-4" />
               </a>
               
               <a 
@@ -4094,9 +4116,13 @@ export default function App() {
                 target="_blank" 
                 rel="noreferrer" 
                 title="Telegram Chat"
-                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+                className={`w-10 h-10 border rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                  themeMode === 'light'
+                    ? 'border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 text-indigo-650 hover:text-indigo-800 shadow-sm'
+                    : 'border-cyber-border hover:border-slate-500 bg-[#050512] hover:bg-[#090924] text-cyber-cyan hover:text-white'
+                }`}
               >
-                <Icons.Send className="w-4 h-4 text-cyber-cyan" />
+                <Icons.Send className="w-4 h-4" />
               </a>
 
               <a 
@@ -4104,9 +4130,13 @@ export default function App() {
                 target="_blank" 
                 rel="noreferrer" 
                 title="Discord Invite"
-                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+                className={`w-10 h-10 border rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                  themeMode === 'light'
+                    ? 'border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 text-indigo-650 hover:text-indigo-800 shadow-sm'
+                    : 'border-cyber-border hover:border-slate-500 bg-[#050512] hover:bg-[#090924] text-cyber-cyan hover:text-white'
+                }`}
               >
-                <Icons.MessageSquareQuote className="w-4 h-4 text-cyber-cyan" />
+                <Icons.MessageSquareQuote className="w-4 h-4" />
               </a>
 
               <a 
@@ -4114,9 +4144,13 @@ export default function App() {
                 target="_blank" 
                 rel="noreferrer" 
                 title="GitHub"
-                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+                className={`w-10 h-10 border rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                  themeMode === 'light'
+                    ? 'border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 text-indigo-650 hover:text-indigo-800 shadow-sm'
+                    : 'border-cyber-border hover:border-slate-500 bg-[#050512] hover:bg-[#090924] text-cyber-cyan hover:text-white'
+                }`}
               >
-                <Icons.Github className="w-4 h-4 text-cyber-cyan" />
+                <Icons.Github className="w-4 h-4" />
               </a>
 
               <a 
@@ -4124,17 +4158,25 @@ export default function App() {
                 target="_blank" 
                 rel="noreferrer" 
                 title="Website"
-                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+                className={`w-10 h-10 border rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                  themeMode === 'light'
+                    ? 'border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 text-indigo-650 hover:text-indigo-800 shadow-sm'
+                    : 'border-cyber-border hover:border-slate-500 bg-[#050512] hover:bg-[#090924] text-cyber-cyan hover:text-white'
+                }`}
               >
-                <Icons.Globe className="w-4 h-4 text-cyber-cyan" />
+                <Icons.Globe className="w-4 h-4" />
               </a>
 
               <a 
                 href="mailto:Surchiecosystem@gmail.com"
                 title="Email Support"
-                className="w-10 h-10 border border-cyber-border hover:border-slate-500 rounded-lg bg-[#050512] hover:bg-[#090924] flex items-center justify-center text-slate-400 hover:text-white transition-all cursor-pointer"
+                className={`w-10 h-10 border rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                  themeMode === 'light'
+                    ? 'border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 text-indigo-650 hover:text-indigo-800 shadow-sm'
+                    : 'border-cyber-border hover:border-slate-500 bg-[#050512] hover:bg-[#090924] text-cyber-cyan hover:text-white'
+                }`}
               >
-                <Icons.Mail className="w-4 h-4 text-cyber-cyan" />
+                <Icons.Mail className="w-4 h-4" />
               </a>
             </div>
 
@@ -4142,7 +4184,11 @@ export default function App() {
             <div className="flex justify-end pt-2">
               <button 
                 onClick={() => setShowAboutModal(false)}
-                className="px-5 py-2.5 bg-[#17172b] hover:bg-[#20203c] text-slate-200 hover:text-white border border-cyber-border rounded-xl cursor-pointer font-mono text-[11px] font-bold uppercase transition-all tracking-wider select-none text-center"
+                className={`px-5 py-2.5 rounded-xl cursor-pointer font-mono text-[11px] font-bold uppercase transition-all tracking-wider select-none text-center ${
+                  themeMode === 'light'
+                    ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600 hover:text-indigo-800 border border-indigo-200 shadow-sm'
+                    : 'bg-[#17172b] hover:bg-[#20203c] text-slate-200 hover:text-white border border-cyber-border'
+                }`}
               >
                 Acknowledge
               </button>
@@ -4246,10 +4292,10 @@ export default function App() {
       )}
 
       {/* STRATEGIC ALLIANCE GLOBAL SYSTEM PANEL */}
-      <PartnershipModal isOpen={showPartnershipModal} onClose={() => setShowPartnershipModal(false)} />
+      <PartnershipModal isOpen={showPartnershipModal} onClose={() => setShowPartnershipModal(false)} themeMode={themeMode} />
 
       {/* WHAT IS SURCHI DOCUMENTATION PANEL */}
-      <SurchiIntroModal isOpen={showSurchiIntroModal} onClose={() => setShowSurchiIntroModal(false)} />
+      <SurchiIntroModal isOpen={showSurchiIntroModal} onClose={() => setShowSurchiIntroModal(false)} themeMode={themeMode} />
 
       {/* TOKEN ANALYSIS DIAGNOSTIC ALERT (Token address checked but not found note) */}
       {tokenNotFoundAddress && (
