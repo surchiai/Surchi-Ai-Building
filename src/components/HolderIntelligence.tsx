@@ -405,7 +405,7 @@ export default function HolderIntelligence({
     setTimeout(() => {
       const report = `
 =========================================
-      SURCHI AI ON-CHAIN RISK AUDIT      
+      SURCHI ON-CHAIN RISK AUDIT      
 =========================================
 Token: ${symbol} (${chainId.toUpperCase()})
 Contract Address: ${address}

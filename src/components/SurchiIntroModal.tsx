@@ -44,7 +44,7 @@ export default function SurchiIntroModal({ isOpen, onClose }: SurchiIntroModalPr
           <div className="p-4 rounded-xl border border-cyber-purple/20 bg-cyber-purple/5 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-1 font-mono text-[7px] text-cyber-purple/40 font-bold">CORE-METRIC-01</div>
             <p className="font-medium text-white leading-relaxed select-text">
-              <strong>SURCHI AI</strong> is an AI-powered DeFi ecosystem built on Solana, created to simplify the crypto experience through intelligent tools, AI-driven analytics, automation, and smart blockchain insights.
+              <strong>SURCHI</strong> is an AI-powered DeFi ecosystem built on Solana, created to simplify the crypto experience through intelligent tools, AI-driven analytics, automation, and smart blockchain insights.
             </p>
           </div>
 
@@ -57,7 +57,7 @@ export default function SurchiIntroModal({ isOpen, onClose }: SurchiIntroModalPr
                   Smarter DeFi Layer
                 </div>
                 <p className="text-[11.5px] text-slate-300 leading-relaxed font-sans">
-                  The core idea behind SURCHI AI is to make decentralized finance smarter, easier, and more accessible for everyone by combining artificial intelligence with blockchain technology.
+                  The core idea behind SURCHI is to make decentralized finance smarter, easier, and more accessible for everyone by combining artificial intelligence with blockchain technology.
                 </p>
               </div>
 
@@ -67,7 +67,7 @@ export default function SurchiIntroModal({ isOpen, onClose }: SurchiIntroModalPr
                   Genuine Utility Focus
                 </div>
                 <p className="text-[11.5px] text-slate-300 leading-relaxed font-sans">
-                  Unlike many projects in the market today, SURCHI AI is not being built as just another hype-driven crypto token with no real purpose. SURCHI AI is focused on utility, ecosystem development, and long-term value creation.
+                  Unlike many projects in the market today, SURCHI is not being built as just another hype-driven crypto token with no real purpose. SURCHI is focused on utility, ecosystem development, and long-term value creation.
                 </p>
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function SurchiIntroModal({ isOpen, onClose }: SurchiIntroModalPr
                 Token Core Mechanics & Use Cases
               </h4>
               <p className="text-[11.5px] text-slate-300 leading-relaxed font-sans">
-                The SURCHI AI token is designed to have real use cases within the ecosystem, including:
+                The SURCHI token is designed to have real use cases within the ecosystem, including:
               </p>
               <div className="grid grid-cols-2 gap-2 text-[10.5px] font-mono text-slate-400">
                 <div className="flex items-center gap-1.5">
@@ -116,7 +116,7 @@ export default function SurchiIntroModal({ isOpen, onClose }: SurchiIntroModalPr
                 Intelligent Defi Navigation
               </div>
               <p className="text-[11.5px] text-slate-300 leading-relaxed font-sans">
-                SURCHI AI aims to build an intelligent layer for DeFi — helping users better understand markets, track opportunities, monitor wallets, manage risks, analyze trends, and navigate the crypto ecosystem with greater confidence and efficiency.
+                SURCHI aims to build an intelligent layer for DeFi — helping users better understand markets, track opportunities, monitor wallets, manage risks, analyze trends, and navigate the crypto ecosystem with greater confidence and efficiency.
               </p>
             </div>
 
@@ -140,7 +140,7 @@ export default function SurchiIntroModal({ isOpen, onClose }: SurchiIntroModalPr
 
         {/* Modal Footer */}
         <div className="p-4 bg-[#050510] border-t border-cyber-border flex items-center justify-between text-[10px] font-mono text-slate-500 shrink-0">
-          <span>SURCHI AI PROTOCOL REV-A2</span>
+          <span>SURCHI PROTOCOL REV-A2</span>
           <button 
             onClick={onClose}
             className="px-4 py-2 bg-cyber-purple/10 hover:bg-cyber-purple/25 border border-cyber-purple/35 text-cyber-purple hover:text-white rounded-lg cursor-pointer transition-all uppercase tracking-wider font-bold select-none text-[10px]"

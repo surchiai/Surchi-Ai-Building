@@ -15,7 +15,11 @@ import {
   ChevronRight,
   ChevronLeft,
   Share2,
-  Volume2
+  Volume2,
+  Play,
+  Video,
+  Image,
+  Tv
 } from 'lucide-react';
 
 interface NewsPost {
@@ -27,6 +31,7 @@ interface NewsPost {
   sentiment: 'bullish' | 'bearish' | 'neutral';
   imageUrl: string;
   summary: string;
+  videoUrl?: string;
 }
 
 const CATEGORIES = [
@@ -294,8 +299,9 @@ function generateClientSimulatedNews(category: string, search: string, page: num
   const result: NewsPost[] = [];
   const baseMinutes = (page - 1) * 30;
 
-  for (let i = 0; i < 3; i++) {
-    const templateIndex = (i + (page - 1) * 3) % templates.length;
+  const itemsPerPage = 8;
+  for (let i = 0; i < itemsPerPage; i++) {
+    const templateIndex = (i + (page - 1) * itemsPerPage) % templates.length;
     const template = templates[templateIndex];
     if (!template) continue;
 
@@ -309,6 +315,18 @@ function generateClientSimulatedNews(category: string, search: string, page: num
       title = `${prefixes[i % prefixes.length]} ${title}`;
     }
 
+    let videoUrl: string | undefined = undefined;
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes("otc") || lowerTitle.includes("institutional") || lowerTitle.includes("yield") || lowerTitle.includes("defi")) {
+      videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-financial-charts-and-graphs-on-a-monitor-42861-large.mp4";
+    } else if (lowerTitle.includes("gpu") || lowerTitle.includes("render") || lowerTitle.includes("ai") || lowerTitle.includes("circuit") || lowerTitle.includes("depin")) {
+      videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-digital-circuit-board-with-glowing-signals-44280-large.mp4";
+    } else if (lowerTitle.includes("security") || lowerTitle.includes("attack") || lowerTitle.includes("bridge") || lowerTitle.includes("validator")) {
+      videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-server-room-infrastructure-42631-large.mp4";
+    } else if (lowerTitle.includes("congest") || lowerTitle.includes("developers") || lowerTitle.includes("merge") || lowerTitle.includes("client") || lowerTitle.includes("taproot")) {
+      videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-man-typing-on-a-computer-42037-large.mp4";
+    }
+
     result.push({
       id,
       title,
@@ -317,7 +335,8 @@ function generateClientSimulatedNews(category: string, search: string, page: num
       publishedAt: date.toISOString(),
       sentiment: template.sentiment,
       imageUrl: getThemedFallbackImageClient(title, selectedCategory),
-      summary: template.summary || generateProceduralSummaryClient(title, template.sentiment)
+      summary: template.summary || generateProceduralSummaryClient(title, template.sentiment),
+      videoUrl
     });
   }
 
@@ -333,6 +352,7 @@ export default function LiveCryptoNews() {
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [isSimulated, setIsSimulated] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(30);
   const [carouselIndex, setCarouselIndex] = useState<number>(0);
   const [voiceActiveId, setVoiceActiveId] = useState<string | null>(null);
@@ -731,61 +751,168 @@ export default function LiveCryptoNews() {
  
         {/* Compact list rows representing active news posts */}
         {!loading && posts.length > 0 && (
-          <div className="space-y-1.5">
+          <div className="space-y-3">
             {posts.map((post) => {
               const semStyle = getSentimentStyles(post.sentiment);
+              const hasVideo = !!post.videoUrl;
+              const isVideoExpanded = expandedVideoId === post.id;
+
               return (
                 <article 
                   key={post.id}
-                  className="bg-[#050512]/92 border border-cyber-cyan/15 hover:border-cyber-cyan/50 hover:bg-[#07071d]/98 rounded-lg p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all text-left"
+                  className="bg-[#050512]/92 border border-cyber-cyan/15 hover:border-cyber-cyan/50 hover:bg-[#07071d]/98 rounded-lg p-3 sm:p-4 flex flex-col transition-all text-left group"
                 >
-                  {/* Left segment containing metadata tags and content title */}
-                  <div className="flex-1 space-y-1">
-                    <div className="flex flex-wrap items-center gap-1.5 text-[8.5px] font-mono text-slate-500">
-                      <span className={`px-1.5 py-0.25 rounded font-black text-[7.5px] uppercase border font-bold ${semStyle.text} ${semStyle.bg} ${semStyle.border}`}>
-                        {semStyle.label}
-                      </span>
-                      <span className="font-bold text-slate-400">{post.sourceName.toUpperCase()}</span>
-                      <span>&bull;</span>
-                      <span className="flex items-center gap-0.5">
-                        <Clock className="w-2.5 h-2.5 text-slate-500 shrink-0" />
-                        {formatTimeAgo(post.publishedAt)}
-                      </span>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start">
+                    {/* Media Thumbnail Block */}
+                    <div className="w-full sm:w-36 md:w-44 shrink-0">
+                      <div 
+                        onClick={() => {
+                          if (hasVideo) {
+                            setExpandedVideoId(isVideoExpanded ? null : post.id);
+                          } else {
+                            window.open(post.url, '_blank');
+                          }
+                        }}
+                        className={`aspect-video sm:aspect-auto sm:h-24 w-full rounded-lg overflow-hidden relative bg-[#04040a] border ${hasVideo ? 'border-[#00ff88]/30 hover:border-[#00ff88]/60 cursor-pointer' : 'border-cyber-cyan/10 hover:border-cyber-cyan/30 cursor-pointer'} transition-all`}
+                      >
+                        <img 
+                          src={post.imageUrl} 
+                          alt={post.title} 
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                        />
+                        
+                        {/* Sentiment Badge Overlay */}
+                        <div className="absolute top-1.5 left-1.5 z-10 scale-90 origin-top-left">
+                          <span className={`px-1.5 py-0.5 rounded text-[7px] font-mono font-bold uppercase tracking-wider ${semStyle.text} ${semStyle.bg} backdrop-blur-md border ${semStyle.border}`}>
+                            {post.sentiment.toUpperCase()}
+                          </span>
+                        </div>
+
+                        {/* Video / Photo Overlay indicator */}
+                        {hasVideo ? (
+                          <div className="absolute inset-0 bg-black/40 hover:bg-black/25 flex items-center justify-center transition-all">
+                            <div className="p-2 rounded-full bg-[#000000]/80 border border-[#00ff88]/40 shadow-[0_0_12px_rgba(0,255,136,0.25)] flex items-center justify-center">
+                              <Play className="w-3.5 h-3.5 text-[#00ff88] fill-[#00ff88]" />
+                            </div>
+                            <span className="absolute bottom-1 bg-black/70 text-[7.5px] font-black font-mono tracking-widest text-[#00ff88] px-1 py-0.25 rounded uppercase">
+                              VIDEO FEED
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="absolute bottom-1 right-1.5 bg-black/60 px-1 rounded text-slate-400 flex items-center gap-0.5 text-[7px] font-mono">
+                            <Image className="w-2 h-2 text-slate-400" />
+                            <span>IMAGE</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
- 
-                    <h3 
-                      onClick={() => window.open(post.url, '_blank')}
-                      className="text-white hover:text-cyber-cyan text-[11.5px] md:text-xs font-bold leading-relaxed cursor-pointer select-text transition-colors block"
-                    >
-                      {post.title}
-                    </h3>
-                    
-                    {/* Small preview of description inside list item */}
-                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed select-text line-clamp-1 italic max-w-4xl">
-                      {post.summary}
-                    </p>
+
+                    {/* Content Detail Segment */}
+                    <div className="flex-1 space-y-1.5 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 text-[8.5px] font-mono text-slate-500">
+                        <span className="font-extrabold text-cyber-cyan tracking-wider">{post.sourceName.toUpperCase()}</span>
+                        <span>&bull;</span>
+                        <span className="flex items-center gap-0.5 font-semibold text-slate-400">
+                          <Clock className="w-2.5 h-2.5 text-slate-500 shrink-0" />
+                          {formatTimeAgo(post.publishedAt)}
+                        </span>
+                        {hasVideo && (
+                          <>
+                            <span>&bull;</span>
+                            <span className="text-[#00ff88] font-bold flex items-center gap-0.5">
+                              <Tv className="w-2.5 h-2.5" /> VIDEO ANALYSIS
+                            </span>
+                          </>
+                        )}
+                      </div>
+   
+                      <h3 
+                        onClick={() => window.open(post.url, '_blank')}
+                        className="text-white hover:text-cyber-cyan text-xs sm:text-sm font-bold leading-snug cursor-pointer select-text transition-colors block text-left"
+                      >
+                        {post.title}
+                      </h3>
+                      
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 font-sans leading-relaxed select-text italic text-left line-clamp-3">
+                        {post.summary}
+                      </p>
+
+                      {/* Video status and quick watch trigger buttons */}
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {hasVideo && (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedVideoId(isVideoExpanded ? null : post.id)}
+                            className={`px-2 py-1 rounded text-[8.5px] font-bold font-mono transition-all flex items-center gap-1 cursor-pointer ${
+                              isVideoExpanded 
+                                ? 'bg-[#ff4b82]/10 border border-[#ff4b82]/30 text-[#ff4b82]' 
+                                : 'bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 hover:border-[#00ff88]/50 text-[#00ff88]'
+                            }`}
+                          >
+                            <Video className="w-2.5 h-2.5 shrink-0" />
+                            <span>{isVideoExpanded ? 'HIDE ANALYSIS FEED' : 'WATCH ANALYSIS LOOP'}</span>
+                          </button>
+                        )}
+
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-black uppercase text-slate-400 bg-cyber-bg/40 border border-cyber-border/30`}>
+                          {semStyle.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Compact Action Panel (Voice and Source Link) */}
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-2 pt-2 sm:pt-0 shrink-0 border-t border-cyber-border/20 sm:border-t-0">
+                      <div className="text-[8.5px] font-mono text-slate-500 sm:text-right">
+                        <span>POST ID:</span> <span className="text-slate-400 font-bold">{post.id.split('-').pop()}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleVoiceRead(post)}
+                          className={`p-1.5 rounded ${voiceActiveId === post.id ? 'bg-[#ff4b82] text-[#050510]' : 'bg-[#0f0f22] text-slate-400 hover:text-white border border-cyber-border'} transition-all`}
+                          title="Read news details aloud"
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                        </button>
+                        
+                        <a
+                          href={post.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2.5 py-1.5 bg-[#0b0c1e] hover:bg-cyber-cyan/10 border border-cyber-cyan/25 hover:border-cyber-cyan rounded flex items-center gap-1 text-[8.5px] font-mono font-bold text-cyber-cyan hover:text-white transition-all no-underline"
+                        >
+                          <span>OPEN SOURCE</span>
+                          <ExternalLink className="w-3 h-3 text-cyber-cyan shrink-0" />
+                        </a>
+                      </div>
+                    </div>
                   </div>
- 
-                  {/* Action Segment on the right side */}
-                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                    <button
-                      onClick={() => handleVoiceRead(post)}
-                      className={`p-1 rounded ${voiceActiveId === post.id ? 'bg-[#ff4b82] text-[#050510]' : 'bg-[#0f0f22] text-slate-400 hover:text-white border border-cyber-border'} transition-all`}
-                      title="Read news details aloud"
-                    >
-                      <Volume2 className="w-3.5 h-3.5" />
-                    </button>
-                    
-                    <a
-                      href={post.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-2 py-1 bg-[#0b0c1e] hover:bg-cyber-cyan/15 border border-cyber-cyan/25 hover:border-cyber-cyan rounded flex items-center gap-1 text-[8.5px] font-mono font-bold text-cyber-cyan hover:text-white transition-all no-underline"
-                    >
-                      <span>OPEN</span>
-                      <ExternalLink className="w-2.5 h-2.5 text-cyber-cyan shrink-0" />
-                    </a>
-                  </div>
+
+                  {/* Inline Expanded Video Section */}
+                  {isVideoExpanded && post.videoUrl && (
+                    <div className="mt-4 p-1.5 bg-[#030308] border border-[#00ff88]/30 rounded-lg overflow-hidden animate-fade-in relative shadow-[0_0_15px_rgba(0,255,136,0.06)]">
+                      <div className="absolute top-3 right-3 z-10 flex gap-1.5">
+                        <span className="px-2 py-0.5 bg-[#00ff88]/20 border border-[#00ff88]/40 text-[#00ff88] text-[7.5px] font-mono font-extrabold rounded uppercase tracking-wider animate-pulse flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#00ff88]"></span> Secured Stream Link
+                        </span>
+                        <button 
+                          onClick={() => setExpandedVideoId(null)}
+                          className="px-2 py-0.5 bg-black/60 hover:bg-black/90 text-white hover:text-rose-500 font-mono text-[8px] font-bold rounded border border-white/10 uppercase cursor-pointer"
+                        >
+                          CLOSE
+                        </button>
+                      </div>
+                      <video 
+                        src={post.videoUrl} 
+                        autoPlay 
+                        loop 
+                        muted 
+                        playsInline 
+                        controls
+                        className="w-full h-[180px] sm:h-[300px] md:h-[360px] object-cover rounded"
+                      />
+                    </div>
+                  )}
                 </article>
               );
             })}

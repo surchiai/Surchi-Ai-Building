@@ -661,7 +661,7 @@ function AdCreatorDashboard({ payload, onRefresh }: AdCreatorProps) {
           <span className="text-[10px] text-cyber-purple tracking-widest uppercase font-bold block">viral copywriting cards & branding generator</span>
           <h3 className="text-base font-bold text-white uppercase flex items-center gap-2">
             <Icons.Megaphone className="w-5 h-5 text-cyber-purple" />
-            Surchi AI Multi-Channel Ad Creator
+            Surchi Multi-Channel Ad Creator
           </h3>
         </div>
         <button
@@ -709,7 +709,7 @@ function AdCreatorDashboard({ payload, onRefresh }: AdCreatorProps) {
           <div className="flex justify-between items-center z-10">
             <span className="text-[9px] text-slate-500">PRESALE PORTAL INITIATING STAGES</span>
             <span className="text-xs font-bold font-mono tracking-widest uppercase" style={{ color: accentTone }}>
-              CRAFTED VIA SURCHI AI
+              CRAFTED VIA SURCHI
             </span>
           </div>
         </div>

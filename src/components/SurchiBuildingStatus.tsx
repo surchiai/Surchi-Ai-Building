@@ -13,7 +13,7 @@ export default function SurchiBuildingStatus() {
     { label: 'EXECUTION AGENT', desc: 'Routing Jupiter swap transaction endpoints' },
     { label: 'NLI CONTROLLER', desc: 'Initializing Plain-English strategy compiler' },
     { label: 'REVENUE BURN', desc: 'Activating auto-buyback deflationary triggers' },
-    { label: 'ORACLE STATUS', desc: 'SURCHI AI Cognitive Layer fully online ⚡' }
+    { label: 'ORACLE STATUS', desc: 'SURCHI Cognitive Layer fully online ⚡' }
   ];
 
   useEffect(() => {

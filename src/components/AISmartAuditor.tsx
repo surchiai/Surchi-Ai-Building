@@ -1138,7 +1138,7 @@ export default function AISmartAuditor({
         <div className="flex items-start gap-3 bg-[#110612]/30 p-3 rounded-lg border border-pink-500/20 text-[11px] font-sans leading-relaxed text-slate-300">
           <Icons.Zap className="w-4 h-4 text-cyber-pink shrink-0 mt-0.5 animate-pulse" />
           <div>
-            <span className="font-mono text-[9px] font-bold text-cyber-pink block uppercase tracking-wide">SURCHI AI SCAN WARNING COMPLIANCE PROTOCOL:</span>
+            <span className="font-mono text-[9px] font-bold text-cyber-pink block uppercase tracking-wide">SURCHI SCAN WARNING COMPLIANCE PROTOCOL:</span>
             {params.riskLevel === 'CRITICAL' && 'CRITICAL: Surchi scanner explicitly advises extreme caution. Honeypot/unlocked liquidity flags detected. High likelihood of liquidity draining or swap lockups.'}
             {params.riskLevel === 'HIGH' && 'HIGH RISK STATUS: Team holds mutable tax privileges or controls early sniper bundles. Potential targeted dumps could follow subsequent volume peaks.'}
             {params.riskLevel === 'MEDIUM' && 'MINOR RECOMMENDATION: Standard contract with minor proxy vulnerabilities or moderate sniped percentages. Monitor creator transaction logs for activity change.'}

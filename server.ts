@@ -27,12 +27,12 @@ function getGenAI(): GoogleGenAI | null {
             }
           }
         });
-        console.log("SURCHI AI: Live GoogleGenAI client initialized successfully.");
+        console.log("SURCHI: Live GoogleGenAI client initialized successfully.");
       } catch (err) {
-        console.error("SURCHI AI: Failed to lazily initialize GoogleGenAI client:", err);
+        console.error("SURCHI: Failed to lazily initialize GoogleGenAI client:", err);
       }
     } else {
-      console.warn("SURCHI AI: GEMINI_API_KEY is not defined. The intelligence engine will fallback to highly detailed blockchain forensic simulations.");
+      console.warn("SURCHI: GEMINI_API_KEY is not defined. The intelligence engine will fallback to highly detailed blockchain forensic simulations.");
     }
   }
   return aiClient;
@@ -299,8 +299,9 @@ function generateSimulatedNews(category: string, search: string, page: number): 
   const result: any[] = [];
   const baseMinutes = (page - 1) * 30;
 
-  for (let i = 0; i < 3; i++) {
-    const templateIndex = (i + (page - 1) * 3) % templates.length;
+  const itemsPerPage = 8;
+  for (let i = 0; i < itemsPerPage; i++) {
+    const templateIndex = (i + (page - 1) * itemsPerPage) % templates.length;
     const template = templates[templateIndex];
     if (!template) continue;
 
@@ -314,6 +315,18 @@ function generateSimulatedNews(category: string, search: string, page: number): 
       title = `${prefixes[i % prefixes.length]} ${title}`;
     }
 
+    let videoUrl: string | undefined = undefined;
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes("otc") || lowerTitle.includes("institutional") || lowerTitle.includes("yield") || lowerTitle.includes("defi")) {
+      videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-financial-charts-and-graphs-on-a-monitor-42861-large.mp4";
+    } else if (lowerTitle.includes("gpu") || lowerTitle.includes("render") || lowerTitle.includes("ai") || lowerTitle.includes("circuit") || lowerTitle.includes("depin")) {
+      videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-digital-circuit-board-with-glowing-signals-44280-large.mp4";
+    } else if (lowerTitle.includes("security") || lowerTitle.includes("attack") || lowerTitle.includes("bridge") || lowerTitle.includes("validator")) {
+      videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-server-room-infrastructure-42631-large.mp4";
+    } else if (lowerTitle.includes("congest") || lowerTitle.includes("developers") || lowerTitle.includes("merge") || lowerTitle.includes("client") || lowerTitle.includes("taproot")) {
+      videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-man-typing-on-a-computer-42037-large.mp4";
+    }
+
     result.push({
       id,
       title,
@@ -322,7 +335,8 @@ function generateSimulatedNews(category: string, search: string, page: number): 
       publishedAt: date.toISOString(),
       sentiment: template.sentiment,
       imageUrl: getThemedFallbackImage(title, selectedCategory),
-      summary: template.summary
+      summary: template.summary,
+      videoUrl
     });
   }
 
@@ -439,8 +453,8 @@ app.get("/api/crypto-news", async (req, res) => {
     isSimulated = true;
   }
 
-  if (posts.length > 3) {
-    posts = posts.slice(0, 3);
+  if (posts.length > 8) {
+    posts = posts.slice(0, 8);
   }
 
   // Optional AI dynamic summaries: If a valid Gemini intelligence key is available, enrich the top posts
@@ -530,7 +544,7 @@ app.post("/api/ai/analyze", async (req, res) => {
   const useWebSearch = searchEnabledModules.includes(module);
 
   // Default system instruction
-  let systemInstruction = `You are SURCHI AI, a sovereign, futuristic, hyper-intelligent crypto analyst, blockchain forensic auditor, and branding/growth consultant.
+  let systemInstruction = `You are SURCHI, a sovereign, futuristic, hyper-intelligent crypto analyst, blockchain forensic auditor, and branding/growth consultant.
 You operate on deep cybernetic parameters using terminal-grade monospace layouts. 
 Provide extremely technical, rigorous, and completely production-grade security, code, and financial analyses. No superficial generalizations.
 Never act like a chatbot that asks follow-ups in primary results; construct a high-fidelity, polished markdown report.
@@ -628,7 +642,7 @@ Provide a meticulous Smart Contract Security Audit Report:
     case "rug_detector":
       systemInstruction += "\nAct as a blockchain forensics expert looking for rug pull indicators. Analyze liquidity status, lock states, contract verification, mint flags, and media activity.";
       promptText = `Conduct a rigorous Rug Pull Forensic Risk Report for:
-Project/Token: ${payload.projectName || "Surchi AI"}
+Project/Token: ${payload.projectName || "Surchi"}
 Review the following rug indicators:
 1. **TEAM ANONYMITY RED FLAGS** (Evaluation of founding identities, multi-sig structure, and KYC status).
 2. **CONTRACT UNVERIFIED OR MALICIOUS BLOCKS** (Check for malicious proxies, upgradeable vulnerabilities, or hidden mint functions).
@@ -683,7 +697,7 @@ Provide the following formatted sections, each wrapped in a distinct visual bloc
     case "airdrop_builder":
       systemInstruction += "\nDesign viral Web3 airdrop campaigns and formulate official step-by-step participant rules and instructions.";
       promptText = `Design a fully operational, high-growth Token Airdrop Campaign for:
-Token Name: ${payload.tokenName || "Surchi AI"}
+Token Name: ${payload.tokenName || "Surchi"}
 Airdrop Supply: ${payload.supply || "10,000,000"} tokens
 Eligibility Criteria: ${payload.eligibility || "Hold past testnet balances or complete social loops"}
 Campaign Goal: ${payload.goal || "Boost community growth and daily active transactions"}
@@ -718,7 +732,7 @@ Construct a full, seamless markdown document featuring:
     case "tokenomics_designer":
       systemInstruction += "\nAct as a token structures quant. Provide clear vesting, allocations, inflation vectors, and render allocation lists with specific numbers.";
       promptText = `Design and explain a custom Tokenomics Distribution Model for:
-Token Name: ${payload.tokenName || "SURCHI AI"}
+Token Name: ${payload.tokenName || "SURCHI"}
 Total Supply: ${payload.totalSupply || "1,000,000,000"}
 Ecosystem/Vesting Goals: ${payload.vestingGoals || "Protect price, reward initial liquidity, 18-month cliff for core builders"}
 
@@ -832,7 +846,7 @@ Provide:
 
       if (useWebSearch) {
         requestConfig.tools = [{ googleSearch: {} }];
-        console.log(`SURCHI AI: Invoking Gemini with live Google Search Grounding for module '${module}'`);
+        console.log(`SURCHI: Invoking Gemini with live Google Search Grounding for module '${module}'`);
       }
 
       const response = await ai.models.generateContent({
@@ -873,7 +887,7 @@ Provide:
                            err?.status === 429 ||
                            err?.code === 429;
                            
-      console.warn(`SURCHI AI [QUOTA CHECK]: Caught execution limit or rate-limiting. Status 429/RESOURCE_EXHAUSTED detected: ${isQuotaError}. Instating resilient offline simulator mode.`);
+      console.warn(`SURCHI [QUOTA CHECK]: Caught execution limit or rate-limiting. Status 429/RESOURCE_EXHAUSTED detected: ${isQuotaError}. Instating resilient offline simulator mode.`);
       
       const mockResult = getMockResponse(module, payload);
       res.json({
@@ -909,7 +923,7 @@ app.post("/api/ai/chat", async (req, res) => {
 
   const ai = getGenAI();
 
-  const systemInstruction = `You are SURCHI AI, a futuristic cyberpunk AI crypto intelligence assistant.
+  const systemInstruction = `You are SURCHI, a futuristic cyberpunk AI crypto intelligence assistant.
 You are helping the operator review a security or market analysis of the SURCHI Crypto Suite.
 Analyze their follow-up questions referencing the previous output context: 
 ${contextOutput ? `[CURRENT WORKSPACE ANALYSIS CONTEXT]:\n${contextOutput}` : "[NO RECENT CONTEXT RECORDED]"}
@@ -949,7 +963,7 @@ Answer with technical, crisp, highly scannable insights. Always keep your respon
                            err?.status === 429 ||
                            err?.code === 429;
 
-      console.warn(`SURCHI AI [CHAT QUOTA CHECK]: Rate-limit / quota exception caught. Status 429/RESOURCE_EXHAUSTED checked: ${isQuotaError}. Resolving follow-up with local cognitive heuristics.`);
+      console.warn(`SURCHI [CHAT QUOTA CHECK]: Rate-limit / quota exception caught. Status 429/RESOURCE_EXHAUSTED checked: ${isQuotaError}. Resolving follow-up with local cognitive heuristics.`);
 
       res.json({
         success: true,
@@ -1163,10 +1177,10 @@ Pre-sale is officially LIVE! Don't sleep on the future of crypto forensics: [LIN
 2. **[TELEGRAM PINNED ANNOUNCEMENT]**
 🚨 **OFFICIAL \$${(payload.ticker || "SURCHI").toUpperCase()} LAUNCH CAMPAIGN IS LIVE** 🚨
 
-Surchi AI is redefining smart security with the **Crypto Intelligence Suite**. Real AI-driven forensics powered by our custom neural engine.
+Surchi is redefining smart security with the **Crypto Intelligence Suite**. Real AI-driven forensics powered by our custom neural engine.
 
 💎 **Token Details**:
-• **Name**: ${payload.projectName || "Surchi"} AI
+• **Name**: ${payload.projectName || "Surchi"}
 • **Ticker**: \$${(payload.ticker || "SURCHI").toUpperCase()}
 • **Presale price**: \$0.05 USD
 • **Primary Utility**: Staking rewards, VIP AI audits, custom portfolio signals.
@@ -1175,23 +1189,23 @@ Surchi AI is redefining smart security with the **Crypto Intelligence Suite**. R
 [Click Here to Enter Launchpad]
 
 3. **[REDDIT POST COPY]**
-**Title**: Introducing Surchi AI - The First AI-Driven Forensics & Security Suite for Solana Projects
-Hey DeFi community! We are excited to present Surchi AI \$${(payload.ticker || "SURCHI").toUpperCase()}.
+**Title**: Introducing Surchi - The First AI-Driven Forensics & Security Suite for Solana Projects
+Hey DeFi community! We are excited to present Surchi \$${(payload.ticker || "SURCHI").toUpperCase()}.
 We are building a comprehensive, fully interactive suite for Token Analysis, Smart Contract Audits, and live Rug Pull indicators. Our main goal is to protect retail traders from malicious deployers and honeypots.
 Check out our tokenomics and secure airdrop guidelines. What do you think about AI security? Let's discuss below!
 
 4. **[DISCORD RICH MESSAGE]**
-🌐 **SURCHI AI ECOSYSTEM LAUNCH** 🌐
+🌐 **SURCHI ECOSYSTEM LAUNCH** 🌐
 • **The Tech**: Deep neural scanning, wallet analytics, and automated Solidity code generator engines.
 • **Join the Presale**: Early participants gain automatic utility staking modifiers (+25% APY booster).
 👉 #announcements channel is now open for whitepaper downloads.
 
 5. **[BANNER HEADLINE]**
 • *"Secure Your Portfolio with Real-Time AI Cryptography."*
-• *"SURCHI AI: Scan for Scams. Generate Code. Build Safely."*`;
+• *"SURCHI: Scan for Scams. Generate Code. Build Safely."*`;
 
     case "airdrop_builder":
-      return `### 🪂 VIRAL CAMPAIGN DESIGN: ${(payload.tokenName || "Surchi AI").toUpperCase()}
+      return `### 🪂 VIRAL CAMPAIGN DESIGN: ${(payload.tokenName || "Surchi").toUpperCase()}
 
 1. **OFFICIAL AIRDROP ANNOUNCEMENT**:
    "The \$${(payload.tokenName || "SURCHI").toUpperCase()} Airdrop is officially announced! We are distributing **${payload.supply || "10,000,000"} tokens** to reward our community and kickstart decentralized adoption. Claim your share now!"
@@ -1211,11 +1225,11 @@ Check out our tokenomics and secure airdrop guidelines. What do you think about 
    *   *Primary Aim*: Boost daily active wallet transactions by 450% and raise community awareness.`;
 
     case "whitepaper_generator":
-      return `# SURCHI AI - DEEP LANDSCAPE RESEARCH WHITEPAPER
+      return `# SURCHI - DEEP LANDSCAPE RESEARCH WHITEPAPER
 *A continuous, technical overview of the Surchi Forensic Cryptography Ecosystem*
 
 ## 1. ABSTRACT
-Surchi AI is an advanced blockchain security and optimization utility framework that leverages Google GenAI models and real-time ledger grounding.
+Surchi is an advanced blockchain security and optimization utility framework that leverages Google GenAI models and real-time ledger grounding.
 
 ## 2. PROBLEM STATEMENT
 Decentralized finance suffers from rapid vector attacks, upgrade malicious proxies, and reentrancy exploits. Standard smart contract audits are expensive, slow, and non-interactive for retail traders.
@@ -1234,11 +1248,11 @@ The **Surchi Crypto Intelligence Suite** provides instantaneous, on-demand smart
 *   *Phase III*: Community decentralized governance launch.
 
 ## 6. LEGAL DISCLAIMERS
-*Trading digital assets carries immense financial risks. Surchi AI is an analytical framework and does not constitute official financial counseling.*`;
+*Trading digital assets carries immense financial risks. Surchi is an analytical framework and does not constitute official financial counseling.*`;
 
     case "tokenomics_designer":
       return `### 📊 CUSTOM TOKEN STRUCTURES DESIGN
-**TOKEN SYSTEM DESIGNED FOR:** ${payload.tokenName || "SURCHI AI"}
+**TOKEN SYSTEM DESIGNED FOR:** ${payload.tokenName || "SURCHI"}
 **TOTAL SUPPLY:** ${payload.totalSupply || "1,000,000,000"}
 
 1. **ALLOCATION MAP**:
@@ -1286,7 +1300,7 @@ pragma solidity ^0.8.20;
 
 /**
  * @title ${payload.name || "SurchiProtocol"} ERC-20 Token
- * @dev Secure ERC-20 contract generated autonomously via SURCHI AI generator engine
+ * @dev Secure ERC-20 contract generated autonomously via SURCHI generator engine
  */
 contract ${(payload.name || "SurchiProtocol").replace(/\s/g, "")} {
     string public name = "${payload.name || "Surchi Protocol"}";
@@ -1371,7 +1385,7 @@ contract ${(payload.name || "SurchiProtocol").replace(/\s/g, "")} {
       return `### 🐦 TWITTER/X BRANDING CAMPAIGN
 
 1. **[VIRAL HOOK LINE]**
-💀 95% of retail DeFi traders have lost capital to anonymous scams. It's time to fight back. Here's how Surchi AI is unmasking honeypots in 4 seconds. 👇
+💀 95% of retail DeFi traders have lost capital to anonymous scams. It's time to fight back. Here's how Surchi is unmasking honeypots in 4 seconds. 👇
 
 2. **[STANDALONE TWEET]**
 DeFi is evolving, but so are the exploits. 🛡️
@@ -1380,7 +1394,7 @@ Secure your crypto. Trade smart.
 👉 [Link] #Solana #AI
 
 3. **[TWITTER THREAD (5 POSTS)]**
-1/5 Understanding smart contract audits shouldn't require a computer science degree. With Surchi AI, we've automated Solidity checks so anyone can audit instantly. Let's look at how it works. 🧵
+1/5 Understanding smart contract audits shouldn't require a computer science degree. With Surchi, we've automated Solidity checks so anyone can audit instantly. Let's look at how it works. 🧵
 
 2/5 Our Smart Contract Auditor scans for typical reentrancy patterns – where hackers drain contracts before balances update. It's the most common DeFi hack, and we block it instantly.
 
@@ -1395,7 +1409,7 @@ Secure your crypto. Trade smart.
 **SUBJECT PROFILE: ${payload.projectName || "Surchi Forensic Suite"}**
 
 1. **FEATURE COMPARISON MATRIX**:
-   *   **Surchi AI**: 15 distinct utility modules, Google Search grounded analytics, solid code generation, and interactive follow-up chat interfaces.
+   *   **Surchi**: 15 distinct utility modules, Google Search grounded analytics, solid code generation, and interactive follow-up chat interfaces.
    *   **Competitor A (SecureScan)**: 3 basic checklist modules, static offline database, high subscription fees.
    *   **Competitor B (TokenForensix)**: Manual request system, 24-hour turnaround, no automatic code builder tools.
 
@@ -1709,7 +1723,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`SURCHI AI: Full-Stack Express Server active on port ${PORT}`);
+    console.log(`SURCHI: Full-Stack Express Server active on port ${PORT}`);
   });
 }
 
