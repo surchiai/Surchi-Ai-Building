@@ -147,42 +147,43 @@ export function SurchiTokenMetrics() {
     <div className="w-full relative font-sans text-left">
       {/* Unified Single-Row Dashboard Card */}
       <div 
-        className={`relative group bg-gradient-to-r from-[#040921] via-[#020514] to-[#01020a] border ${pulseGlow ? 'border-cyber-cyan/90 shadow-[0_0_25px_rgba(0,229,255,0.3)]' : 'border-cyber-cyan/30 hover:border-cyber-cyan/50'} rounded-xl px-4 py-3 backdrop-blur-md transition-all duration-300 hover:shadow-[0_4px_30px_rgba(0,229,255,0.12)] overflow-hidden`}
+        className={`relative group bg-gradient-to-r from-[#040921] via-[#020514] to-[#01020a] border ${pulseGlow ? 'border-cyber-cyan/90 shadow-[0_0_20px_rgba(0,229,255,0.25)]' : 'border-cyber-cyan/30 hover:border-cyber-cyan/50'} rounded-xl px-3 sm:px-4 py-2 backdrop-blur-md transition-all duration-300 hover:shadow-[0_4px_30px_rgba(0,229,255,0.12)] overflow-hidden`}
       >
         {/* Subtle Cyber Neon glow background accent */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-cyber-cyan/3 rounded-full blur-2xl pointer-events-none group-hover:bg-cyber-cyan/5 transition-all duration-300"></div>
+        <div className="absolute top-0 right-0 w-24 h-24 bg-cyber-cyan/3 rounded-full blur-xl pointer-events-none group-hover:bg-cyber-cyan/5 transition-all duration-300"></div>
 
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3.5 relative z-10">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-3 relative z-10">
           
-          {/* LEFT SIDE: Current Price & Status immediately beside it */}
-          <div className="flex items-center gap-4 py-0.5">
+          {/* LEFT SIDE: Price & Status, with MCAP underneath */}
+          <div className="flex flex-col gap-2 py-0.5 shrink-0">
+            {/* SURCHI Price & Status Container */}
             <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5 text-[8.5px] font-mono font-bold text-slate-400 tracking-widest uppercase select-none">
+              <div className="flex items-center gap-1.5 text-[8px] font-mono font-bold text-slate-400 tracking-widest uppercase select-none">
                 <span>$SURCHI PRICE</span>
-                <Icons.TrendingUp className="w-3 h-3 text-[#00ff88]" />
+                <Icons.TrendingUp className="w-2.5 h-2.5 text-[#00ff88]" />
               </div>
               
-              <div className="flex items-baseline gap-3.5">
+              <div className="flex items-center gap-2">
                 {loading ? (
-                  <div className="h-8 w-24 bg-slate-800/60 rounded animate-pulse"></div>
+                  <div className="h-5 w-16 bg-slate-800/60 rounded animate-pulse"></div>
                 ) : (
-                  <span className="text-2xl sm:text-3xl font-mono font-black tracking-tight text-white">
+                  <span className="text-base sm:text-lg font-mono font-black tracking-tight text-white inline-block">
                     {formatPrice(metrics.priceUsd)}
                   </span>
                 )}
 
                 {/* Status Badge IMMEDIATELY beside the price */}
                 {!loading && (
-                  <div className="flex items-center gap-2 self-center">
-                    <span className="relative flex h-2 w-2">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="relative flex h-1.5 w-1.5">
                       <span className={`absolute inline-flex h-full w-full rounded-full ${metrics.isListed ? 'bg-cyber-green' : 'bg-slate-500'} opacity-75 ${metrics.isListed ? 'animate-ping' : ''}`}></span>
-                      <span className={`relative inline-flex rounded-full h-2 w-2 ${metrics.isListed ? 'bg-cyber-green' : 'bg-slate-500'}`}></span>
+                      <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${metrics.isListed ? 'bg-cyber-green' : 'bg-slate-500'}`}></span>
                     </span>
-                    <span className={`text-[8.5px] font-mono font-black tracking-widest px-2 py-0.5 rounded leading-none ${metrics.isListed ? 'bg-cyber-green/12 text-cyber-green border border-cyber-green/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}`}>
-                      {metrics.isListed ? 'LIVE SYNCED' : 'NOT LISTED YET'}
+                    <span className={`text-[7.5px] font-mono font-black tracking-wider px-1.5 py-0.5 rounded leading-none ${metrics.isListed ? 'bg-cyber-green/12 text-cyber-green border border-cyber-green/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}`}>
+                      {metrics.isListed ? 'LIVE' : 'NOT LISTED'}
                     </span>
                     {metrics.isListed && (
-                      <span className={`text-[8.5px] font-mono font-bold ${metrics.priceChange24h >= 0 ? 'text-cyber-green' : 'text-rose-450'}`}>
+                      <span className={`text-[7.5px] font-mono font-bold ${metrics.priceChange24h >= 0 ? 'text-cyber-green' : 'text-rose-450'}`}>
                         {metrics.priceChange24h >= 0 ? '+' : ''}{metrics.priceChange24h.toFixed(2)}%
                       </span>
                     )}
@@ -190,53 +191,47 @@ export function SurchiTokenMetrics() {
                 )}
               </div>
             </div>
+
+            {/* Market Cap - Aligned perfectly on a single line matching the premium terminal design */}
+            <div className="flex items-center gap-2 text-xs font-mono select-none">
+              <span className="text-[8px] font-black text-slate-400 tracking-widest uppercase">MCAP</span>
+              <Icons.Layers className="w-2.5 h-2.5 text-cyber-cyan/85 shrink-0" />
+              {loading ? (
+                <div className="h-3.5 w-12 bg-slate-800/40 rounded animate-pulse"></div>
+              ) : (
+                <span className="text-xs sm:text-sm font-black text-white tracking-tight leading-none">
+                  {formatLargeNum(metrics.marketCap)}
+                </span>
+              )}
+              {!loading && (
+                <span className={`text-[6.5px] font-sans font-extrabold uppercase px-1 py-0.5 rounded leading-none ${metrics.isListed ? 'text-cyber-cyan/90 bg-cyber-cyan/8' : 'text-slate-405 bg-slate-500/10'}`}>
+                  {metrics.isListed ? 'FULLY DILUTED' : 'PENDING'}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* RIGHT/FAR-RIGHT SIDE: Market Cap & 24H Volume with minimal spacing inside unified card */}
-          <div className="flex flex-row items-center gap-3 sm:gap-4 justify-between sm:justify-end shrink-0 border-t border-slate-800/40 md:border-t-0 pt-2.5 md:pt-0">
+          {/* RIGHT/FAR-RIGHT SIDE: 24H Volume with minimal spacing inside unified card */}
+          <div className="flex flex-row items-center gap-2 sm:gap-3 shrink-0 ml-auto">
             
-            {/* Market Cap Compact Indicator Widget */}
-            <div className="px-3 py-1.5 bg-[#070f22]/70 border border-cyber-cyan/15 rounded-lg flex items-center gap-2.5 min-w-[125px] sm:min-w-[145px]">
-              <div className="p-1 rounded bg-[#0b1736] border border-cyber-cyan/10 shrink-0">
-                <Icons.Layers className="w-3.5 h-3.5 text-cyber-cyan" />
-              </div>
-              <div className="space-y-0.5">
-                <span className="text-[7.5px] font-mono font-bold text-slate-400 tracking-widest uppercase block leading-none select-none">
-                  MARKET CAP
-                </span>
-                {loading ? (
-                  <div className="h-3.5 w-14 bg-slate-800/40 rounded animate-pulse"></div>
-                ) : (
-                  <div>
-                    <div className="text-xs sm:text-sm font-mono font-black text-white tracking-tight leading-tight">
-                      {formatLargeNum(metrics.marketCap)}
-                    </div>
-                    <span className="text-[7px] font-sans text-slate-500 uppercase block font-semibold leading-none mt-0.5 select-none">
-                      {metrics.isListed ? 'FULLY DILUTED' : 'Pending Launch'}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* 24H Volume Compact Indicator Widget */}
-            <div className="px-3 py-1.5 bg-[#070f22]/70 border border-cyber-cyan/15 rounded-lg flex items-center gap-2.5 min-w-[125px] sm:min-w-[145px]">
-              <div className="p-1 rounded bg-[#051710] border border-cyber-green/10 shrink-0">
-                <Icons.Activity className="w-3.5 h-3.5 text-cyber-green" />
+            <div className="px-2.5 py-1 bg-[#070f22]/70 border border-cyber-cyan/15 rounded-lg flex items-center gap-2">
+              <div className="p-0.5 rounded bg-[#051710] border border-cyber-green/10 shrink-0">
+                <Icons.Activity className="w-3 h-3 text-cyber-green" />
               </div>
               <div className="space-y-0.5">
                 <span className="text-[7.5px] font-mono font-bold text-slate-400 tracking-widest uppercase block leading-none select-none">
-                  24H VOLUME
+                  VOLUME
                 </span>
                 {loading ? (
-                  <div className="h-3.5 w-14 bg-slate-800/40 rounded animate-pulse"></div>
+                  <div className="h-3 w-10 bg-slate-800/40 rounded animate-pulse"></div>
                 ) : (
                   <div>
-                    <div className="text-xs sm:text-sm font-mono font-black text-white tracking-tight leading-tight">
+                    <div className="text-xs font-mono font-black text-white tracking-tight leading-none">
                       {formatLargeNum(metrics.volume24h)}
                     </div>
-                    <span className="text-[7px] font-sans text-slate-500 uppercase block font-semibold leading-none mt-0.5 select-none">
-                      {metrics.isListed ? '24H SWAPS' : 'No Trading Activity'}
+                    <span className="text-[6.5px] font-sans text-slate-500 uppercase block font-semibold leading-none mt-0.5 select-none text-left">
+                      {metrics.isListed ? '24H SWAPS' : 'Inactive'}
                     </span>
                   </div>
                 )}
@@ -244,16 +239,16 @@ export function SurchiTokenMetrics() {
             </div>
 
             {/* Quick Refresh Icon with dynamic status */}
-            <div className="flex items-center gap-1.5 pl-1 shrink-0">
+            <div className="flex items-center gap-1.5 pl-0.5 shrink-0">
               {lastUpdated && (
-                <span className="text-[7.5px] font-mono text-slate-500 hidden lg:inline tracking-wider select-none">
-                  LATEST CALIBRATION: {lastUpdated.toLocaleTimeString()}
+                <span className="text-[7px] font-mono text-slate-500 hidden xl:inline tracking-wider select-none">
+                  CALIBRATED: {lastUpdated.toLocaleTimeString()}
                 </span>
               )}
               <button
                 onClick={() => fetchSurchiMetrics(true)}
                 disabled={loading || refreshing}
-                className="p-1.5 rounded-lg bg-[#0a1226]/80 text-cyber-cyan hover:text-white border border-cyber-cyan/20 hover:border-cyber-cyan disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center shrink-0"
+                className="p-1 rounded-lg bg-[#0a1226]/80 text-cyber-cyan hover:text-white border border-cyber-cyan/15 hover:border-cyber-cyan disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center shrink-0"
                 title="Synchronise on-chain telemetry tools"
               >
                 <Icons.RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
