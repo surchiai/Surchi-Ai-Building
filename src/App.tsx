@@ -3218,7 +3218,7 @@ export default function App() {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-extrabold tracking-widest text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_12px_rgba(0,255,136,0.18)] hover:shadow-[0_0_18px_rgba(0,255,136,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase no-underline"
                   >
                     <Icons.Coins className="w-3.5 h-3.5 text-cyber-neon shrink-0" />
-                    <span>Buy $SURCHI on Raydium.io</span>
+                    <span>BUY $SURCHI</span>
                     <Icons.ExternalLink className="w-3 h-3 text-cyber-neon/70 shrink-0" />
                   </a>
                 </div>
@@ -4073,7 +4073,7 @@ export default function App() {
               className="w-full py-3 bg-[#110d24] hover:bg-[#1a1435] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/32 hover:border-[#ff4b82]/60 rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 text-xs font-mono font-bold select-none text-center shadow-[0_0_15px_rgba(255,75,130,0.06)] group"
             >
               <Icons.Coins className="w-4 h-4 text-[#ff4b82] group-hover:scale-110 transition-transform duration-250" />
-              <span>BUY $SURCHI ON RAYDIUM</span>
+              <span>BUY $SURCHI</span>
               <Icons.ExternalLink className="w-3.5 h-3.5 opacity-70" />
             </a>
 
