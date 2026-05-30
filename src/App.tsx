@@ -24,6 +24,7 @@ import ProductsDashboard from './components/ProductsDashboard';
 import SurchiBuildingStatus from './components/SurchiBuildingStatus';
 import InteractiveSuite from './components/InteractiveSuite';
 import HolderIntelligence from './components/HolderIntelligence';
+import { SurchiTokenMetrics } from './components/SurchiTokenMetrics';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -3177,6 +3178,13 @@ export default function App() {
                       <Icons.X className="w-4 h-4" />
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Project Token Metrics Dashboard for $SURCHI */}
+              {isHomePage && (
+                <div className="w-full animate-fade-in">
+                  <SurchiTokenMetrics />
                 </div>
               )}
 
