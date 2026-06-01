@@ -136,6 +136,24 @@ export default function PartnershipModal({ isOpen, onClose, themeMode = 'dark' }
       )
     },
     {
+      name: 'jup.ag',
+      url: 'https://jup.ag',
+      description: 'The premier swap aggregation engine on Solana routing trades across all decentralized exchanges for optimal price execution.',
+      badge: 'Solana Swap Route',
+      iconTheme: '#a855f7',
+      logo: (
+        <PartnerLogo
+          src="https://assets.coingecko.com/coins/images/34188/large/jup.png"
+          fallbackDomain="jup.ag"
+          alt="Jupiter Logo"
+          fallbackText="JP"
+          themeColor="#a855f7"
+          bgColor="#0d021c"
+          className="w-10 h-10 p-1 bg-[#0d021c]/70"
+        />
+      )
+    },
+    {
       name: 'cryptopanic.com',
       url: 'https://cryptopanic.com',
       description: 'The supreme crypto news aggregator offering immediate sentiment signals, breaking alerts, and deep market impact tracking.',
@@ -273,6 +291,162 @@ export default function PartnershipModal({ isOpen, onClose, themeMode = 'dark' }
           fallbackText="XT"
           themeColor="#FF9800"
           className="w-8 h-8 p-0.5 bg-slate-900/40 border border-orange-500/20 shrink-0"
+        />
+      )
+    }
+  ];
+
+  const aggregatorPartners = [
+    {
+      name: 'CoinGecko',
+      url: 'https://www.coingecko.com',
+      description: 'The world\'s largest independent cryptocurrency data aggregator with global valuation telemetry.',
+      themeColor: '#8CC63F',
+      logo: (
+        <PartnerLogo
+          src="https://www.google.com/s2/favicons?sz=128&domain=coingecko.com"
+          fallbackDomain="coingecko.com"
+          alt="CoinGecko Logo"
+          fallbackText="CG"
+          themeColor="#8CC63F"
+          bgColor="#0c140c"
+          className="w-8 h-8 p-0.5 bg-slate-900/40 border border-emerald-500/20 shrink-0"
+        />
+      )
+    },
+    {
+      name: 'CoinMarketCap',
+      url: 'https://coinmarketcap.com',
+      description: 'The most-referenced price-tracking website for digital assets in the rapidly growing crypto space.',
+      themeColor: '#3861fb',
+      logo: (
+        <PartnerLogo
+          src="https://www.google.com/s2/favicons?sz=128&domain=coinmarketcap.com"
+          fallbackDomain="coinmarketcap.com"
+          alt="CoinMarketCap Logo"
+          fallbackText="CMC"
+          themeColor="#3861fb"
+          bgColor="#05081c"
+          className="w-8 h-8 p-0.5 bg-slate-900/40 border border-blue-500/20 shrink-0"
+        />
+      )
+    },
+    {
+      name: 'Birdeye',
+      url: 'https://birdeye.so',
+      description: 'Data aggregator for supreme chain-native traders featuring instantaneous price discovery feeds.',
+      themeColor: '#1CE687',
+      logo: (
+        <PartnerLogo
+          src="https://www.google.com/s2/favicons?sz=128&domain=birdeye.so"
+          fallbackDomain="birdeye.so"
+          alt="Birdeye Logo"
+          fallbackText="BE"
+          themeColor="#1CE687"
+          bgColor="#02140a"
+          className="w-8 h-8 p-0.5 bg-slate-900/40 border border-green-500/20 shrink-0"
+        />
+      )
+    },
+    {
+      name: 'DEX Screener',
+      url: 'https://dexscreener.com',
+      description: 'Real-time charts, trade history, and transaction metrics across deep decentralized networks.',
+      themeColor: '#17b6dc',
+      logo: (
+        <PartnerLogo
+          src="https://www.google.com/s2/favicons?sz=128&domain=dexscreener.com"
+          fallbackDomain="dexscreener.com"
+          alt="DEX Screener Logo"
+          fallbackText="DS"
+          themeColor="#17b6dc"
+          bgColor="#021014"
+          className="w-8 h-8 p-0.5 bg-slate-900/40 border border-cyan-500/20 shrink-0"
+        />
+      )
+    },
+    {
+      name: 'DefiLlama',
+      url: 'https://defillama.com',
+      description: 'The largest open-source DeFi TVL, volume, yield and liquid protocol statistics aggregator.',
+      themeColor: '#FA3B3B',
+      logo: (
+        <PartnerLogo
+          src="https://www.google.com/s2/favicons?sz=128&domain=defillama.com"
+          fallbackDomain="defillama.com"
+          alt="DefiLlama Logo"
+          fallbackText="DL"
+          themeColor="#FA3B3B"
+          bgColor="#140404"
+          className="w-8 h-8 p-0.5 bg-slate-900/40 border border-red-500/20 shrink-0"
+        />
+      )
+    },
+    {
+      name: 'GeckoTerminal',
+      url: 'https://www.geckoterminal.com',
+      description: 'DEX tracking terminal powered by CoinGecko, covering full multi-chain pool data live logs.',
+      themeColor: '#8CC63F',
+      logo: (
+        <PartnerLogo
+          src="https://www.google.com/s2/favicons?sz=128&domain=geckoterminal.com"
+          fallbackDomain="geckoterminal.com"
+          alt="GeckoTerminal Logo"
+          fallbackText="GT"
+          themeColor="#8CC63F"
+          bgColor="#0c140c"
+          className="w-8 h-8 p-0.5 bg-slate-900/40 border border-emerald-500/20 shrink-0"
+        />
+      )
+    },
+    {
+      name: 'Token Terminal',
+      url: 'https://tokenterminal.com',
+      description: 'Institutional-grade data aggregator tracking financial metrics on blockchains and dApps.',
+      themeColor: '#0052FF',
+      logo: (
+        <PartnerLogo
+          src="https://www.google.com/s2/favicons?sz=128&domain=tokenterminal.com"
+          fallbackDomain="tokenterminal.com"
+          alt="Token Terminal Logo"
+          fallbackText="TT"
+          themeColor="#0052FF"
+          bgColor="#020814"
+          className="w-8 h-8 p-0.5 bg-slate-900/40 border border-indigo-500/20 shrink-0"
+        />
+      )
+    },
+    {
+      name: 'Dune Analytics',
+      url: 'https://dune.com',
+      description: 'Community-powered blockchain research queries offering custom dashboard visualizers.',
+      themeColor: '#F3752A',
+      logo: (
+        <PartnerLogo
+          src="https://www.google.com/s2/favicons?sz=128&domain=dune.com"
+          fallbackDomain="dune.com"
+          alt="Dune Logo"
+          fallbackText="DN"
+          themeColor="#F3752A"
+          bgColor="#140802"
+          className="w-8 h-8 p-0.5 bg-slate-900/40 border border-orange-500/20 shrink-0"
+        />
+      )
+    },
+    {
+      name: 'TradingView',
+      url: 'https://www.tradingview.com',
+      description: 'Advanced charting panel and social network for global technical analysts on standard metrics.',
+      themeColor: '#1976D2',
+      logo: (
+        <PartnerLogo
+          src="https://www.google.com/s2/favicons?sz=128&domain=tradingview.com"
+          fallbackDomain="tradingview.com"
+          alt="TradingView Logo"
+          fallbackText="TV"
+          themeColor="#1976D2"
+          bgColor="#020a14"
+          className="w-8 h-8 p-0.5 bg-slate-900/40 border border-blue-500/20 shrink-0"
         />
       )
     }
@@ -431,7 +605,48 @@ export default function PartnershipModal({ isOpen, onClose, themeMode = 'dark' }
             </div>
           </div>
 
-          {/* Section 3: Little Short note & things to know */}
+          {/* Section 3: Token Data Aggregators */}
+          <div className="space-y-4">
+            <div className={`flex items-center gap-2 border-b pb-1.5 ${isLight ? 'border-slate-200' : 'border-cyber-border'}`}>
+              <Icons.Layers className={`w-4.5 h-4.5 ${isLight ? 'text-slate-500' : 'text-cyber-cyan animate-pulse-safe'}`} />
+              <h4 className={`text-xs font-bold font-display uppercase tracking-wider text-left ${isLight ? 'text-slate-700' : 'text-cyber-text'}`}>
+                Token Data Aggregators & Indexers
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3">
+              {aggregatorPartners.map((item, idx) => (
+                <a
+                  key={idx}
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`p-3 rounded-lg border transition-all flex items-center gap-3 text-left no-underline group ${
+                    isLight 
+                      ? 'border-slate-200 hover:border-indigo-300 bg-slate-50/50 hover:bg-slate-55' 
+                      : 'border-cyber-border/60 hover:border-cyber-cyan bg-[#04040a]/40 hover:bg-[#070719]/65'
+                  }`}
+                >
+                  {item.logo}
+                  <div className="min-w-0 flex-1">
+                    <span className={`text-[11px] font-bold font-mono transition-colors block truncate ${
+                      isLight ? 'text-slate-800 group-hover:text-indigo-600' : 'text-white group-hover:text-cyber-cyan'
+                    }`}>
+                      {item.name}
+                    </span>
+                    <p className={`text-[8.5px] leading-tight font-sans select-text line-clamp-1 truncate ${
+                      isLight ? 'text-slate-500 group-hover:text-slate-700' : 'text-slate-400 group-hover:text-slate-300'
+                    }`}>
+                      {item.description}
+                    </p>
+                  </div>
+                  <Icons.ExternalLink className={`w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ${isLight ? 'text-indigo-500' : 'text-cyber-cyan'}`} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 4: Little Short note & things to know */}
           <div className={`p-4 rounded-xl flex items-start gap-3 text-left ${
             isLight 
               ? 'bg-amber-50/60 border border-amber-200 text-slate-705' 

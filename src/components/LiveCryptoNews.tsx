@@ -343,7 +343,8 @@ function generateClientSimulatedNews(category: string, search: string, page: num
   return result;
 }
 
-export default function LiveCryptoNews() {
+export default function LiveCryptoNews({ themeMode }: { themeMode?: 'dark' | 'light' }) {
+  const isLight = themeMode === 'light';
   const [posts, setPosts] = useState<NewsPost[]>([]);
   const [category, setCategory] = useState<string>('breaking');
   const [search, setSearch] = useState<string>('');
@@ -546,9 +547,9 @@ export default function LiveCryptoNews() {
 
   // Helper styles for sentiments
   const getSentimentStyles = (sent: string) => {
-    if (sent === 'bullish') return { text: 'text-[#00ff88]', bg: 'bg-[#00ff88]/10', border: 'border-[#00ff88]/20', label: '🟢 BULLISH IMPACT' };
-    if (sent === 'bearish') return { text: 'text-[#ff4b82]', bg: 'bg-[#ff4b82]/10', border: 'border-[#ff4b82]/20', label: '🔴 BEARISH IMPACT' };
-    return { text: 'text-[#00e5ff]', bg: 'bg-[#00e5ff]/10', border: 'border-[#00e5ff]/20', label: '🔵 NEUTRAL SIGNAL' };
+    if (sent === 'bullish') return { text: 'text-[#00ff88]', bg: 'bg-[#00ff881a]', border: 'border-[#00ff8833]', label: '🟢 BULLISH IMPACT' };
+    if (sent === 'bearish') return { text: 'text-[#ff4b82]', bg: 'bg-[#ff4b821a]', border: 'border-[#ff4b8233]', label: '🔴 BEARISH IMPACT' };
+    return { text: 'text-[#00e5ff]', bg: 'bg-[#00e5ff1a]', border: 'border-[#00e5ff33]', label: '🔵 NEUTRAL SIGNAL' };
   };
 
   // Top trending carousel subset from current posts
@@ -589,18 +590,20 @@ export default function LiveCryptoNews() {
       )}
  
       {/* SLIM MINIMIZED BANNER HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-[#070817] border border-cyber-cyan/20 rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.04)]">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 border rounded-lg shadow-sm ${
+        isLight ? 'bg-white border-slate-200' : 'bg-[#070817] border-[#00e5ff33] shadow-[0_0_15px_rgba(0,229,255,0.04)]'
+      }`}>
         {/* News logo and live info */}
         <div className="flex items-center gap-2 text-left">
-          <div className="p-1 px-1.5 bg-gradient-to-br from-cyber-cyan to-cyber-purple text-[#050510] rounded text-xs">
+          <div className="p-1 px-1.5 bg-gradient-to-br from-cyber-cyan to-cyber-purple text-[#050510] rounded text-xs select-none">
             <Newspaper className="w-3.5 h-3.5" />
           </div>
           <div className="flex items-center gap-2">
             <span className="flex h-1.5 w-1.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#00ff88]"></span>
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isLight ? 'bg-emerald-650 bg-emerald-500' : 'bg-[#00ff88]'}`}></span>
+              <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isLight ? 'bg-emerald-600' : 'bg-[#00ff88]'}`}></span>
             </span>
-            <h2 className="text-white font-display font-black text-xs sm:text-sm uppercase tracking-wider">
+            <h2 className={`font-display font-black text-xs sm:text-sm uppercase tracking-wider ${isLight ? 'text-slate-800' : 'text-white'}`}>
               NEWS FEED ORACLE
             </h2>
             <span className="text-[8px] font-mono text-slate-500 uppercase hidden md:inline">
@@ -611,14 +614,20 @@ export default function LiveCryptoNews() {
  
         {/* Live Refresh Counter & Network Switch */}
         <div className="flex items-center justify-between sm:justify-end gap-2 text-[9px] font-mono">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#0b0b1e] border border-cyber-border rounded">
+          <div className={`flex items-center gap-1.5 px-2 py-0.5 border rounded ${
+            isLight ? 'bg-slate-50 border-slate-200 text-slate-600 font-medium' : 'bg-[#0b0b1e] border-cyber-border text-slate-300'
+          }`}>
             <span className="text-slate-500">CYCLE:</span>
             <span className="text-cyber-cyan font-bold">{countdown}s</span>
           </div>
           <button
             onClick={handleManualRefresh}
             disabled={loading}
-            className="px-2.5 py-1 bg-[#10102b] hover:bg-cyber-purple/20 text-cyber-cyan border border-cyber-cyan/25 hover:border-cyber-cyan/50 rounded cursor-pointer transition-all flex items-center gap-1.5 font-bold"
+            className={`px-2.5 py-1 rounded cursor-pointer transition-all flex items-center gap-1.5 font-bold border ${
+              isLight 
+                ? 'bg-indigo-50 hover:bg-slate-50 text-indigo-700 border-indigo-200 hover:border-indigo-400' 
+                : 'bg-[#10102b] hover:bg-[#7c3aed33] text-cyber-cyan border-[#00e5ff4d] hover:border-[#00e5ff80]'
+            }`}
           >
             <RefreshCw className={`w-3 h-3 text-cyber-cyan ${loading ? 'animate-spin' : ''}`} />
             <span>SYNC NOW</span>
@@ -628,23 +637,27 @@ export default function LiveCryptoNews() {
  
       {/* CONTINUOUS BREAKING NEWS TICKER */}
       {posts.length > 0 && (
-        <div className="bg-[#0b0509] border border-rose-500/15 py-1.5 px-3 rounded-lg flex items-center gap-2.5 overflow-hidden text-[10px] select-none">
-          <span className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#ff4b82] text-[8px] font-black uppercase text-[#050510] tracking-wider animate-pulse font-mono font-black">
-            <Flame className="w-3 h-3 text-[#050510]" />
+        <div className={`py-1.5 px-3 rounded-lg flex items-center gap-2.5 overflow-hidden text-[10px] select-none border ${
+          isLight ? 'bg-rose-50 border-rose-100 text-rose-800' : 'bg-[#0b0509] border-[#f43f5e26] text-rose-300'
+        }`}>
+          <span className={`shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider animate-pulse font-mono font-black ${
+            isLight ? 'bg-rose-600 text-white' : 'bg-[#ff4b82] text-[#050510]'
+          }`}>
+            <Flame className="w-3 h-3 scale-90" />
             LIVE TICKER
           </span>
           <div className="relative flex-1 overflow-hidden h-3.5">
-            <div className="animate-ticker-marquee flex gap-10 text-[10px] font-mono text-rose-300">
+            <div className={`animate-ticker-marquee flex gap-10 text-[10px] font-mono ${isLight ? 'text-rose-700' : 'text-rose-300'}`}>
               <div className="flex gap-10 whitespace-nowrap">
                 {posts.map(p => (
-                  <span key={p.id} className="cursor-pointer hover:underline hover:text-[#ff4b82]" onClick={() => window.open(p.url, '_blank')}>
+                  <span key={p.id} className="cursor-pointer hover:underline" onClick={() => window.open(p.url, '_blank')}>
                     &bull; {p.title.toUpperCase()} — {p.sourceName.toUpperCase()}
                   </span>
                 ))}
               </div>
               <div className="flex gap-10 whitespace-nowrap">
                 {posts.map(p => (
-                  <span key={`${p.id}-dup`} className="cursor-pointer hover:underline hover:text-[#ff4b82]" onClick={() => window.open(p.url, '_blank')}>
+                  <span key={`${p.id}-dup`} className="cursor-pointer hover:underline" onClick={() => window.open(p.url, '_blank')}>
                     &bull; {p.title.toUpperCase()} — {p.sourceName.toUpperCase()}
                   </span>
                 ))}
@@ -667,8 +680,12 @@ export default function LiveCryptoNews() {
               }}
               className={`px-2.5 py-1 text-[10px] font-mono font-bold uppercase border rounded cursor-pointer transition-all select-none shrink-0 ${
                 category === cat.id
-                  ? 'bg-cyber-purple border-cyber-purple text-white shadow-[0_0_8px_rgba(124,58,237,0.25)]'
-                  : 'bg-[#050511] border-cyber-border text-slate-400 hover:text-white hover:border-cyber-cyan/30'
+                  ? (isLight
+                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm font-semibold'
+                      : 'bg-cyber-purple border-cyber-purple text-white shadow-[0_0_8px_rgba(124,58,237,0.25)]')
+                  : (isLight
+                      ? 'bg-white border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-350'
+                      : 'bg-[#050511] border-cyber-border text-slate-400 hover:text-white hover:border-[#00e5ff4d]')
               }`}
             >
               {cat.label}
@@ -677,8 +694,10 @@ export default function LiveCryptoNews() {
         </div>
  
         {/* Keyword Search Input */}
-        <div className="relative w-full md:max-w-[200px] shrink-0 bg-[#03030b] rounded border border-cyber-border focus-within:border-cyber-cyan/45 transition-all">
-          <span className="absolute left-2.5 top-1.5 text-slate-505 text-slate-500">
+        <div className={`relative w-full md:max-w-[200px] shrink-0 rounded border transition-all ${
+          isLight ? 'bg-white border-slate-300 focus-within:border-indigo-500' : 'bg-[#03030b] border-cyber-border focus-within:border-[#00e5ff73]'
+        }`}>
+          <span className="absolute left-2.5 top-1.5 text-slate-500">
             <Search className="w-3.5 h-3.5" />
           </span>
           <input 
@@ -686,7 +705,9 @@ export default function LiveCryptoNews() {
             value={search}
             onChange={handleSearchChange}
             placeholder="Search feed keywords..."
-            className="w-full bg-transparent pl-8 pr-3 py-1 text-[10px] font-mono text-white focus:outline-none placeholder:text-slate-600 block"
+            className={`w-full bg-transparent pl-8 pr-3 py-1 text-[10px] font-mono focus:outline-none block ${
+              isLight ? 'text-slate-805 text-slate-800 placeholder:text-slate-400' : 'text-white placeholder:text-slate-600'
+            }`}
           />
           {search && (
             <button 
@@ -707,7 +728,7 @@ export default function LiveCryptoNews() {
             {Array.from({ length: 3 }).map((_, idx) => (
               <div 
                 key={idx} 
-                className="bg-[#0b0c22]/50 border border-cyber-border rounded-lg p-3 animate-pulse flex items-center justify-between h-14"
+                className="bg-[#0b0c2280] border border-cyber-border rounded-lg p-3 animate-pulse flex items-center justify-between h-14"
               >
                 <div className="space-y-1.5 flex-1">
                   <div className="h-2.5 w-1/4 bg-[#161730] rounded"></div>

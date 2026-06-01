@@ -2656,17 +2656,27 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex justify-start">
           {/* Backdrop blur overlay */}
           <div 
-            className="fixed inset-0 bg-[#020205]/95 backdrop-blur-md transition-opacity duration-300 cursor-pointer"
+            className={`fixed inset-0 backdrop-blur-md transition-opacity duration-300 cursor-pointer ${
+              themeMode === 'light' ? 'bg-slate-900/40' : 'bg-[#020205]/95'
+            }`}
             onClick={() => setIsMenuOpen(false)}
           />
 
           {/* Sliding Drawer Body Container */}
-          <aside className="relative flex flex-col w-80 max-w-[85vw] h-full bg-[#030308] border-r border-cyber-border z-10 shadow-[5px_0_35px_rgba(0,255,136,0.15)] overflow-y-auto animate-fade-in">
+          <aside className={`relative flex flex-col w-80 max-w-[85vw] h-full border-r z-10 overflow-y-auto animate-fade-in ${
+            themeMode === 'light'
+              ? 'bg-white border-slate-200 text-slate-800 shadow-xl'
+              : 'bg-[#030308] border-cyber-border text-white shadow-[5px_0_35px_rgba(0,255,136,0.15)]'
+          }`}>
             
             {/* Drawer Header Brand */}
-            <div className="p-5 border-b border-cyber-border flex items-center justify-between bg-[#04040a]">
+            <div className={`p-5 border-b flex items-center justify-between ${
+              themeMode === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#04040a] border-cyber-border'
+            }`}>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded border border-cyber-neon flex items-center justify-center bg-[#0d0d1e] animate-pulse shrink-0">
+                <div className={`w-8 h-8 rounded border flex items-center justify-center animate-pulse shrink-0 ${
+                  themeMode === 'light' ? 'border-indigo-400 bg-indigo-50' : 'border-cyber-neon bg-[#0d0d1e]'
+                }`}>
                   <img
                     src="https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg"
                     alt="SURCHI Logo"
@@ -2675,13 +2685,21 @@ export default function App() {
                   />
                 </div>
                 <div>
-                  <h2 className="text-xs font-black text-white tracking-wider uppercase font-display select-none">SURCHI</h2>
-                  <span className="text-[9px] text-cyber-neon font-mono tracking-widest uppercase block font-bold">INTELLIGENCE SUITE</span>
+                  <h2 className={`text-xs font-black tracking-wider uppercase font-display select-none ${
+                    themeMode === 'light' ? 'text-slate-900 font-extrabold' : 'text-white'
+                  }`}>SURCHI</h2>
+                  <span className={`text-[9px] font-mono tracking-widest uppercase block font-bold ${
+                    themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
+                  }`}>INTELLIGENCE SUITE</span>
                 </div>
               </div>
               <button 
                 onClick={() => setIsMenuOpen(false)}
-                className="p-1.5 hover:bg-rose-950/40 text-slate-400 hover:text-red-400 border border-cyber-border rounded-lg cursor-pointer transition-all"
+                className={`p-1.5 border rounded-lg cursor-pointer transition-all ${
+                  themeMode === 'light'
+                    ? 'hover:bg-slate-100 text-slate-400 hover:text-red-500 border-slate-250'
+                    : 'hover:bg-rose-950/40 text-slate-400 hover:text-red-400 border-cyber-border'
+                }`}
                 title="Close drawer menu"
               >
                 <Icons.X className="w-4 h-4" />
@@ -2698,13 +2716,19 @@ export default function App() {
                   value={menuSearchQuery}
                   onChange={(e) => setMenuSearchQuery(e.target.value)}
                   placeholder="Search forensic tools..."
-                  className="w-full bg-[#050511] border border-cyber-border rounded-lg pl-9 pr-8 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_8px_rgba(0,229,255,0.15)] transition-all placeholder:text-slate-650"
+                  className={`w-full border rounded-lg pl-9 pr-8 py-2.5 text-xs font-mono focus:outline-none transition-all ${
+                    themeMode === 'light'
+                      ? 'bg-slate-50 border-slate-200 text-slate-950 focus:border-indigo-500 focus:shadow-[0_0_8px_rgba(79,70,229,0.1)] placeholder:text-slate-400'
+                      : 'bg-[#050511] border-cyber-border text-white focus:border-cyber-cyan focus:shadow-[0_0_8px_rgba(0,229,255,0.15)] placeholder:text-slate-650'
+                  }`}
                 />
                 <Icons.Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                 {menuSearchQuery && (
                   <button
                     onClick={() => setMenuSearchQuery('')}
-                    className="absolute right-3 top-2.5 p-1 rounded hover:bg-[#111126] text-slate-500 hover:text-white transition-colors cursor-pointer"
+                    className={`absolute right-3 top-2.5 p-1 rounded text-slate-500 hover:text-slate-800 transition-colors cursor-pointer ${
+                      themeMode === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#111126] hover:text-white'
+                    }`}
                     title="Clear search query"
                   >
                     <Icons.X className="w-3.5 h-3.5" />
@@ -2760,20 +2784,30 @@ export default function App() {
                             }}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
                               isActive 
-                                ? 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
-                                : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                                ? themeMode === 'light'
+                                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm'
+                                  : 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
+                                : themeMode === 'light'
+                                  ? 'text-slate-600 hover:text-indigo-650 hover:bg-slate-50 border-transparent hover:border-slate-100'
+                                  : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
                             }`}
                           >
                             <div className={`p-1 rounded ${
                               isActive 
-                                ? 'text-cyber-neon bg-cyber-bg' 
-                                : 'text-slate-500 group-hover:text-cyber-cyan'
+                                ? themeMode === 'light'
+                                  ? 'text-indigo-600 bg-indigo-50/50'
+                                  : 'text-cyber-neon bg-cyber-bg' 
+                                : themeMode === 'light'
+                                  ? 'text-slate-400 group-hover:text-indigo-600'
+                                  : 'text-slate-500 group-hover:text-cyber-cyan'
                             }`}>
                               <SurchiIcon name={m.icon} className="w-4 h-4" />
                             </div>
                             <span className="truncate">{m.name}</span>
                             {isActive && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
+                              <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
+                                themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon shadow-[0_0_6px_#00ff88]'
+                              }`}></span>
                             )}
                           </button>
                         );
@@ -2801,20 +2835,30 @@ export default function App() {
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
                             activeCustomPage === 'create_ad'
-                              ? 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
-                              : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                              ? themeMode === 'light'
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm'
+                                : 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
+                              : themeMode === 'light'
+                                ? 'text-slate-600 hover:text-indigo-650 hover:bg-slate-50 border-transparent hover:border-slate-100'
+                                : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
                           }`}
                         >
                           <div className={`p-1 rounded ${
                             activeCustomPage === 'create_ad'
-                              ? 'text-cyber-neon bg-cyber-bg' 
-                              : 'text-slate-500 group-hover:text-cyber-cyan'
+                              ? themeMode === 'light'
+                                ? 'text-indigo-600 bg-indigo-50'
+                                : 'text-cyber-neon bg-cyber-bg' 
+                              : themeMode === 'light'
+                                ? 'text-slate-400 group-hover:text-indigo-650'
+                                : 'text-slate-500 group-hover:text-cyber-cyan'
                           }`}>
                             <Icons.Megaphone className="w-4 h-4" />
                           </div>
                           <span className="truncate">Create ad</span>
                           {activeCustomPage === 'create_ad' && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
+                            <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
+                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon shadow-[0_0_6px_#00ff88]'
+                            }`}></span>
                           )}
                         </button>
 
@@ -2835,20 +2879,30 @@ export default function App() {
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
                             activeCustomPage === 'create_token'
-                              ? 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
-                              : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                              ? themeMode === 'light'
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm'
+                                : 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
+                              : themeMode === 'light'
+                                ? 'text-slate-600 hover:text-indigo-650 hover:bg-slate-50 border-transparent hover:border-slate-100'
+                                : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
                           }`}
                         >
                           <div className={`p-1 rounded ${
                             activeCustomPage === 'create_token'
-                              ? 'text-cyber-neon bg-cyber-bg' 
-                              : 'text-slate-500 group-hover:text-cyber-cyan'
+                              ? themeMode === 'light'
+                                ? 'text-indigo-600 bg-indigo-50'
+                                : 'text-cyber-neon bg-cyber-bg' 
+                              : themeMode === 'light'
+                                ? 'text-slate-400 group-hover:text-indigo-650'
+                                : 'text-slate-500 group-hover:text-cyber-cyan'
                           }`}>
                             <Icons.Coins className="w-4 h-4" />
                           </div>
                           <span className="truncate">Create token</span>
                           {activeCustomPage === 'create_token' && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
+                            <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
+                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon shadow-[0_0_6px_#00ff88]'
+                            }`}></span>
                           )}
                         </button>
 
@@ -2869,22 +2923,36 @@ export default function App() {
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
                             activeCustomPage === 'staking'
-                              ? 'bg-cyber-card-light text-[#ffffff] border-[#00ff88]/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
-                              : 'text-slate-400 hover:text-[#00ff88] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                              ? themeMode === 'light'
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm'
+                                : 'bg-cyber-card-light text-[#ffffff] border-[#00ff88]/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
+                              : themeMode === 'light'
+                                ? 'text-slate-600 hover:text-indigo-650 hover:bg-slate-50 border-transparent hover:border-slate-100'
+                                : 'text-slate-400 hover:text-[#00ff88] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
                           }`}
                         >
                           <div className={`p-1 rounded ${
                             activeCustomPage === 'staking'
-                              ? 'text-cyber-neon bg-cyber-bg' 
-                              : 'text-slate-500 group-hover:text-cyber-neon'
+                              ? themeMode === 'light'
+                                ? 'text-indigo-600 bg-indigo-50'
+                                : 'text-cyber-neon bg-cyber-bg' 
+                              : themeMode === 'light'
+                                ? 'text-slate-400 group-hover:text-indigo-650'
+                                : 'text-slate-500 group-hover:text-cyber-neon'
                           }`}>
                             <Icons.Layers className="w-4 h-4" />
                           </div>
                           <span className="truncate">Stake $SURCHI</span>
                           {activeCustomPage === 'staking' ? (
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon ml-auto shadow-[0_0_6px_#00ff88]"></span>
+                            <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
+                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon shadow-[0_0_6px_#00ff88]'
+                            }`}></span>
                           ) : (
-                            <span className="ml-auto text-[8px] px-1.5 py-0.5 bg-[#051c11] border border-cyber-neon/30 text-cyber-neon font-black rounded uppercase scale-90">APY 7.3%</span>
+                            <span className={`ml-auto text-[8px] px-1.5 py-0.5 font-black border rounded uppercase scale-90 ${
+                              themeMode === 'light'
+                                ? 'bg-emerald-50 border-emerald-350 text-emerald-700'
+                                : 'bg-[#051c11] border-cyber-neon/30 text-cyber-neon'
+                            }`}>APY 7.3%</span>
                           )}
                         </button>
 
@@ -2899,22 +2967,36 @@ export default function App() {
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
                             activeCustomPage === 'crypto_news'
-                              ? 'bg-cyber-card-light text-[#ffffff] border-cyber-cyan/40 shadow-[0_0_8px_rgba(0,229,255,0.15)]'
-                              : 'text-slate-400 hover:text-cyber-cyan hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                              ? themeMode === 'light'
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm'
+                                : 'bg-cyber-card-light text-[#ffffff] border-cyber-cyan/40 shadow-[0_0_8px_rgba(0,229,255,0.15)]'
+                              : themeMode === 'light'
+                                ? 'text-slate-600 hover:text-indigo-650 hover:bg-slate-50 border-transparent hover:border-slate-100'
+                                : 'text-slate-400 hover:text-cyber-cyan hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
                           }`}
                         >
                           <div className={`p-1 rounded ${
                             activeCustomPage === 'crypto_news'
-                              ? 'text-cyber-cyan bg-cyber-bg' 
-                              : 'text-slate-500 group-hover:text-cyber-cyan'
+                              ? themeMode === 'light'
+                                ? 'text-indigo-600 bg-indigo-50'
+                                : 'text-cyber-cyan bg-cyber-bg' 
+                              : themeMode === 'light'
+                                ? 'text-slate-400 group-hover:text-indigo-650'
+                                : 'text-slate-500 group-hover:text-cyber-cyan'
                           }`}>
                             <Icons.Newspaper className="w-4 h-4" />
                           </div>
                           <span className="truncate flex-1">Crypto News</span>
                           {activeCustomPage === 'crypto_news' ? (
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-cyan ml-auto shadow-[0_0_6px_rgba(0,229,255,1)]"></span>
+                            <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
+                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-cyan shadow-[0_0_6px_rgba(0,229,255,1)]'
+                            }`}></span>
                           ) : (
-                            <span className="ml-auto text-[8px] px-1.5 py-0.5 bg-[#0a1829] border border-cyber-cyan/30 text-cyber-cyan font-black rounded uppercase scale-90">LIVE FEED</span>
+                            <span className={`ml-auto text-[8px] px-1.5 py-0.5 border font-black rounded uppercase scale-90 ${
+                              themeMode === 'light'
+                                ? 'bg-indigo-50 border-indigo-250 text-indigo-700'
+                                : 'bg-[#0a1829] border-cyber-cyan/30 text-cyber-cyan'
+                            }`}>LIVE FEED</span>
                           )}
                         </button>
                       </>
@@ -2928,17 +3010,21 @@ export default function App() {
                 <h4 className="text-[9px] font-mono uppercase tracking-widest text-slate-500 font-extrabold text-left pl-1">
                   UTILITIES & ACCESS TIERS
                 </h4>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 font-mono">
                   <button
                     onClick={() => {
                       setIsMenuOpen(false); // Close drawer first to reveal about modal
                       setAboutSubTab('overview');
                       setShowAboutModal(true);
                     }}
-                    className="py-2.5 bg-[#1b1c31] hover:bg-[#25274ade] text-cyber-cyan hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-[9px] font-mono select-none"
+                    className={`py-2.5 rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-[9px] select-none ${
+                      themeMode === 'light'
+                        ? 'bg-indigo-50 hover:bg-indigo-150 border border-indigo-200 text-indigo-700 hover:text-indigo-800'
+                        : 'bg-[#1b1c31] hover:bg-[#25274ade] text-cyber-cyan hover:text-cyber-neon border border-cyber-border'
+                    }`}
                     title="About SURCHI Protocol"
                   >
-                    <Icons.BookOpen className="w-4 h-4 text-cyber-cyan" />
+                    <Icons.BookOpen className={`w-4 h-4 ${themeMode === 'light' ? 'text-indigo-650' : 'text-cyber-cyan'}`} />
                     <span className="font-bold">ABOUT</span>
                   </button>
                   <button
@@ -2946,10 +3032,14 @@ export default function App() {
                       setIsMenuOpen(false);
                       setShowDonateModal(true);
                     }}
-                    className="py-2.5 bg-[#2d0f1b] hover:bg-[#4a1c2d] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/30 rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-[9px] font-mono select-none"
+                    className={`py-2.5 rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-[9px] select-none ${
+                      themeMode === 'light'
+                        ? 'bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-[#db2777] hover:text-rose-705'
+                        : 'bg-[#2d0f1b] hover:bg-[#4a1c2d] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/30'
+                    }`}
                     title="Donate address details"
                   >
-                    <Icons.Heart className="w-4 h-4 text-[#ff4b82]" />
+                    <Icons.Heart className={`w-4 h-4 ${themeMode === 'light' ? 'text-[#e11d48]' : 'text-[#ff4b82]'}`} />
                     <span className="font-bold">DONATE</span>
                   </button>
                 </div>
@@ -2958,7 +3048,11 @@ export default function App() {
                     href="https://raydium.io/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-2.5 bg-[#0d2a23]/90 hover:bg-[#123e33] text-[#00ff88] hover:text-[#39ffac] border border-[#00ff88]/30 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 text-[10.5px] font-mono font-bold select-none text-center"
+                    className={`w-full py-2.5 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 text-[10.5px] font-mono font-bold select-none text-center border ${
+                      themeMode === 'light'
+                        ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 border-emerald-300'
+                        : 'bg-[#0d2a23]/90 hover:bg-[#123e33] text-[#00ff88] hover:text-[#39ffac] border border-[#00ff88]/30'
+                    }`}
                   >
                     <Icons.Coins className="w-3.5 h-3.5 animate-pulse" />
                     <span>BUY $SURCHI</span>
@@ -2968,12 +3062,16 @@ export default function App() {
 
               {/* SECTION 3: PROTOCOL HISTORY LOGS */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between border-b border-cyber-border/40 pb-1">
+                <div className={`flex items-center justify-between border-b pb-1 ${
+                  themeMode === 'light' ? 'border-slate-200' : 'border-cyber-border/40'
+                }`}>
                   <h4 className="text-[9px] font-mono uppercase tracking-widest text-slate-500 font-extrabold text-left pl-1">
                     RESEARCH MEMORY INDEX
                   </h4>
                   {historyList.length > 0 && (
-                    <span className="text-[8px] font-mono text-cyber-purple uppercase font-bold">
+                    <span className={`text-[8px] font-mono uppercase font-bold ${
+                      themeMode === 'light' ? 'text-indigo-650' : 'text-cyber-purple'
+                    }`}>
                       {historyList.length} saves
                     </span>
                   )}
@@ -2981,8 +3079,10 @@ export default function App() {
                 
                 <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
                   {historyList.length === 0 ? (
-                    <div className="py-8 text-center text-[10px] text-slate-600 font-mono space-y-1.5 border border-cyber-border/20 rounded-lg bg-[#040409]">
-                      <Icons.ShieldX className="w-5 h-5 mx-auto text-slate-700" />
+                    <div className={`py-8 text-center text-[10px] font-mono space-y-1.5 border rounded-lg ${
+                      themeMode === 'light' ? 'border-slate-200 bg-slate-50 text-slate-500' : 'border-cyber-border/20 bg-[#040409] text-slate-600'
+                    }`}>
+                      <Icons.ShieldX className="w-5 h-5 mx-auto text-slate-400" />
                       <span>Diagnostic Memory empty.</span>
                     </div>
                   ) : (
@@ -2999,22 +3099,34 @@ export default function App() {
                           }}
                           className={`w-full p-2.5 rounded-lg border text-left transition-all relative block cursor-pointer select-none group overflow-hidden ${
                             isSelected 
-                              ? 'bg-cyber-card-light border-cyber-neon/40 shadow-[0_0_10px_rgba(0,255,136,0.06)]' 
-                              : 'bg-cyber-card/40 border-cyber-border hover:border-slate-700'
+                              ? themeMode === 'light'
+                                ? 'bg-indigo-50/50 border-indigo-300 shadow-sm'
+                                : 'bg-cyber-card-light border-cyber-neon/40 shadow-[0_0_10px_rgba(0,255,136,0.06)]' 
+                              : themeMode === 'light'
+                                ? 'bg-white border-slate-200 hover:border-slate-350 hover:bg-slate-50/50'
+                                : 'bg-cyber-card/40 border-cyber-border hover:border-slate-700'
                           }`}
                         >
                           <div className="flex items-center gap-2 mb-1">
-                            <span className={`p-0.5 rounded text-[11px] ${isSelected ? 'text-cyber-neon bg-cyber-bg' : 'text-slate-500'}`}>
+                            <span className={`p-0.5 rounded text-[11px] ${
+                              isSelected 
+                                ? themeMode === 'light' ? 'text-indigo-600 bg-indigo-50' : 'text-cyber-neon bg-cyber-bg' 
+                                : 'text-slate-500'
+                            }`}>
                               <SurchiIcon name={moduleRef?.icon || 'Compass'} className="w-3.5 h-3.5" />
                             </span>
-                            <span className="text-[11px] font-bold text-slate-200 truncate pr-1 max-w-[120px] font-display">
+                            <span className={`text-[11px] font-bold truncate pr-1 max-w-[120px] font-display ${
+                              themeMode === 'light' ? 'text-slate-800' : 'text-slate-200'
+                            }`}>
                               {h.moduleName}
                             </span>
                             <span className="text-[8px] text-slate-500 font-mono ml-auto">
                               {h.timestamp.split(',')[1]?.trim() || h.timestamp}
                             </span>
                           </div>
-                          <div className="text-[8px] text-slate-400 font-mono line-clamp-1 truncate">
+                          <div className={`text-[8px] font-mono line-clamp-1 truncate ${
+                            themeMode === 'light' ? 'text-slate-500' : 'text-slate-400'
+                          }`}>
                             {Object.entries(h.payload).map(([k, v]) => `${k.toUpperCase()}: ${v}`).join(' | ')}
                           </div>
                         </button>
@@ -3192,6 +3304,7 @@ export default function App() {
               {isHomePage && (
                 <div className="w-full animate-fade-in">
                   <SurchiTokenMetrics 
+                    themeMode={themeMode}
                     onPriceClick={() => {
                       setActiveCustomPage('surchi_live');
                       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3215,11 +3328,15 @@ export default function App() {
                     href="https://raydium.io/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-extrabold tracking-widest text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_12px_rgba(0,255,136,0.18)] hover:shadow-[0_0_18px_rgba(0,255,136,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase no-underline"
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-extrabold tracking-widest uppercase no-underline hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none border ${
+                      themeMode === 'light'
+                        ? 'bg-emerald-50 hover:bg-emerald-100/80 text-emerald-700 hover:text-emerald-800 border-emerald-300 shadow-sm'
+                        : 'text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_12px_rgba(0,255,136,0.18)] hover:shadow-[0_0_18px_rgba(0,255,136,0.35)]'
+                    }`}
                   >
-                    <Icons.Coins className="w-3.5 h-3.5 text-cyber-neon shrink-0" />
+                    <Icons.Coins className={`w-3.5 h-3.5 shrink-0 ${themeMode === 'light' ? 'text-emerald-600' : 'text-cyber-neon'}`} />
                     <span>BUY $SURCHI</span>
-                    <Icons.ExternalLink className="w-3 h-3 text-cyber-neon/70 shrink-0" />
+                    <Icons.ExternalLink className={`w-3 h-3 shrink-0 ${themeMode === 'light' ? 'text-emerald-500/70' : 'text-cyber-neon/70'}`} />
                   </a>
                 </div>
               )}
@@ -3261,18 +3378,24 @@ export default function App() {
                   </div>
 
                   {/* AUTOMATIC LIVE CRYPTO NEWS */}
-                  <LiveCryptoNews />
+                  <LiveCryptoNews themeMode={themeMode} />
                 </div>
               ) : activeCustomPage === 'staking' ? (
                 <div className="space-y-8 animate-fade-in text-left">
                   {/* Custom Header Title Accent */}
                   <div className="space-y-2">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-cyber-card border border-[#00ff88]/30 text-[#00ff88] text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_8px_rgba(0,255,136,0.05)]">
-                      <Icons.Layers className="w-3.5 h-3.5 text-[#00ff88] animate-pulsing" /> live staging portal
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-widest ${
+                      themeMode === 'light'
+                        ? 'bg-emerald-50 border border-emerald-250 text-emerald-750'
+                        : 'bg-cyber-card border border-[#00ff88]/30 text-[#00ff88] shadow-[0_0_8px_rgba(0,255,136,0.05)]'
+                    }`}>
+                      <Icons.Layers className={`w-3.5 h-3.5 ${themeMode === 'light' ? 'text-emerald-700' : 'text-[#00ff88]'} animate-pulse`} /> live staging portal
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#ffffff] font-display flex items-center gap-3">
-                        <Icons.Layers className="w-7 h-7 text-[#00ff88]" />
+                      <h2 className={`text-2xl md:text-3xl font-bold tracking-tight font-display flex items-center gap-3 ${
+                        themeMode === 'light' ? 'text-slate-900 font-black' : 'text-[#ffffff]'
+                      }`}>
+                        <Icons.Layers className={`w-7 h-7 ${themeMode === 'light' ? 'text-emerald-600' : 'text-[#00ff88]'}`} />
                         Dedicated $SURCHI Smart Staking Portals
                       </h2>
                       <button
@@ -3280,42 +3403,58 @@ export default function App() {
                         onClick={() => {
                           setActiveCustomPage(null);
                         }}
-                        className="px-4 py-2 bg-[#0c0c1e] hover:bg-[#1a1a3e] border border-cyber-border rounded-lg text-slate-300 hover:text-white text-xs font-bold font-mono transition-all cursor-pointer select-none uppercase w-fit font-semibold"
+                        className={`px-4 py-2 border rounded-lg text-xs font-bold font-mono transition-all cursor-pointer select-none uppercase w-fit font-semibold ${
+                          themeMode === 'light'
+                            ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700 hover:text-slate-900'
+                            : 'bg-[#0c0c1e] hover:bg-[#1a1a3e] border border-cyber-border text-slate-300 hover:text-white'
+                        }`}
                       >
                         &larr; Back to Workspace
                       </button>
                     </div>
-                    <p className="text-slate-400 text-xs leading-relaxed max-w-2xl font-mono">
+                    <p className={`text-xs leading-relaxed max-w-2xl font-mono ${themeMode === 'light' ? 'text-slate-500 font-medium' : 'text-slate-400'}`}>
                       Activate security consensus validator nodes, check hold durations, calculate emissions, and lock holdings in decentralized validation pools.
                     </p>
                   </div>
 
                   {/* SYSTEM STAKING BOARD */}
-                  <div className="border border-cyber-cyan/20 bg-[#04040a] rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
-                    <StakingDashboard />
+                  <div className={`border rounded-xl p-5 md:p-8 shadow-sm text-left ${
+                    themeMode === 'light'
+                      ? 'bg-white border-slate-200'
+                      : 'border-cyber-cyan/20 bg-[#04040a] shadow-[0_0_20px_rgba(0,191,255,0.03)]'
+                  }`}>
+                    <StakingDashboard themeMode={themeMode} />
                   </div>
                 </div>
               ) : activeCustomPage ? (
                 <div className="space-y-8 animate-fade-in text-left">
                   {/* Custom Header Title Accent */}
                   <div className="space-y-2">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-cyber-card border border-cyber-border text-cyber-cyan text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_8px_rgba(0,229,255,0.05)]">
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-widest ${
+                      themeMode === 'light'
+                        ? 'bg-slate-100 border border-slate-200 text-indigo-700 shadow-sm'
+                        : 'bg-cyber-card border border-cyber-border text-cyber-cyan shadow-[0_0_8px_rgba(0,229,255,0.05)]'
+                    }`}>
                       <Icons.Rocket className="w-3.5 h-3.5 text-cyber-cyan animate-bounce" /> coming soon module
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#ffffff] font-display flex items-center gap-3">
+                    <h2 className={`text-2xl md:text-3xl font-bold tracking-tight font-display flex items-center gap-3 ${
+                      themeMode === 'light' ? 'text-slate-900 font-extrabold' : 'text-[#ffffff]'
+                    }`}>
                       {activeCustomPage === 'create_ad' ? (
                         <>
-                          <Icons.Megaphone className="w-7 h-7 text-cyber-neon" />
+                          <Icons.Megaphone className={`w-7 h-7 ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'}`} />
                           Create Ad Campaign Core
                         </>
                       ) : (
                         <>
-                          <Icons.Coins className="w-7 h-7 text-cyber-neon" fill="none" />
+                          <Icons.Coins className={`w-7 h-7 ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'}`} fill="none" />
                           Audited Token Genesis Generator
                         </>
                       )}
                     </h2>
-                    <p className="text-slate-400 text-xs leading-relaxed max-w-2xl font-mono">
+                    <p className={`text-xs leading-relaxed max-w-2xl font-mono ${
+                      themeMode === 'light' ? 'text-slate-500 font-medium' : 'text-slate-400'
+                    }`}>
                       {activeCustomPage === 'create_ad' 
                         ? "Design, compile, and launch premium automated advertising campaigns across leading Web3 channels instantly with real-time feedback."
                         : "Compile, security-audit, and deploy flawless customized smart contracts on major blockchains with zero coding requirements."
@@ -3324,29 +3463,35 @@ export default function App() {
                   </div>
 
                   {/* Gorgeous visual block */}
-                  <div className="bg-[#0b0b1a] rounded-xl border border-cyber-border p-6 sm:p-8 shadow-2xl relative overflow-hidden text-left font-mono">
+                  <div className={`rounded-xl border p-6 sm:p-8 shadow-2xl relative overflow-hidden text-left font-mono transition-all duration-300 ${
+                    themeMode === 'light'
+                      ? 'bg-white border-slate-200 text-slate-800 shadow-slate-200/50'
+                      : 'bg-[#0b0b1a] border-cyber-border text-white'
+                  }`}>
                     <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
                     
                     <div className="max-w-2xl space-y-6 relative z-10">
                       <div className="flex items-center gap-3 text-xs">
                         <span className={`px-2 py-0.5 rounded font-black tracking-widest text-[9px] uppercase border ${
                           activeCustomPage === 'create_ad' 
-                            ? 'bg-cyber-cyan/10 text-cyber-cyan border-cyber-cyan/30' 
-                            : 'bg-cyber-neon/10 text-cyber-neon border-cyber-neon/30 animate-pulse'
+                            ? (themeMode === 'light' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-cyber-cyan/10 text-cyber-cyan border-cyber-cyan/30') 
+                            : (themeMode === 'light' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 animate-pulse' : 'bg-cyber-neon/10 text-cyber-neon border-cyber-neon/30 animate-pulse')
                         }`}>
                           {activeCustomPage === 'create_ad' ? 'ECOSYSTEM PHASE III' : 'ECOSYSTEM PHASE IV'}
                         </span>
                         <span className="text-slate-500">&bull;</span>
-                        <span className="text-slate-400 animate-pulse font-bold">DEVELOPMENT STAGE: GRID ALIGNMENT</span>
+                        <span className={`animate-pulse font-bold ${themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>DEVELOPMENT STAGE: GRID ALIGNMENT</span>
                       </div>
 
-                      <div className="space-y-4 font-sans text-sm text-slate-300 leading-relaxed text-left">
+                      <div className={`space-y-4 font-sans text-sm leading-relaxed text-left ${
+                        themeMode === 'light' ? 'text-slate-700' : 'text-slate-300'
+                      }`}>
                         {activeCustomPage === 'create_ad' ? (
                           <>
                             <p>
                               Unleash the supreme powers of automated blockchain outreach. The <strong>Surchi Ad Creation Core</strong> translates token real-time telemetry, live candle trends, and social indexes directly into multi-format ad assets (banners, copy blocks, post templates, video scripts) crafted to dominate Web3 feeds in one click.
                             </p>
-                            <p className="text-xs text-slate-400 font-mono">
+                            <p className={`text-xs font-mono ${themeMode === 'light' ? 'text-slate-500 font-medium' : 'text-slate-400'}`}>
                               * Integrated CPM Optimizer determines the highest density channels automatically to guarantee maximal placement coverage.
                             </p>
                           </>
@@ -3355,7 +3500,7 @@ export default function App() {
                             <p>
                               Launch fully audited smart contracts instantly with no writing requirement. Create customized token assets on <strong>Solana (under standard SPL), Base (EVM), or Ethereum</strong>. Every generated contract is pre-loaded with optimal tax configurations, anti-bot mechanisms, fully audited liquidity structures, and automated owner renunciation state options.
                             </p>
-                            <p className="text-xs text-slate-400 font-mono">
+                            <p className={`text-xs font-mono ${themeMode === 'light' ? 'text-slate-500 font-medium' : 'text-slate-400'}`}>
                               * Every deployed asset receives a verified genesis shield seal, pre-authenticated by Surchi Forensic scanners to prevent false-positives on block explorers.
                             </p>
                           </>
@@ -3363,9 +3508,17 @@ export default function App() {
                       </div>
 
                       {/* Visual Mock / Progress Area */}
-                      <div className="border border-cyber-border bg-[#030308]/60 rounded-xl p-4 sm:p-5 space-y-4">
-                        <div className="flex items-center justify-between border-b border-cyber-border/40 pb-2">
-                          <span className="text-[10px] text-cyber-cyan uppercase font-bold tracking-widest leading-none flex items-center gap-1.5 font-mono">
+                      <div className={`border rounded-xl p-4 sm:p-5 space-y-4 transition-colors ${
+                        themeMode === 'light'
+                          ? 'border-slate-200 bg-slate-50/70'
+                          : 'border-cyber-border bg-[#030308]/60'
+                      }`}>
+                        <div className={`flex items-center justify-between border-b pb-2 ${
+                          themeMode === 'light' ? 'border-slate-200' : 'border-cyber-border/40'
+                        }`}>
+                          <span className={`text-[10px] uppercase font-bold tracking-widest leading-none flex items-center gap-1.5 font-mono ${
+                            themeMode === 'light' ? 'text-slate-800' : 'text-cyber-cyan'
+                          }`}>
                             <Icons.Activity className="w-3.5 h-3.5 animate-pulse" />
                             quantum core status monitor
                           </span>
@@ -3374,31 +3527,47 @@ export default function App() {
 
                         {activeCustomPage === 'create_ad' ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-                            <div className="space-y-1.5 border border-cyber-border/30 bg-cyber-card-light/40 p-2.5 rounded-lg">
-                              <span className="text-emerald-400 font-bold block">● AI COPYSYTEM</span>
-                              <span className="text-[10.5px] text-slate-400 leading-normal block">Pre-trained on billions of successful conversion parameters and click patterns.</span>
+                            <div className={`space-y-1.5 border p-2.5 rounded-lg ${
+                              themeMode === 'light'
+                                ? 'border-indigo-100 bg-white/80 shadow-xs text-slate-705 text-slate-700'
+                                : 'border-cyber-border/30 bg-cyber-card-light/40'
+                            }`}>
+                              <span className="text-emerald-500 dark:text-emerald-400 font-bold block">● AI COPYSYTEM</span>
+                              <span className={`text-[10.5px] leading-normal block ${themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>Pre-trained on billions of successful conversion parameters and click patterns.</span>
                             </div>
-                            <div className="space-y-1.5 border border-cyber-border/30 bg-cyber-card-light/40 p-2.5 rounded-lg">
-                              <span className="text-cyber-cyan font-bold block">● MULTI-FORMAT EXPORT</span>
-                              <span className="text-[10.5px] text-slate-400 leading-normal block">Instant exports to Telegram posts, X threading scripts, banner assets, or web frames.</span>
+                            <div className={`space-y-1.5 border p-2.5 rounded-lg ${
+                              themeMode === 'light'
+                                ? 'border-indigo-100 bg-white/80 shadow-xs'
+                                : 'border-cyber-border/30 bg-cyber-card-light/40'
+                            }`}>
+                              <span className="text-indigo-600 dark:text-cyber-cyan font-bold block">● MULTI-FORMAT EXPORT</span>
+                              <span className={`text-[10.5px] leading-normal block ${themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>Instant exports to Telegram posts, X threading scripts, banner assets, or web frames.</span>
                             </div>
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-                            <div className="space-y-1.5 border border-cyber-border/30 bg-cyber-card-light/40 p-2.5 rounded-lg">
-                              <span className="text-cyber-purple font-bold block">● AUDITED BYTECODE</span>
-                              <span className="text-[10.5px] text-slate-400 leading-normal block">100% pre-audited solidity and Rust binaries to satisfy security requirements out-of-the-box.</span>
+                            <div className={`space-y-1.5 border p-2.5 rounded-lg ${
+                              themeMode === 'light'
+                                ? 'border-indigo-100 bg-white/80 shadow-xs text-slate-705 text-slate-700'
+                                : 'border-cyber-border/30 bg-cyber-card-light/40'
+                            }`}>
+                              <span className="text-indigo-600 dark:text-cyber-purple font-bold block">● AUDITED BYTECODE</span>
+                              <span className={`text-[10.5px] leading-normal block ${themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>100% pre-audited solidity and Rust binaries to satisfy security requirements out-of-the-box.</span>
                             </div>
-                            <div className="space-y-1.5 border border-cyber-border/30 bg-cyber-card-light/40 p-2.5 rounded-lg">
-                              <span className="text-cyber-neon font-bold block">● LP STABILIZER</span>
-                              <span className="text-[10.5px] text-slate-400 leading-normal block">Lock liquidity pools or burn providers automatically upon contract verification.</span>
+                            <div className={`space-y-1.5 border p-2.5 rounded-lg ${
+                              themeMode === 'light'
+                                ? 'border-indigo-100 bg-white/80 shadow-xs text-slate-750 text-slate-700'
+                                : 'border-cyber-border/30 bg-cyber-card-light/40'
+                            }`}>
+                              <span className="text-emerald-505 text-emerald-600 dark:text-cyber-neon font-bold block">● LP STABILIZER</span>
+                              <span className={`text-[10.5px] leading-normal block ${themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>Lock liquidity pools or burn providers automatically upon contract verification.</span>
                             </div>
                           </div>
                         )}
 
                         <div className="pt-2 flex items-center justify-between font-mono gap-5 flex-wrap">
                           <span className="text-[9px] text-slate-500 uppercase leading-normal">LAUNCH QUEUE: SEQUENCE UNLOCKED BY PRESALE STAGES</span>
-                          <span className="text-[10px] text-cyber-neon font-black uppercase tracking-widest animate-pulse">COMING SOON</span>
+                          <span className={`text-[10px] font-black uppercase tracking-widest animate-pulse ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'}`}>COMING SOON</span>
                         </div>
                       </div>
 
@@ -3409,7 +3578,11 @@ export default function App() {
                           onClick={() => {
                             setActiveCustomPage(null);
                           }}
-                          className="px-4 py-2 bg-cyber-card-light hover:bg-[#1a1a3e] border border-cyber-border rounded-lg text-slate-300 hover:text-white text-xs font-bold font-mono transition-all cursor-pointer select-none"
+                          className={`px-4 py-2 border rounded-lg text-xs font-bold font-mono transition-all cursor-pointer select-none ${
+                            themeMode === 'light'
+                              ? 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-700 hover:text-slate-900'
+                              : 'bg-cyber-card-light hover:bg-[#1a1a3e] border border-cyber-border text-slate-300 hover:text-white'
+                          }`}
                         >
                           &larr; Back to Workspace
                         </button>
@@ -3423,9 +3596,13 @@ export default function App() {
                               type: activeCustomPage === 'create_ad' ? 'ad' : 'token'
                             });
                           }}
-                          className="px-5 py-2.5 rounded-lg bg-cyber-card border border-cyber-border hover:border-cyber-cyan/50 text-slate-300 hover:text-cyber-cyan text-xs font-bold font-mono tracking-wider transition-all cursor-pointer select-none"
+                          className={`px-5 py-2.5 rounded-lg text-xs font-bold font-mono tracking-wider transition-all cursor-pointer select-none border ${
+                            themeMode === 'light'
+                              ? 'bg-indigo-600 hover:bg-indigo-700 border-indigo-500 text-white shadow-sm hover:shadow'
+                              : 'bg-cyber-card border border-cyber-border hover:border-cyber-cyan/50 text-slate-300 hover:text-cyber-cyan'
+                          }`}
                         >
-                          [⚡ ENLIST FOR PRIORITY ACCESS]
+                          ⚡ ENLIST FOR PRIORITY ACCESS
                         </button>
                       </div>
 
@@ -3436,28 +3613,46 @@ export default function App() {
                 <>
                   {/* Header Title Accent */}
                   <div className="space-y-2">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-cyber-card border border-cyber-border text-cyber-cyan text-[10px] font-mono font-bold uppercase tracking-widest shadow-[0_0_8px_rgba(0,229,255,0.05)]">
-                      <Icons.Sparkles className="w-3.5 h-3.5 text-cyber-cyan" /> active forensics module
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-widest ${
+                      themeMode === 'light'
+                        ? 'bg-slate-100 border border-slate-200 text-indigo-600'
+                        : 'bg-cyber-card border border-cyber-border text-cyber-cyan shadow-[0_0_8px_rgba(0,229,255,0.05)]'
+                    }`}>
+                      <Icons.Sparkles className={`w-3.5 h-3.5 ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-cyan'}`} /> active forensics module
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#ffffff] font-display flex items-center gap-3">
-                      <SurchiIcon name={activeModule.icon} className="w-7 h-7 text-cyber-neon" />
+                    <h2 className={`text-2xl md:text-3xl font-bold tracking-tight font-display flex items-center gap-3 ${
+                      themeMode === 'light' ? 'text-slate-900' : 'text-white'
+                    }`}>
+                      <SurchiIcon name={activeModule.icon} className={`w-7 h-7 ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'}`} />
                       {activeModule.name}
                     </h2>
-                    <p className="text-slate-400 text-xs leading-relaxed max-w-2xl font-mono">
+                    <p className={`text-xs leading-relaxed max-w-2xl font-mono ${
+                      themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'
+                    }`}>
                       {activeModule.description}
                     </p>
                   </div>
 
                   {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
-                  <section className="bg-[#0b0b1a] rounded-xl border border-cyber-border p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+                  <section className={`rounded-xl border p-4 sm:p-6 shadow-2xl relative overflow-hidden ${
+                    themeMode === 'light'
+                      ? 'bg-white border-slate-200 shadow-slate-200/55'
+                      : 'bg-[#0b0b1a] border-cyber-border/80 shadow-2xl'
+                  }`}>
                     {/* Ambient Corner Glow grids */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
+                    {themeMode !== 'light' ? (
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
+                    ) : (
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-transparent pointer-events-none rounded-bl-full"></div>
+                    )}
                     
                     <form onSubmit={handleRunAnalysis} className="space-y-5">
                       <div className="grid grid-cols-1 gap-5">
                         {activeModule.inputs.map(input => (
                           <div key={input.key} className="space-y-2 text-left">
-                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
+                            <label className={`block text-xs font-bold uppercase tracking-wider font-mono ${
+                              themeMode === 'light' ? 'text-slate-700' : 'text-slate-300'
+                            }`}>
                               {input.label}
                             </label>
 
@@ -3468,7 +3663,11 @@ export default function App() {
                                 value={formInputs[input.key] || ''}
                                 onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
                                 placeholder={input.placeholder}
-                                className="w-full bg-[#03030a] border border-cyber-border rounded-lg px-4 py-3 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all placeholder:text-slate-600"
+                                className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all ${
+                                  themeMode === 'light'
+                                    ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
+                                    : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
+                                }`}
                               />
                             )}
 
@@ -3479,7 +3678,11 @@ export default function App() {
                                 value={formInputs[input.key] || ''}
                                 onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
                                 placeholder={input.placeholder}
-                                className="w-full bg-[#03030a] border border-cyber-border rounded-lg px-4 py-3 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all placeholder:text-slate-600 resize-y"
+                                className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all resize-y ${
+                                  themeMode === 'light'
+                                    ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
+                                    : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
+                                }`}
                               />
                             )}
 
@@ -3487,10 +3690,14 @@ export default function App() {
                               <select
                                 value={formInputs[input.key] || ''}
                                 onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                                className="w-full bg-[#03030a] border border-cyber-border rounded-lg px-4 py-3 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all"
+                                className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all ${
+                                  themeMode === 'light'
+                                    ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500'
+                                    : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)]'
+                                }`}
                               >
                                 {input.options?.map(opt => (
-                                  <option key={opt.value} value={opt.value} className="bg-[#0b0b1a] text-[#ffffff]">
+                                  <option key={opt.value} value={opt.value} className={themeMode === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b1a] text-white'}>
                                     {opt.label}
                                   </option>
                                 ))}
@@ -3505,7 +3712,11 @@ export default function App() {
                         <button
                           type="submit"
                           disabled={loading}
-                          className="px-6 py-3 rounded-lg bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)] disabled:opacity-50 transition-all flex items-center gap-2"
+                          className={`px-6 py-3 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center gap-2 ${
+                            themeMode === 'light'
+                              ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
+                              : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
+                          }`}
                         >
                           {loading ? (
                             <>
@@ -3520,8 +3731,12 @@ export default function App() {
                           )}
                         </button>
                         {loading && (
-                          <span className="text-[10px] text-cyber-neon font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-neon inline-block animate-ping"></span> quantum ledger scanning active
+                          <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center gap-1 ${
+                            themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full inline-block animate-ping ${
+                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon'
+                            }`}></span> quantum ledger scanning active
                           </span>
                         )}
                       </div>
@@ -3833,10 +4048,18 @@ export default function App() {
           ) : isHomePage ? (
             <div className="space-y-8 w-full">
               {/* EMPTY SHEETS INITIAL DEMAND ACCENTS */}
-              <div className="p-6 sm:p-12 text-center bg-[#090915] border border-cyber-border/80 rounded-xl space-y-4 max-w-xl mx-auto flex flex-col items-center shadow-inner">
+              <div className={`p-6 sm:p-12 text-center rounded-xl space-y-4 max-w-xl mx-auto flex flex-col items-center border ${
+                themeMode === 'light'
+                  ? 'bg-white border-slate-200 shadow-sm shadow-slate-100/60'
+                  : 'bg-[#090915] border-cyber-border/80 shadow-inner'
+              }`}>
                 <div className="space-y-2">
-                  <h3 className="text-sm font-bold text-[#ffffff] uppercase tracking-wide font-mono">Cybernetic Oracle Diagnostics</h3>
-                  <p className="text-xs text-slate-400 font-sans leading-relaxed max-w-sm">
+                  <h3 className={`text-sm uppercase tracking-wide font-mono ${
+                    themeMode === 'light' ? 'text-slate-900 font-extrabold' : 'text-[#ffffff] font-bold'
+                  }`}>Cybernetic Oracle Diagnostics</h3>
+                  <p className={`text-xs font-sans leading-relaxed max-w-sm ${
+                    themeMode === 'light' ? 'text-slate-605 text-slate-600 font-medium' : 'text-slate-400'
+                  }`}>
                     Specify input parameters in the controller module above, then select **"{activeModule.buttonText}"** to retrieve forensic analysis sheets.
                   </p>
                 </div>
@@ -3851,11 +4074,15 @@ export default function App() {
               <div className="flex justify-center pt-2">
                 <button
                   onClick={() => setShowSurchiIntroModal(true)}
-                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-xs sm:text-sm font-mono font-black tracking-widest text-[#a855f7] hover:text-[#c084fc] bg-[#120721] hover:bg-[#1e0a36] border border-[#a855f7]/45 hover:border-[#c084fc] shadow-[0_0_18px_rgba(168,85,247,0.15)] hover:shadow-[0_0_25px_rgba(168,85,247,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase"
+                  className={`inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-xs sm:text-sm font-mono font-black tracking-widest uppercase hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none border ${
+                    themeMode === 'light'
+                      ? 'bg-purple-50 hover:bg-purple-100 text-purple-700 hover:text-purple-800 border-purple-300 shadow-sm'
+                      : 'text-[#a855f7] hover:text-[#c084fc] bg-[#120721] hover:bg-[#1e0a36] border border-[#a855f7]/45 hover:border-[#c084fc] shadow-[0_0_18px_rgba(168,85,247,0.15)] hover:shadow-[0_0_25px_rgba(168,85,247,0.35)]'
+                  }`}
                 >
-                  <Icons.Cpu className="w-4.5 h-4.5 shrink-0 text-[#a855f7] animate-pulse" />
+                  <Icons.Cpu className={`w-4.5 h-4.5 shrink-0 animate-pulse ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
                   <span>WHAT IS SURCHI?</span>
-                  <Icons.ChevronRight className="w-4.5 h-4.5 shrink-0 text-[#a855f7]" />
+                  <Icons.ChevronRight className={`w-4.5 h-4.5 shrink-0 ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
                 </button>
               </div>
 
@@ -3936,22 +4163,30 @@ export default function App() {
               <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
                 <button
                   onClick={() => setShowPartnershipModal(true)}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-mono font-bold tracking-widest text-[#00e5ff] hover:text-[#52f0ff] bg-[#051821] hover:bg-[#0a2c3d] border border-[#00e5ff]/35 hover:border-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.15)] hover:shadow-[0_0_20px_rgba(0,229,255,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase"
+                  className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-mono font-bold tracking-widest uppercase transition-all duration-300 cursor-pointer select-none border hover:scale-[1.02] active:scale-[0.98] ${
+                    themeMode === 'light'
+                      ? 'bg-cyan-50 hover:bg-cyan-100/80 text-cyan-700 hover:text-cyan-800 border-cyan-300 shadow-sm shadow-cyan-100/40'
+                      : 'text-[#00e5ff] hover:text-[#52f0ff] bg-[#051821] hover:bg-[#0a2c3d] border border-[#00e5ff]/35 hover:border-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.15)] hover:shadow-[0_0_20px_rgba(0,229,255,0.35)]'
+                  }`}
                 >
-                  <Icons.ShieldCheck className="w-4 h-4 shrink-0 text-[#00e5ff]" />
+                  <Icons.ShieldCheck className={`w-4 h-4 shrink-0 ${themeMode === 'light' ? 'text-cyan-600' : 'text-[#00e5ff]'}`} />
                   <span>Strategic Partnerships</span>
-                  <Icons.ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#00e5ff]/80" />
+                  <Icons.ExternalLink className={`w-3.5 h-3.5 shrink-0 ${themeMode === 'light' ? 'text-cyan-500/70' : 'text-[#00e5ff]/80'}`} />
                 </button>
 
                 <a
                   href="https://drive.google.com/file/d/1qRYj5f4d99Q1JHzKYYQkoiVYT76LeQYO/view?usp=drivesdk"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-mono font-bold tracking-widest text-[#00ff88] hover:text-[#52ffb0] bg-[#051a10] hover:bg-[#092b1a] border border-[#00ff88]/35 hover:border-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.15)] hover:shadow-[0_0_20px_rgba(0,255,136,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none uppercase no-underline"
+                  className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-mono font-bold tracking-widest uppercase no-underline transition-all duration-300 cursor-pointer select-none border hover:scale-[1.02] active:scale-[0.98] ${
+                    themeMode === 'light'
+                      ? 'bg-emerald-50 hover:bg-emerald-100/80 text-emerald-700 hover:text-emerald-800 border-emerald-300 shadow-sm shadow-emerald-100/40'
+                      : 'text-[#00ff88] hover:text-[#52ffb0] bg-[#051a10] hover:bg-[#092b1a] border border-[#00ff88]/35 hover:border-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.15)] hover:shadow-[0_0_20px_rgba(0,255,136,0.35)]'
+                  }`}
                 >
-                  <Icons.BookOpen className="w-4 h-4 shrink-0 text-[#00ff88]" />
+                  <Icons.BookOpen className={`w-4 h-4 shrink-0 ${themeMode === 'light' ? 'text-emerald-600' : 'text-[#00ff88]'}`} />
                   <span>Read More Details</span>
-                  <Icons.ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#00ff88]/80" />
+                  <Icons.ExternalLink className={`w-3.5 h-3.5 shrink-0 ${themeMode === 'light' ? 'text-emerald-500/70' : 'text-[#00ff88]/80'}`} />
                 </a>
               </div>
             </div>
@@ -3962,9 +4197,15 @@ export default function App() {
     </div>
 
         {/* INTERACTIVE COMPOSABLE SYSTEM FOOTER */}
-        <footer className="mt-auto border-t border-cyber-border bg-[#030308]/60 py-6 px-6 md:px-10 flex flex-col sm:flex-row items-center justify-between gap-4 z-10">
+        <footer className={`mt-auto border-t py-6 px-6 md:px-10 flex flex-col sm:flex-row items-center justify-between gap-4 z-10 transition-all duration-300 ${
+          themeMode === 'light'
+            ? 'border-slate-200 bg-white/90 shadow-xs backdrop-blur-md'
+            : 'border-cyber-border bg-[#030308]/60'
+        }`}>
           <div className="flex flex-col sm:items-start text-center sm:text-left gap-1">
-            <span className="text-xs font-bold text-[#ffffff] font-display uppercase tracking-wider">SURCHI PROMPTING PROTOCOL</span>
+            <span className={`text-xs font-bold font-display uppercase tracking-wider transition-colors duration-300 ${
+              themeMode === 'light' ? 'text-slate-800' : 'text-white'
+            }`}>SURCHI PROMPTING PROTOCOL</span>
             <span className="text-[10px] font-mono text-slate-500">Autonomous Web3 Intelligence & Sovereign Execution Suite</span>
           </div>
           <div className="flex items-center gap-2.5 flex-wrap">
@@ -3973,15 +4214,23 @@ export default function App() {
                 setAboutSubTab('overview');
                 setShowAboutModal(true);
               }}
-              className="px-4 py-2 bg-[#1b1c31] hover:bg-[#25274ade] text-cyber-cyan hover:text-cyber-neon border border-cyber-border rounded-lg cursor-pointer transition-all flex items-center gap-2 text-xs font-mono select-none"
+              className={`px-4 py-2 rounded-lg cursor-pointer transition-all flex items-center gap-2 text-xs font-mono select-none border ${
+                themeMode === 'light'
+                  ? 'bg-sky-50 hover:bg-sky-100/80 text-sky-700 hover:text-sky-800 border-sky-305 border-sky-300'
+                  : 'bg-[#1b1c31] hover:bg-[#25274ade] text-cyber-cyan hover:text-cyber-neon border-cyber-border'
+              }`}
             >
-              <Icons.BookOpen className="w-4 h-4 text-cyber-cyan" />
+              <Icons.BookOpen className={`w-4 h-4 ${themeMode === 'light' ? 'text-sky-600' : 'text-cyber-cyan'}`} />
               <span>ABOUT SURCHI</span>
             </button>
 
             <button
               onClick={() => setShowDonateModal(true)}
-              className="px-4 py-2 bg-[#2d0f1b] hover:bg-[#4a1c2d] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/30 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 text-xs font-mono select-none"
+              className={`px-4 py-2 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 text-xs font-mono select-none border ${
+                themeMode === 'light'
+                  ? 'bg-rose-50 hover:bg-rose-100/80 text-rose-600 hover:text-rose-700 border-rose-250 border-rose-300'
+                  : 'bg-[#2d0f1b] hover:bg-[#4a1c2d] text-[#ff4b82] hover:text-[#ff7da3] border-[#ff4b82]/30'
+              }`}
             >
               <span className="text-xs">❤️</span>
               <span>DONATE</span>
@@ -3991,11 +4240,15 @@ export default function App() {
               href="https://drive.google.com/file/d/1FfFQRwgX4q4WLGG08kWmQYI2z79uloe4/view?usp=drivesdk"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 bg-[#211505] hover:bg-[#342109] text-[#ffaa00] hover:text-[#ffca55] border border-[#ffaa00]/30 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 text-xs font-mono select-none no-underline uppercase"
+              className={`px-4 py-2 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 text-xs font-mono select-none no-underline uppercase border ${
+                themeMode === 'light'
+                  ? 'bg-amber-50 hover:bg-amber-100/80 text-amber-700 hover:text-amber-800 border-amber-300'
+                  : 'bg-[#211505] hover:bg-[#342109] text-[#ffaa00] hover:text-[#ffca55] border-[#ffaa00]/30'
+              }`}
             >
-              <Icons.FileText className="w-4 h-4 text-[#ffaa00]" />
+              <Icons.FileText className={`w-4 h-4 ${themeMode === 'light' ? 'text-amber-600' : 'text-[#ffaa00]'}`} />
               <span>OFFICIAL WHITEPAPER</span>
-              <Icons.ExternalLink className="w-3.5 h-3.5 text-[#ffaa00]/80" />
+              <Icons.ExternalLink className={`w-3.5 h-3.5 ${themeMode === 'light' ? 'text-amber-500/70' : 'text-[#ffaa00]/80'}`} />
             </a>
           </div>
         </footer>
@@ -4407,39 +4660,57 @@ export default function App() {
 
       {/* Dynamic Coming Soon Notification Toast */}
       {comingSoonToast?.show && (
-        <div className="fixed bottom-24 right-6 z-[100] max-w-sm w-[90vw] bg-[#0c0c1e] border-2 border-cyber-cyan/60 rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,229,255,0.2)] animate-slide-up sm:w-80">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyber-cyan/10 to-transparent pointer-events-none rounded-bl-full"></div>
+        <div className={`fixed bottom-24 right-6 z-[100] max-w-sm w-[90vw] rounded-xl overflow-hidden animate-slide-up sm:w-80 border-2 ${
+          themeMode === 'light'
+            ? 'bg-white border-indigo-500 shadow-[0_10px_35px_rgba(79,70,229,0.15)] text-slate-900'
+            : 'bg-[#0c0c1e] border-cyber-cyan/60 shadow-[0_8px_32px_rgba(0,229,255,0.2)] text-white'
+        }`}>
+          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyber-cyan/5 to-transparent pointer-events-none rounded-bl-full"></div>
           
           <div className="p-4 space-y-3 relative z-10 text-left">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-cyber-cyan uppercase tracking-wider flex items-center gap-1.5 leading-none">
+              <span className={`text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 leading-none ${
+                themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-cyan'
+              }`}>
                 {comingSoonToast.type === 'ad' ? (
-                  <Icons.Megaphone className="w-3.5 h-3.5 animate-pulse text-cyber-neon" />
+                  <Icons.Megaphone className={`w-3.5 h-3.5 animate-pulse ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'}`} />
                 ) : comingSoonToast.type === 'stake' ? (
-                  <Icons.Layers className="w-3.5 h-3.5 animate-pulse text-[#00ff88]" />
+                  <Icons.Layers className={`w-3.5 h-3.5 animate-pulse ${themeMode === 'light' ? 'text-emerald-600' : 'text-[#00ff88]'}`} />
                 ) : (
-                  <Icons.Coins className="w-3.5 h-3.5 animate-pulse text-cyber-neon" />
+                  <Icons.Coins className={`w-3.5 h-3.5 animate-pulse ${themeMode === 'light' ? 'text-indigo-650' : 'text-cyber-neon'}`} />
                 )}
                 {comingSoonToast.title}
               </span>
               <button
                 onClick={() => setComingSoonToast(null)}
-                className="p-1 hover:bg-slate-800/40 text-slate-400 hover:text-white border border-cyber-border rounded cursor-pointer transition-all"
+                className={`p-1 border rounded cursor-pointer transition-all ${
+                  themeMode === 'light'
+                    ? 'hover:bg-slate-100 text-slate-400 hover:text-slate-800 border-slate-200'
+                    : 'hover:bg-slate-800/40 text-slate-400 hover:text-white border-cyber-border'
+                }`}
                 title="Dismiss details"
               >
                 <Icons.X className="w-3 h-3" />
               </button>
             </div>
             
-            <p className="text-[11px] font-mono text-slate-300 leading-relaxed">
+            <p className={`text-[11px] font-mono leading-relaxed ${
+              themeMode === 'light' ? 'text-slate-658 text-slate-700 font-medium' : 'text-slate-300'
+            }`}>
               {comingSoonToast.message}
             </p>
             
-            <div className="flex items-center justify-between pt-1 border-t border-cyber-border/40 text-[9px] font-mono text-slate-500">
-              <span className="uppercase tracking-widest animate-pulse font-black text-cyber-neon font-bold">CORE BETA QUEUE READY</span>
+            <div className={`flex items-center justify-between pt-1 text-[9px] font-mono border-t ${
+              themeMode === 'light' ? 'border-slate-100 text-slate-500' : 'border-cyber-border/40 text-slate-500'
+            }`}>
+              <span className={`uppercase tracking-widest animate-pulse font-black ${
+                themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon font-bold'
+              }`}>CORE BETA QUEUE READY</span>
               <button
                 onClick={() => setComingSoonToast(null)}
-                className="text-cyber-cyan hover:underline font-bold"
+                className={`font-semibold ${
+                  themeMode === 'light' ? 'text-indigo-600 hover:text-indigo-805 hover:underline' : 'text-cyber-cyan hover:underline font-bold'
+                }`}
               >
                 DISMISS
               </button>

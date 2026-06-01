@@ -15,9 +15,10 @@ interface TokenMetrics {
 interface SurchiTokenMetricsProps {
   onPriceClick?: () => void;
   onMetricsFetched?: (metrics: TokenMetrics) => void;
+  themeMode?: 'dark' | 'light';
 }
 
-export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched }: SurchiTokenMetricsProps = {}) {
+export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }: SurchiTokenMetricsProps = {}) {
   const [metrics, setMetrics] = useState<TokenMetrics>({
     priceUsd: 0,
     marketCap: 0,
@@ -272,7 +273,11 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched }: SurchiTok
               <button
                 onClick={(e) => { e.stopPropagation(); fetchSurchiMetrics(true); }}
                 disabled={loading || refreshing}
-                className="p-1 rounded-lg bg-cyber-card-light text-cyber-cyan hover:text-cyber-text border border-cyber-cyan/15 hover:border-cyber-cyan disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center shrink-0"
+                className={`p-1 rounded-lg disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center shrink-0 border ${
+                  themeMode === 'light'
+                    ? 'bg-slate-50 hover:bg-slate-100 text-indigo-600 hover:text-indigo-800 border-slate-300'
+                    : 'bg-cyber-card-light text-cyber-cyan hover:text-cyber-text border border-cyber-cyan/15 hover:border-cyber-cyan'
+                }`}
                 title="Synchronise on-chain telemetry tools"
               >
                 <Icons.RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
