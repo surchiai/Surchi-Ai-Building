@@ -4088,7 +4088,7 @@ export default function App() {
 
               {/* SYSTEM TOKENOMICS DISTRIBUTION */}
               <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
-                <TokenomicsDashboard />
+                <TokenomicsDashboard themeMode={themeMode} />
                </div>
 
               {/* PLATFORM EVOLUTION ARCHITECTURE NOTE */}

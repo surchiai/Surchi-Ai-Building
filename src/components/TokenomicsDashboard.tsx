@@ -2,8 +2,19 @@ import { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { motion } from 'motion/react';
 
-export default function TokenomicsDashboard() {
+interface TokenomicsDashboardProps {
+  themeMode?: 'dark' | 'light';
+}
+
+export default function TokenomicsDashboard({ themeMode = 'dark' }: TokenomicsDashboardProps) {
   const TOTAL_SUPPLY = 19897905;
+  const [copied, setCopied] = useState(false);
+
+  const handleCopySupply = () => {
+    navigator.clipboard.writeText('19897905');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const sections = [
     {
@@ -227,6 +238,110 @@ export default function TokenomicsDashboard() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      {/* VISUAL SUPPLY BREAKDOWN CARD (AS REQUESTED) */}
+      <div className="pt-6 border-t border-cyber-border/40 space-y-4">
+        <div className="flex items-center gap-2">
+          <Icons.Layers className="w-4 h-4 text-[#ffaa00]" />
+          <h4 className="text-xs font-mono font-black tracking-widest uppercase text-cyber-text">
+            Supply Breakdown & Integrity Monitor
+          </h4>
+        </div>
+
+        <div className="flex justify-center md:justify-start">
+          <div className={`relative w-full max-w-sm rounded-[24px] p-6 sm:p-7 select-none border transition-all duration-300 ${
+            themeMode === 'light'
+              ? 'bg-[#eaeaea] text-[#1a1a1a] border-[#d2d2d6] shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
+              : 'bg-[#0b0c1e] text-[#eaeaea] border-cyber-cyan/20 shadow-[0_0_25px_rgba(0,191,255,0.02)]'
+          }`}>
+            {/* Copy button top right */}
+            <button
+              onClick={handleCopySupply}
+              className={`absolute top-5 right-5 p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                themeMode === 'light'
+                  ? 'text-slate-500 hover:text-slate-850 hover:bg-slate-200/50'
+                  : 'text-cyber-cyan hover:text-white hover:bg-cyber-cyan/10'
+              }`}
+              title="Copy total supply"
+            >
+              {copied ? (
+                <div className="flex items-center gap-1 text-[9px] uppercase font-bold text-emerald-500">
+                  <Icons.Check className="w-4 h-4 text-emerald-500" />
+                  <span>Copied</span>
+                </div>
+              ) : (
+                <Icons.Copy className="w-5 h-5 opacity-85" />
+              )}
+            </button>
+
+            <div className="space-y-4 text-left font-mono">
+              {/* Total Supply Section */}
+              <div className="space-y-1">
+                <div className={`text-xs uppercase tracking-wider ${
+                  themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'
+                }`}>
+                  Total Supply
+                </div>
+                <div className={`text-lg sm:text-xl font-black ${
+                  themeMode === 'light' ? 'text-[#1a1a1a]' : 'text-white'
+                }`}>
+                  19,897,905 $SURCHI
+                </div>
+              </div>
+
+              {/* Progress Block Bar - 18 solid blocks exactly matching the photo */}
+              <div className="flex items-center gap-0.5 select-none py-1">
+                {[...Array(18)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-[11.5px] h-[22px] sm:w-[13.5px] sm:h-[24px] ${
+                      themeMode === 'light' ? 'bg-[#1a1a1a]' : 'bg-[#a855f7]'
+                    }`}
+                    style={{
+                      boxShadow: themeMode === 'dark' ? '0 0 10px rgba(168, 85, 247, 0.2)' : 'none'
+                    }}
+                  />
+                ))}
+                <span className={`ml-3 text-sm font-black ${
+                  themeMode === 'light' ? 'text-[#1a1a1a]' : 'text-white'
+                }`}>
+                  100%
+                </span>
+              </div>
+
+              {/* Feature List */}
+              <div className={`space-y-1.5 pt-1 text-xs sm:text-sm font-medium leading-relaxed font-mono ${
+                themeMode === 'light' ? 'text-slate-800' : 'text-slate-300'
+              }`}>
+                <div>Fixed Forever</div>
+                <div>No Inflation</div>
+                <div>No Hidden Minting</div>
+                <div>Community Focused</div>
+              </div>
+
+              {/* Token Explorer Link Button */}
+              <div className={`pt-4 mt-1 border-t border-dashed ${
+                themeMode === 'light' ? 'border-[#c1c1c6]' : 'border-cyber-cyan/25'
+              }`}>
+                <a
+                  href="https://explorer.solana.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider uppercase transition-all duration-300 transform active:scale-95 hover:scale-[1.01] no-underline border ${
+                    themeMode === 'light'
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-500 hover:shadow-sm'
+                      : 'bg-[#120721]/90 hover:bg-[#1e0a36] text-[#a855f7] hover:text-[#c084fc] border-[#a855f7]/40 hover:border-[#c084fc] shadow-[0_0_12px_rgba(168,85,247,0.1)] hover:shadow-[0_0_15px_rgba(168,85,247,0.25)]'
+                  }`}
+                >
+                  <Icons.Compass className={`w-4 h-4 shrink-0 ${themeMode === 'light' ? 'text-white' : 'text-[#a855f7]'}`} />
+                  <span>Token Explorer</span>
+                  <Icons.ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-80" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
