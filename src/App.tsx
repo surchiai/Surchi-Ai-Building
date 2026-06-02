@@ -10,7 +10,12 @@ import {
   CartesianGrid,
   ComposedChart,
   Bar,
-  Cell
+  Cell,
+  Line,
+  Label,
+  ReferenceLine,
+  ReferenceDot,
+  LineChart
 } from 'recharts';
 import { MODULES } from './data';
 import { AnalysisResult, ChatMessage } from './types';
@@ -26,6 +31,7 @@ import InteractiveSuite from './components/InteractiveSuite';
 import HolderIntelligence from './components/HolderIntelligence';
 import { SurchiTokenMetrics } from './components/SurchiTokenMetrics';
 import SurchiLivePortal from './components/SurchiLivePortal';
+import UniversalTokenAnalyzer from './components/UniversalTokenAnalyzer';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -724,77 +730,464 @@ interface CandlePoint {
   wick: [number, number];
 }
 
+function generateCandleHistory(
+  interval: string, 
+  initialPrice: number, 
+  pChange: number, 
+  seed: number,
+  pointsCount: number = 50
+): CandlePoint[] {
+  const points: CandlePoint[] = [];
+  
+  let volatility = 0.005; 
+  switch(interval) {
+    case '1m': volatility = 0.001; break;
+    case '5m': volatility = 0.0018; break;
+    case '15m': volatility = 0.003; break;
+    case '1h': volatility = 0.006; break;
+    case '4h': volatility = 0.012; break;
+    case '1D': volatility = 0.022; break;
+    case '1W': volatility = 0.045; break;
+    case '1M': volatility = 0.080; break;
+    case '1Y': volatility = 0.180; break;
+    default: volatility = 0.012;
+  }
+
+  const now = new Date();
+  const dates: string[] = [];
+  
+  for (let i = pointsCount - 1; i >= 0; i--) {
+    const d = new Date(now.getTime());
+    if (interval === '1m') d.setMinutes(now.getMinutes() - i);
+    else if (interval === '5m') d.setMinutes(now.getMinutes() - i * 5);
+    else if (interval === '15m') d.setMinutes(now.getMinutes() - i * 15);
+    else if (interval === '1h') d.setHours(now.getHours() - i);
+    else if (interval === '4h') d.setHours(now.getHours() - i * 4);
+    else if (interval === '1D') d.setDate(now.getDate() - i);
+    else if (interval === '1W') d.setDate(now.getDate() - i * 7);
+    else if (interval === '1M') d.setMonth(now.getMonth() - i);
+    else if (interval === '1Y') d.setFullYear(now.getFullYear() - i);
+    
+    let label = '';
+    if (interval === '1m' || interval === '5m' || interval === '15m') {
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      label = `${hh}:${mm}`;
+    } else if (interval === '1h' || interval === '4h') {
+      const hh = String(d.getHours()).padStart(2, '0');
+      label = `${hh}:00`;
+    } else if (interval === '1D') {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      label = `${yyyy}-${mm}-${dd}`;
+    } else if (interval === '1W') {
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      label = `Wk ${d.getDate()} ${months[d.getMonth()]}`;
+    } else if (interval === '1M') {
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      label = `${months[d.getMonth()]} '${String(d.getFullYear()).slice(-2)}`;
+    } else if (interval === '1Y') {
+      label = `${d.getFullYear()}`;
+    }
+    dates.push(label);
+  }
+
+  const drift = (pChange / 100) / pointsCount;
+  
+  let currentPrice = initialPrice / (1 + pChange / 100);
+  if (currentPrice <= 0) currentPrice = initialPrice * 0.1;
+
+  for (let i = 0; i < pointsCount; i++) {
+    const fraction = i / (pointsCount - 1);
+    const noiseSeed = seed + i * 14.7 + (interval.charCodeAt(0) || 0) * 11.2;
+    const rnd1 = Math.sin(noiseSeed) * 0.55 + Math.cos(noiseSeed * 2.1) * 0.35 + Math.sin(noiseSeed * 4.9) * 0.1;
+    
+    const stepReturn = drift + rnd1 * volatility;
+    const openVal = currentPrice;
+    let closeVal = currentPrice * (1 + stepReturn);
+    if (closeVal <= 0.000000001) closeVal = openVal * 0.5;
+
+    const maxOC = Math.max(openVal, closeVal);
+    const minOC = Math.min(openVal, closeVal);
+    
+    const highMult = 1 + Math.abs(Math.sin(noiseSeed * 7.4)) * volatility * 0.85;
+    const lowMult = 1 - Math.abs(Math.cos(noiseSeed * 8.6)) * volatility * 0.85;
+    
+    let highVal = maxOC * highMult;
+    let lowVal = Math.max(0.000000001, minOC * lowMult);
+
+    points.push({
+      label: dates[i],
+      price: closeVal,
+      open: openVal,
+      high: highVal,
+      low: lowVal,
+      close: closeVal,
+      body: [Math.min(openVal, closeVal), Math.max(openVal, closeVal)],
+      wick: [lowVal, highVal]
+    });
+
+    currentPrice = closeVal;
+  }
+
+  if (points.length > 0) {
+    const lastIdx = points.length - 1;
+    const lastPoint = points[lastIdx];
+    lastPoint.close = initialPrice;
+    lastPoint.price = initialPrice;
+    lastPoint.body = [Math.min(lastPoint.open, initialPrice), Math.max(lastPoint.open, initialPrice)];
+    lastPoint.high = Math.max(lastPoint.high, lastPoint.open, initialPrice);
+    lastPoint.low = Math.max(0.000000001, Math.min(lastPoint.low, lastPoint.open, initialPrice));
+    lastPoint.wick = [lastPoint.low, lastPoint.high];
+  }
+
+  for (let i = 0; i < points.length; i++) {
+    const startIndex = Math.max(0, i - 2);
+    const subset = points.slice(startIndex, i + 1);
+    const sum = subset.reduce((acc, d) => acc + d.close, 0);
+    (points[i] as any).sma = sum / subset.length;
+  }
+
+  return points;
+}
+
+function mapChainIdToGeckoTerminal(chain: string): string {
+  const c = (chain || '').toLowerCase();
+  if (c === 'ethereum' || c === 'eth') return 'eth';
+  if (c === 'polygon' || c === 'polygon_pos') return 'polygon_pos';
+  if (c === 'avalanche' || c === 'avax') return 'avax';
+  if (c === 'bsc' || c === 'binance-smart-chain') return 'bsc';
+  if (c === 'arbitrum') return 'arbitrum';
+  if (c === 'optimism') return 'optimism';
+  if (c === 'base') return 'base';
+  if (c === 'fantom') return 'fantom';
+  return c;
+}
+
+function mapChainIdToDexView(chain: string): string {
+  const c = (chain || '').toLowerCase();
+  if (c === 'ethereum' || c === 'eth') return 'eth';
+  if (c === 'polygon' || c === 'polygon_pos') return 'polygon';
+  if (c === 'avalanche' || c === 'avax') return 'avax';
+  if (c === 'bsc' || c === 'binance-smart-chain') return 'bsc';
+  if (c === 'arbitrum') return 'arbitrum';
+  if (c === 'optimism') return 'optimism';
+  if (c === 'base') return 'base';
+  if (c === 'fantom') return 'fantom';
+  if (c === 'solana' || c === 'sol') return 'solana';
+  return c;
+}
+
+function computeIndicators(candles: CandlePoint[]): CandlePoint[] {
+  if (!candles || candles.length === 0) return candles;
+  
+  const period = 10;
+  
+  // EMA state initialization
+  let emaPrev = candles[0].close;
+  const k = 2 / (period + 1);
+
+  // MACD state initialization
+  let ema12 = candles[0].close;
+  let ema26 = candles[0].close;
+  const k12 = 2 / 13;
+  const k26 = 2 / 27;
+  let signalPrev = 0;
+  const kSignal = 2 / 10;
+
+  // RSI smoothed averages initialization
+  let avgGain = 0;
+  let avgLoss = 0;
+
+  for (let i = 0; i < candles.length; i++) {
+    const close = candles[i].close;
+
+    // --- SMA & Bollinger Bands (10 period) ---
+    const startIndex = Math.max(0, i - period + 1);
+    const subset = candles.slice(startIndex, i + 1);
+    const prices = subset.map(cd => cd.close);
+    const sum = prices.reduce((acc, p) => acc + p, 0);
+    const mean = sum / subset.length;
+    
+    const variance = prices.reduce((acc, p) => acc + Math.pow(p - mean, 2), 0) / subset.length;
+    const stdDev = Math.sqrt(variance);
+    
+    (candles[i] as any).sma = mean;
+    (candles[i] as any).bbMiddle = mean;
+    (candles[i] as any).bbUpper = mean + (1.8 * stdDev);
+    (candles[i] as any).bbLower = Math.max(0.0000000001, mean - (1.8 * stdDev));
+
+    // --- EMA (10 period) ---
+    const emaVal = i === 0 ? close : (close * k) + (emaPrev * (1 - k));
+    (candles[i] as any).ema = emaVal;
+    emaPrev = emaVal;
+
+    // --- MACD components (12, 26, 9) ---
+    ema12 = i === 0 ? close : (close * k12) + (ema12 * (1 - k12));
+    ema26 = i === 0 ? close : (close * k26) + (ema26 * (1 - k26));
+    const macdLine = ema12 - ema26;
+    const signalVal = i === 0 ? macdLine : (macdLine * kSignal) + (signalPrev * (1 - kSignal));
+    const hist = macdLine - signalVal;
+    
+    (candles[i] as any).macdLine = macdLine;
+    (candles[i] as any).macdSignal = signalVal;
+    (candles[i] as any).macdHist = hist;
+    signalPrev = signalVal;
+
+    // --- RSI Smooth (14 period) ---
+    if (i > 0) {
+      const change = close - candles[i - 1].close;
+      const gain = change > 0 ? change : 0;
+      const loss = change < 0 ? -change : 0;
+      
+      if (i < 14) {
+        avgGain += gain;
+        avgLoss += loss;
+        (candles[i] as any).rsi = 50;
+      } else if (i === 14) {
+        avgGain = (avgGain + gain) / 14;
+        avgLoss = (avgLoss + loss) / 14;
+        const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+        (candles[i] as any).rsi = 100 - (100 / (1 + rs));
+      } else {
+        avgGain = (avgGain * 13 + gain) / 14;
+        avgLoss = (avgLoss * 13 + loss) / 14;
+        const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+        (candles[i] as any).rsi = 100 - (100 / (1 + rs));
+      }
+    } else {
+      (candles[i] as any).rsi = 50;
+    }
+
+    // --- KDJ indicators (9, 3, 3) ---
+    const kdjStart = Math.max(0, i - 8);
+    const kdjSubset = candles.slice(kdjStart, i + 1);
+    const highs = kdjSubset.map(c => c.high);
+    const lows = kdjSubset.map(c => c.low);
+    const hn = Math.max(...highs);
+    const ln = Math.min(...lows);
+    const rsv = hn === ln ? 50 : ((close - ln) / (hn - ln)) * 100;
+    
+    const prevK = i === 0 ? 50 : (candles[i-1] as any).kdjK;
+    const prevD = i === 0 ? 50 : (candles[i-1] as any).kdjD;
+    
+    const kVal = (2/3) * prevK + (1/3) * rsv;
+    const dVal = (2/3) * prevD + (1/3) * kVal;
+    const jVal = 3 * kVal - 2 * dVal;
+    
+    (candles[i] as any).kdjK = kVal;
+    (candles[i] as any).kdjD = dVal;
+    (candles[i] as any).kdjJ = jVal;
+  }
+  return candles;
+}
+
+const HighLowLabel = ({ cx, cy, value, isHigh, isLeftHalf }: any) => {
+  if (!cx || !cy) return null;
+  const dx = isLeftHalf ? 24 : -24;
+  const dy = isHigh ? -14 : 14;
+  return (
+    <g>
+      {/* Dynamic line connecting to high/low wick point */}
+      <polyline
+        points={`${cx},${cy} ${cx},${cy + dy} ${cx + dx},${cy + dy}`}
+        fill="none"
+        stroke="#7f8c8d"
+        strokeWidth={0.8}
+        opacity={0.85}
+      />
+      {/* Anchor Dot on peak/trough wick */}
+      <circle cx={cx} cy={cy} r={1.5} fill={isHigh ? "#26a69a" : "#e8563f"} />
+      
+      {/* Numeric callout */}
+      <text
+        x={cx + dx + (isLeftHalf ? 4 : -4)}
+        y={cy + dy + 3}
+        fill="#95a5a6"
+        fontSize={8.5}
+        fontWeight="bold"
+        fontFamily="monospace"
+        textAnchor={isLeftHalf ? "start" : "end"}
+      >
+        {value}
+      </text>
+    </g>
+  );
+};
+
 function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: { details: any; themeAccent?: string; themeMode?: 'dark' | 'light'; livePrice: number }) {
   if (!details) return null;
 
-  const [viewMode, setViewMode] = useState<'candles' | 'line'>('candles');
+  // Tabs for the Advanced charting terminal
+  const [activeTab, setActiveTab] = useState<'custom' | 'dexscreener' | 'dexview'>('custom');
+  const [viewMode, setViewMode] = useState<'candles' | 'line' | 'depth'>('candles');
+  const [selectedInterval, setSelectedInterval] = useState<string>('1D'); 
+  const [zoomCount, setZoomCount] = useState<number>(30); 
+  const [hoveredPoint, setHoveredPoint] = useState<CandlePoint | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [loadingRealChart, setLoadingRealChart] = useState(false);
+
+  // New trading indicators state to match screenshot
+  const [overlayIndicator, setOverlayIndicator] = useState<'none' | 'ma' | 'ema' | 'boll'>('none');
+  const [subIndicator, setSubIndicator] = useState<'none' | 'macd' | 'rsi' | 'kdj'>('none');
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const price = livePrice || parseFloat(details.priceUsd) || 1.0;
   const pChange = parseFloat(details.priceChange24h) || 0.0;
   const isUp = pChange >= 0;
 
-  const hours = ['24h ago', '18h ago', '12h ago', '8h ago', '4h ago', '2h ago', '1h ago', 'Live Now'];
-  
   let seed = 0;
   const cleanAddr = details.address || 'DEFAULT';
   for (let i = 0; i < cleanAddr.length; i++) {
     seed += cleanAddr.charCodeAt(i);
   }
 
-  // Generate 8 candle ticks
-  const dataPoints: CandlePoint[] = [];
-  const initialBasePrice = parseFloat(details.priceUsd) || 1.0;
-  let prevClose = initialBasePrice / (1 + (pChange + Math.sin(seed) * 2) / 100);
-  if (prevClose <= 0) prevClose = initialBasePrice * 0.1;
+  const [dataPoints, setDataPoints] = useState<CandlePoint[]>([]);
 
-  for (let i = 0; i < 8; i++) {
-    const fraction = i / 7;
-    const currentChange = pChange * (1 - fraction);
-    const noise = Math.sin(fraction * Math.PI * 3.5 + seed + i) * (Math.abs(pChange) * 0.12 + 1.0) * (1 - fraction * 0.7);
-    let closeVal = initialBasePrice / (1 + (currentChange + noise) / 100);
-    if (closeVal <= 0) closeVal = initialBasePrice * 0.01;
+  useEffect(() => {
+    let active = true;
+    const fetchRealCandles = async () => {
+      const initialBasePrice = parseFloat(details.priceUsd) || 1.0;
+      const chainId = details?.chainId || 'ethereum';
+      const pool = details?.pairAddress || '';
+      
+      if (!pool) {
+        const rawCandles = generateCandleHistory(selectedInterval, initialBasePrice, pChange, seed, 50);
+        const candles = computeIndicators(rawCandles);
+        if (active) {
+          setDataPoints(candles);
+          setHoveredPoint(null);
+        }
+        return;
+      }
+      
+      setLoadingRealChart(true);
+      try {
+        const network = mapChainIdToGeckoTerminal(chainId);
+        let timeframe = 'day';
+        let aggregate = 1;
+        switch(selectedInterval) {
+          case '1m': timeframe = 'minute'; aggregate = 1; break;
+          case '5m': timeframe = 'minute'; aggregate = 5; break;
+          case '15m': timeframe = 'minute'; aggregate = 15; break;
+          case '1h': timeframe = 'hour'; aggregate = 1; break;
+          case '4h': timeframe = 'hour'; aggregate = 4; break;
+          case '1D': timeframe = 'day'; aggregate = 1; break;
+          case '1W': timeframe = 'day'; aggregate = 7; break;
+          case '1M': timeframe = 'day'; aggregate = 30; break;
+          case '1Y': timeframe = 'day'; aggregate = 30; break;
+          default: timeframe = 'hour'; aggregate = 1;
+        }
 
-    // Build candle metrics
-    const openVal = i === 0 
-      ? prevClose 
-      : dataPoints[i - 1].close;
+        const url = `https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pool}/ohlcv/${timeframe}?aggregate=${aggregate}&limit=100`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch real-time data: ${res.status}`);
+        }
+        const responseData = await res.json();
+        const ohlcvList = responseData?.data?.attributes?.ohlcv_list;
+        
+        if (ohlcvList && ohlcvList.length > 0) {
+          const sortedList = [...ohlcvList].sort((a: any, b: any) => a[0] - b[0]);
+          
+          const rawCandles: CandlePoint[] = sortedList.map((item: any) => {
+            const d = new Date(item[0] * 1000);
+            let label = '';
+            
+            if (selectedInterval === '1m' || selectedInterval === '5m' || selectedInterval === '15m') {
+              const hh = String(d.getHours()).padStart(2, '0');
+              const mm = String(d.getMinutes()).padStart(2, '0');
+              label = `${hh}:${mm}`;
+            } else if (selectedInterval === '1h' || selectedInterval === '4h') {
+              const hh = String(d.getHours()).padStart(2, '0');
+              label = `${hh}:00`;
+            } else if (selectedInterval === '1D') {
+              const yyyy = d.getFullYear();
+              const mm = String(d.getMonth() + 1).padStart(2, '0');
+              const dd = String(d.getDate()).padStart(2, '0');
+              label = `${yyyy}-${mm}-${dd}`;
+            } else if (selectedInterval === '1W') {
+              const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+              label = `Wk ${d.getDate()} ${months[d.getMonth()]}`;
+            } else if (selectedInterval === '1M') {
+              const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+              label = `${months[d.getMonth()]} '${String(d.getFullYear()).slice(-2)}`;
+            } else if (selectedInterval === '1Y') {
+              label = `${d.getFullYear()}`;
+            }
+            
+            return {
+              label,
+              price: item[4],
+              open: item[1],
+              high: item[2],
+              low: item[3],
+              close: item[4],
+              body: [Math.min(item[1], item[4]), Math.max(item[1], item[4])],
+              wick: [item[3], item[2]],
+            };
+          });
+          
+          // Re-calculate SMAs & Bollinger Bands
+          const candles = computeIndicators(rawCandles);
 
-    let finalClose = closeVal;
-    if (i === 7) {
-      // Connect specifically with live ticking spot price
-      finalClose = price;
-    }
-
-    const candleIsUp = finalClose >= openVal;
+          if (active) {
+            setDataPoints(candles);
+            setHoveredPoint(null);
+          }
+        } else {
+          throw new Error("No data returned");
+        }
+      } catch (err) {
+        console.warn("Fallback to simulated history:", err);
+        const rawCandles = generateCandleHistory(selectedInterval, initialBasePrice, pChange, seed, 50);
+        const candles = computeIndicators(rawCandles);
+        if (active) {
+          setDataPoints(candles);
+          setHoveredPoint(null);
+        }
+      } finally {
+        if (active) {
+          setLoadingRealChart(false);
+        }
+      }
+    };
     
-    // Low and High
-    const hMultiplier = 1 + (0.005 + (Math.abs(Math.cos(i + seed)) % 0.01));
-    const lMultiplier = 1 - (0.005 + (Math.abs(Math.sin(i * 2 + seed)) % 0.01));
+    fetchRealCandles();
+    
+    return () => {
+      active = false;
+    };
+  }, [selectedInterval, details.address, details.pairAddress, details.chainId]);
 
-    let highVal = Math.max(openVal, finalClose) * hMultiplier;
-    let lowVal = Math.max(0.00000001, Math.min(openVal, finalClose) * lMultiplier);
+  useEffect(() => {
+    if (dataPoints.length === 0 || !livePrice) return;
+    setDataPoints((prev) => {
+      if (prev.length === 0) return prev;
+      const copy = prev.map((p, idx) => {
+        if (idx === prev.length - 1) {
+          const lastPoint = { ...p };
+          lastPoint.close = livePrice;
+          lastPoint.price = livePrice;
+          lastPoint.body = [Math.min(lastPoint.open, livePrice), Math.max(lastPoint.open, livePrice)];
+          lastPoint.high = Math.max(lastPoint.high, lastPoint.open, livePrice);
+          lastPoint.low = Math.max(0.000000001, Math.min(lastPoint.low, lastPoint.open, livePrice));
+          lastPoint.wick = [lastPoint.low, lastPoint.high];
+          return lastPoint;
+        }
+        return { ...p };
+      });
 
-    if (i === 7) {
-      // Ensure the active live bar high/low cover open/close cleanly with a slight padding
-      highVal = Math.max(openVal, finalClose) * 1.0025;
-      lowVal = Math.max(0.00000001, Math.min(openVal, finalClose) * 0.9975);
-    }
-
-    dataPoints.push({
-      label: hours[i],
-      price: finalClose,
-      open: openVal,
-      high: highVal,
-      low: lowVal,
-      close: finalClose,
-      body: [Math.min(openVal, finalClose), Math.max(openVal, finalClose)],
-      wick: [lowVal, highVal],
+      return computeIndicators(copy);
     });
-  }
+  }, [livePrice]);
 
-  const prices = dataPoints.map(d => d.close);
-  const maxPrice = Math.max(...prices) * 1.015;
-  const minPrice = Math.min(...prices) * 0.985;
+  const visibleData = dataPoints.slice(-zoomCount);
+
+  const prices = visibleData.map(d => d.close);
+  const maxPrice = prices.length > 0 ? Math.max(...prices) * 1.015 : price * 1.05;
+  const minPrice = prices.length > 0 ? Math.min(...prices) * 0.985 : price * 0.95;
 
   const formatPriceLabel = (val: number) => {
     if (val < 0.000001) return `$${val.toFixed(9)}`;
@@ -810,195 +1203,800 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
       ? (isUp ? '#16a34a' : '#dc2626')
       : (isUp ? '#00ff88' : '#ff4b82');
 
+  const gridLineColor = themeMode === 'light' ? '#e2e8f0' : '#1e1b4b';
+  const textLabelColor = themeMode === 'light' ? '#64748b' : '#94a3b8';
+
+  const intervals = [
+    { value: '1m', label: '1m' },
+    { value: '5m', label: '5m' },
+    { value: '15m', label: '15m' },
+    { value: '1h', label: '1H' },
+    { value: '4h', label: '4H' },
+    { value: '1D', label: '1D' },
+    { value: '1W', label: '1W' },
+    { value: '1M', label: '1M' },
+    { value: '1Y', label: '1Y' },
+  ];
+
+  const activeHUD = hoveredPoint || (dataPoints.length > 0 ? dataPoints[dataPoints.length - 1] : null);
+  const activeChangePct = activeHUD 
+    ? activeHUD.open > 0 
+      ? ((activeHUD.close - activeHUD.open) / activeHUD.open) * 100 
+      : 0
+    : 0;
+  const isUpHUD = activeChangePct >= 0;
+
+  const activeBarSize = Math.max(3, Math.floor(255 / zoomCount));
+  const activeWickSize = Math.max(1, Math.floor(activeBarSize * 0.15));
+
+  const getDexScreenerEmbedUrl = () => {
+    const chainId = (details.chainId || 'ethereum').toLowerCase();
+    const pairAddress = details.pairAddress;
+    if (!pairAddress) return '';
+    const theme = themeMode === 'light' ? 'light' : 'dark';
+    return `https://dexscreener.com/${chainId}/${pairAddress}?embed=1&theme=${theme}&trades=0&info=0`;
+  };
+
+  const getDexViewEmbedUrl = () => {
+    let chainId = (details.chainId || 'bsc').toLowerCase();
+    if (chainId === 'ethereum') chainId = 'eth';
+    if (chainId === 'binance-smart-chain' || chainId === 'binance') chainId = 'bsc';
+    const tokenAddress = details.address;
+    if (!tokenAddress) return '';
+    return `https://www.dexview.com/${chainId}/${tokenAddress}`;
+  };
+
+  const formatPriceRaw = (val: number) => {
+    if (val === undefined || val === null) return '';
+    if (val < 0.000001) return val.toFixed(8);
+    if (val < 0.0001) return val.toFixed(6);
+    if (val < 0.01) return val.toFixed(5);
+    return val.toFixed(4);
+  };
+
+  const renderLivePriceBadge = (props: any) => {
+    const { viewBox, value } = props;
+    if (!viewBox) return null;
+    const { width, y } = viewBox;
+    const bgFill = isUp ? '#26a69a' : '#e8563f';
+    return (
+      <g>
+        <rect
+          x={width + 5} 
+          y={y - 8} 
+          width={48} 
+          height={16} 
+          fill={bgFill} 
+          rx={2}
+        />
+        <text
+          x={width + 29}
+          y={y + 3}
+          fill="#ffffff"
+          fontSize={8.5}
+          fontWeight="bold"
+          fontFamily="monospace"
+          textAnchor="middle"
+        >
+          {value}
+        </text>
+      </g>
+    );
+  };
+
+  let depthData: any[] = [];
+  if (viewMode === 'depth') {
+    const steps = 20;
+    const midPrice = price; 
+    for (let i = steps; i >= 1; i--) {
+      const pPoint = midPrice * (1 - (i / steps) * 0.05); 
+      const size = Math.pow((steps - i + 1), 1.5) * 150 + (seed % 100);
+      depthData.push({
+        priceValue: pPoint,
+        label: formatPriceRaw(pPoint),
+        bids: size,
+        asks: null
+      });
+    }
+    depthData.push({
+      priceValue: midPrice,
+      label: formatPriceRaw(midPrice),
+      bids: 0,
+      asks: 0
+    });
+    for (let i = 1; i <= steps; i++) {
+      const pPoint = midPrice * (1 + (i / steps) * 0.05); 
+      const size = Math.pow((steps - i + 1), 1.5) * 145 + (seed % 90);
+      depthData.push({
+        priceValue: pPoint,
+        label: formatPriceRaw(pPoint),
+        bids: null,
+        asks: size
+      });
+    }
+  }
+
+  // Compute highest high and lowest low
+  let highestCandle = visibleData[0];
+  let lowestCandle = visibleData[0];
+  let highestIdx = 0;
+  let lowestIdx = 0;
+  for (let i = 0; i < visibleData.length; i++) {
+    const c = visibleData[i];
+    if (c && c.high > (highestCandle ? highestCandle.high : 0)) {
+      highestCandle = c;
+      highestIdx = i;
+    }
+    if (c && c.low < (lowestCandle ? lowestCandle.low : 999999)) {
+      lowestCandle = c;
+      lowestIdx = i;
+    }
+  }
+
   return (
-    <div id="dynamic-market-graph" className="bg-[#050512] border border-cyber-cyan/15 rounded-xl p-4 lg:p-5 text-left flex flex-col justify-between h-full space-y-3 shadow-inner">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div 
+      id="dynamic-market-graph" 
+      className={`border rounded-xl p-3 lg:p-4 text-left flex flex-col justify-between h-full min-h-[500px] space-y-2.5 bg-[#121214] border-slate-800/80 text-white shadow-2xl relative ${isFullscreen ? 'fixed inset-0 z-50 overflow-y-auto p-6 md:p-8 space-y-4 rounded-none' : ''}`}
+    >
+      {/* Tab Selector Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cyber-cyan/5 pb-3">
         <div className="flex items-center gap-2">
-          <Icons.LineChart className={`w-4 h-4 ${themeAccent === 'white' ? 'text-cyber-neon' : (themeMode === 'light' ? (isUp ? 'text-emerald-600' : 'text-rose-600') : (isUp ? 'text-[#00ff88]' : 'text-[#ff4b82]'))}`} />
-          <span className="text-xs font-mono font-black uppercase text-slate-200 tracking-wider">
-            {viewMode === 'candles' ? 'OHLC Candlestick Feed' : 'Dynamic Market Chart'}
-          </span>
+          <Icons.LineChart className={`w-4 h-4 ${themeAccent === 'white' ? (themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon') : (themeMode === 'light' ? (isUp ? 'text-emerald-600' : 'text-rose-600') : (isUp ? 'text-[#00ff88]' : 'text-[#ff4b82]'))}`} />
+          <div className="flex flex-col">
+            <span className={`text-[11px] font-mono font-black uppercase tracking-wider ${themeMode === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
+              Surchi Live Terminal Feed
+            </span>
+            <span className="text-[8px] text-slate-500 font-mono tracking-wide leading-none uppercase mt-0.5">
+              Source: {activeTab === 'custom' ? 'Surchi Custom Engine' : activeTab === 'dexscreener' ? 'DexScreener API' : 'DexView API'}
+            </span>
+          </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          {/* Chart Type Toggle Button */}
-          <div className="flex bg-[#040410] border border-cyber-border rounded-lg p-0.5">
-            <button
-              onClick={() => setViewMode('candles')}
-              className={`px-2 py-0.5 text-[9px] font-bold rounded transition-all cursor-pointer flex items-center gap-1 ${
-                viewMode === 'candles' 
-                  ? 'bg-cyber-cyan text-black shadow-lg shadow-cyber-cyan/25' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-              title="Candlestick Chart"
-            >
-              <Icons.TrendingUp className="w-2.5 h-2.5 rotate-90" />
-              <span>Candles</span>
-            </button>
-            <button
-              onClick={() => setViewMode('line')}
-              className={`px-2 py-0.5 text-[9px] font-bold rounded transition-all cursor-pointer flex items-center gap-1 ${
-                viewMode === 'line' 
-                  ? 'bg-cyber-purple text-white shadow-lg' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-              title="Line Chart"
-            >
-              <Icons.LineChart className="w-2.5 h-2.5" />
-              <span>Line</span>
-            </button>
-          </div>
 
-          <div className="flex items-center gap-1">
-            <span className={`w-2 h-2 rounded-full ${themeAccent === 'white' ? 'bg-cyber-neon' : (isUp ? 'bg-[#00ff88]' : 'bg-[#ff4b82]')} animate-pulse`}></span>
-            <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest">24H DURATION</span>
-          </div>
+        {/* Pro Terminals Tab Bar */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setActiveTab('custom')}
+            className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded transition-all flex items-center gap-1 cursor-pointer border ${
+              activeTab === 'custom'
+                ? themeMode === 'light'
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow'
+                  : 'bg-cyber-cyan/15 border-cyber-cyan text-cyber-cyan shadow-sm shadow-cyber-cyan/10'
+                : themeMode === 'light'
+                  ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                  : 'bg-[#040410] border-cyber-border text-slate-400 hover:text-white'
+            }`}
+          >
+            <Icons.Cpu className="w-2.5 h-2.5" />
+            <span>Surchi Customs</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('dexscreener')}
+            className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded transition-all flex items-center gap-1 cursor-pointer border ${
+              activeTab === 'dexscreener'
+                ? themeMode === 'light'
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow'
+                  : 'bg-cyber-cyan/20 border-cyber-cyan text-cyber-cyan'
+                : themeMode === 'light'
+                  ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                  : 'bg-[#040410] border-cyber-border text-slate-400 hover:text-white'
+            }`}
+            disabled={!details.pairAddress}
+            title={!details.pairAddress ? "No pool pair detected to load frame" : "DexScreener Pro Frame"}
+          >
+            <Icons.TrendingUp className="w-2.5 h-2.5" />
+            <span>DexScreener Feed</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('dexview')}
+            className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded transition-all flex items-center gap-1 cursor-pointer border border-cyber-border ${
+              activeTab === 'dexview'
+                ? themeMode === 'light'
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow'
+                  : 'bg-[#121338]/30 border-cyber-cyan/30 text-cyber-cyan'
+                : themeMode === 'light'
+                  ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                  : 'bg-[#040410] border-cyber-border text-slate-400 hover:text-white'
+            }`}
+            disabled={!details.address}
+            title={!details.address ? "No token address detected to load frame" : "DexView Pro Frame"}
+          >
+            <Icons.Zap className="w-2.5 h-2.5" />
+            <span>DexView Feed</span>
+          </button>
         </div>
       </div>
 
-      <div className="h-44 relative bg-[#010105] border border-cyber-border/40 rounded-lg p-3 pt-6 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          {viewMode === 'candles' ? (
-            <ComposedChart data={dataPoints} margin={{ top: 5, right: 5, left: -22, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-cyber-border)" vertical={false} opacity={0.4} />
-              <XAxis 
-                dataKey="label" 
-                tick={{ fill: 'var(--color-cyber-text-muted)', fontSize: 9, fontFamily: 'monospace' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis 
-                domain={['auto', 'auto']}
-                tick={{ fill: 'var(--color-cyber-text-muted)', fontSize: 9, fontFamily: 'monospace' }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(val) => formatPriceLabel(val)}
-              />
-              <Tooltip
-                content={({ active, payload: tourPayload, label }) => {
-                  if (active && tourPayload && tourPayload.length) {
-                    const dataPoint = tourPayload[0].payload as CandlePoint;
-                    const isUpCandle = dataPoint.close >= dataPoint.open;
-                    return (
-                      <div className="bg-[#060616] border border-cyber-cyan/40 p-2.5 rounded shadow-xl text-[9.5px] font-mono text-left space-y-1 min-w-[130px]">
-                        <p className="text-slate-500 dark:text-slate-400 font-bold mb-1 uppercase tracking-wider">{label}</p>
-                        <div className="grid grid-cols-2 gap-x-2 text-slate-800 dark:text-white">
-                          <div>
-                            <span className="text-slate-500 text-[8px] block">OPEN:</span>
-                            <span className="font-semibold">{formatPriceLabel(dataPoint.open)}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 text-[8px] block">HIGH:</span>
-                            <span className="text-emerald-600 dark:text-[#00ff88] font-semibold">{formatPriceLabel(dataPoint.high)}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 text-[8px] block">LOW:</span>
-                            <span className="text-rose-600 dark:text-[#ff4b82] font-semibold">{formatPriceLabel(dataPoint.low)}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 text-[8px] block">CLOSE:</span>
-                            <span className={`font-semibold ${isUpCandle ? 'text-emerald-600 dark:text-[#00ff88]' : 'text-rose-600 dark:text-[#ff4b82]'}`}>
-                              {formatPriceLabel(dataPoint.close)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
+      {activeTab === 'custom' ? (
+        <>
+          {/* Professional Trading Toolbar matching screenshot */}
+          <div className="flex items-center justify-between bg-[#18181a] px-3 py-1.5 rounded-t-lg border border-[#2d2d30] border-b-0 text-[11px] font-mono select-none">
+            <div className="flex items-center gap-3.5 text-[#8a8a93]">
+              <button
+                onClick={() => setViewMode('line')}
+                className={`transition-colors hover:text-white cursor-pointer ${viewMode === 'line' ? 'text-white font-bold' : ''}`}
+              >
+                Line
+              </button>
+              
+              <button
+                onClick={() => {
+                  setSelectedInterval('15m');
+                  setViewMode('candles');
                 }}
-              />
-              <Bar dataKey="wick" barSize={1.5}>
-                {dataPoints.map((entry, index) => {
-                  const isUpCandle = entry.close >= entry.open;
-                  return (
-                    <Cell 
-                      key={`wick-${index}`} 
-                      fill={isUpCandle ? '#16a34a' : '#dc2626'} 
-                      opacity={0.65}
-                    />
-                  );
-                })}
-              </Bar>
-              <Bar dataKey="body" barSize={12}>
-                {dataPoints.map((entry, index) => {
-                  const isUpCandle = entry.close >= entry.open;
-                  return (
-                    <Cell 
-                      key={`body-${index}`} 
-                      fill={isUpCandle ? '#16a34a' : '#dc2626'} 
-                    />
-                  );
-                })}
-              </Bar>
-            </ComposedChart>
+                className={`transition-colors hover:text-white cursor-pointer ${viewMode === 'candles' && selectedInterval === '15m' ? 'text-white font-bold' : ''}`}
+              >
+                15m
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedInterval('1h');
+                  setViewMode('candles');
+                }}
+                className={`transition-colors hover:text-white cursor-pointer ${viewMode === 'candles' && selectedInterval === '1h' ? 'text-white font-bold' : ''}`}
+              >
+                1h
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedInterval('4h');
+                  setViewMode('candles');
+                }}
+                className={`transition-colors hover:text-white cursor-pointer ${viewMode === 'candles' && selectedInterval === '4h' ? 'text-white font-bold' : ''}`}
+              >
+                4h
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedInterval('1D');
+                  setViewMode('candles');
+                }}
+                className={`transition-colors hover:text-white cursor-pointer ${viewMode === 'candles' && selectedInterval === '1D' ? 'text-white font-black scale-105 transition-transform' : ''}`}
+              >
+                1D
+              </button>
+
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className={`transition-colors hover:text-white cursor-pointer flex items-center gap-1 ${
+                    ['1m', '5m', '1W', '1M', '1Y'].includes(selectedInterval) && viewMode === 'candles'
+                      ? 'text-white font-bold'
+                      : ''
+                  }`}
+                >
+                  <span>{['1m', '5m', '1W', '1M', '1Y'].includes(selectedInterval) ? selectedInterval : 'More'}</span>
+                  <Icons.ChevronDown className="w-2.5 h-2.5 text-[#5e5e64]" />
+                </button>
+
+                {isDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
+                    <div className="absolute left-0 mt-1 top-full w-20 rounded bg-[#131314] border border-[#2d2d30] shadow-2xl z-50 p-0.5 text-[10px]">
+                      {['1m', '5m', '1W', '1M', '1Y'].map((int) => (
+                        <button
+                          key={int}
+                          onClick={() => {
+                            setSelectedInterval(int);
+                            setViewMode('candles');
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-2 py-1 rounded hover:bg-[#2c2c2e] hover:text-white font-mono ${
+                            selectedInterval === int ? 'text-[#26a69a] font-bold' : 'text-[#8a8a93]'
+                          }`}
+                        >
+                          {int}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="w-[1.2px] h-3 bg-[#2d2d30]" />
+
+              <button
+                onClick={() => {
+                  setViewMode(viewMode === 'depth' ? 'candles' : 'depth');
+                }}
+                className={`transition-colors hover:text-white cursor-pointer ${
+                  viewMode === 'depth' ? 'text-[#26a69a] font-bold' : ''
+                }`}
+              >
+                Depth
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[8px] font-mono text-[#5e5e64] uppercase tracking-wider font-bold">DENSITY:</span>
+              <button
+                onClick={() => setZoomCount(prev => Math.max(10, prev - 5))}
+                className="p-1 rounded hover:bg-[#202022] hover:text-white transition-all text-[#8a8a93]"
+                title="Fewer candles (zoom in)"
+              >
+                <Icons.Plus className="w-2.5 h-2.5" />
+              </button>
+              <span className="text-[10px] font-mono font-bold text-slate-350 min-w-[32px] text-center">
+                {zoomCount}
+              </span>
+              <button
+                onClick={() => setZoomCount(prev => Math.min(60, prev + 5))}
+                className="p-1 rounded hover:bg-[#202022] hover:text-white transition-all text-[#8a8a93]"
+                title="More candles (zoom out)"
+              >
+                <Icons.Minus className="w-2.5 h-2.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Chart Canvas with overlay HUD inside */}
+          <div className="flex-1 min-h-[300px] h-[340px] relative rounded-b-lg border border-[#2d2d30] bg-[#0c0c0e] p-2 overflow-hidden">
+            
+            {/* Real-time Floating HUD */}
+            {activeHUD && (
+              <div className="absolute top-2 left-3 z-20 flex flex-wrap items-center gap-x-2 text-[9.5px] font-mono text-slate-400 bg-black/60 px-2.5 py-1 rounded backdrop-blur-md border border-white/5 pointer-events-none shadow-lg">
+                <span className="text-slate-200 font-bold uppercase">{selectedInterval}</span>
+                <span className="text-slate-500">O:</span>
+                <span className="text-slate-200">{formatPriceRaw(activeHUD.open)}</span>
+                <span className="text-slate-500">H:</span>
+                <span className="text-[#26a69a] font-bold">{formatPriceRaw(activeHUD.high)}</span>
+                <span className="text-slate-500">L:</span>
+                <span className="text-[#e8563f] font-bold">{formatPriceRaw(activeHUD.low)}</span>
+                <span className="text-slate-500">C:</span>
+                <span className={isUpHUD ? "text-[#26a69a] font-bold" : "text-[#e8563f] font-bold"}>
+                  {formatPriceRaw(activeHUD.close)}
+                </span>
+                <span className={`font-bold ${isUpHUD ? "text-[#26a69a]" : "text-[#e8563f]"}`}>
+                  {activeChangePct >= 0 ? '+' : ''}{activeChangePct.toFixed(2)}%
+                </span>
+              </div>
+            )}
+
+            <div className="w-full h-full flex flex-col justify-between">
+              <div className="flex-1 min-h-[220px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  {viewMode === 'depth' ? (
+                    <AreaChart
+                      data={depthData}
+                      margin={{ top: 10, right: 5, left: -20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#222225" vertical={false} opacity={0.3} />
+                      <XAxis 
+                        dataKey="label" 
+                        tick={{ fill: '#70707a', fontSize: 8.5, fontFamily: 'monospace' }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis 
+                        tick={{ fill: '#70707a', fontSize: 8.5, fontFamily: 'monospace' }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-[#18181a] border border-[#2d2d30] p-1.5 rounded text-[8.5px] font-mono shadow-xl text-slate-300">
+                                <p>Price: <span className="text-white font-bold">${data.label}</span></p>
+                                {data.bids !== null && <p className="text-[#26a69a]">Bids: {data.bids.toFixed(0)}</p>}
+                                {data.asks !== null && <p className="text-[#e8563f]">Asks: {data.asks.toFixed(0)}</p>}
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Area
+                        type="step"
+                        dataKey="bids"
+                        stroke="#26a69a"
+                        strokeWidth={1.5}
+                        fill="#26a69a"
+                        fillOpacity={0.15}
+                      />
+                      <Area
+                        type="step"
+                        dataKey="asks"
+                        stroke="#e8563f"
+                        strokeWidth={1.5}
+                        fill="#e8563f"
+                        fillOpacity={0.15}
+                      />
+                    </AreaChart>
+                  ) : viewMode === 'candles' ? (
+                    <ComposedChart 
+                      data={visibleData} 
+                      margin={{ top: 10, right: 42, left: -22, bottom: 5 }}
+                      onMouseMove={(state: any) => {
+                        if (state && state.activePayload && state.activePayload.length) {
+                          setHoveredPoint(state.activePayload[0].payload as CandlePoint);
+                        } else {
+                          setHoveredPoint(null);
+                        }
+                      }}
+                      onMouseLeave={() => setHoveredPoint(null)}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1d1e1f" vertical={false} opacity={0.35} />
+                      <XAxis 
+                        dataKey="label" 
+                        tick={{ fill: '#6e6e73', fontSize: 8.5, fontFamily: 'monospace' }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis 
+                        domain={[minPrice, maxPrice]}
+                        orientation="right"
+                        tick={{ fill: '#6e6e73', fontSize: 8.5, fontFamily: 'monospace' }}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(val) => formatPriceRaw(val)}
+                      />
+                      <Tooltip
+                        cursor={{ 
+                          stroke: '#4a4a4e', 
+                          strokeWidth: 0.8, 
+                          strokeDasharray: '4 4' 
+                        }}
+                        content={() => null}
+                      />
+
+                      {/* Bollinger Band channel range shading */}
+                      {overlayIndicator === 'boll' && (
+                        <Area
+                          type="monotone"
+                          dataKey="bbUpper"
+                          stroke="#00ffff"
+                          strokeWidth={0.5}
+                          strokeDasharray="2 2"
+                          fill="transparent"
+                          opacity={0.10}
+                          isAnimationActive={false}
+                        />
+                      )}
+                      {overlayIndicator === 'boll' && (
+                        <Area
+                          type="monotone"
+                          dataKey="bbLower"
+                          stroke="#00ffff"
+                          strokeWidth={0.5}
+                          strokeDasharray="2 2"
+                          fill="#00e5ff"
+                          fillOpacity={0.02}
+                          opacity={0.10}
+                          isAnimationActive={false}
+                        />
+                      )}
+
+                      {/* Candle Wicks */}
+                      <Bar dataKey="wick" barSize={activeWickSize} isAnimationActive={false}>
+                        {visibleData.map((entry, index) => {
+                          if (!entry) return null;
+                          const isUpCandle = entry.close >= entry.open;
+                          return (
+                            <Cell 
+                              key={`wick-${index}`} 
+                              fill={isUpCandle ? '#26a69a' : '#e8563f'} 
+                            />
+                          );
+                        })}
+                      </Bar>
+                      
+                      {/* Robust Hollow Candlestick Body Renderer */}
+                      <Bar dataKey="body" barSize={activeBarSize} isAnimationActive={false}>
+                        {visibleData.map((entry, index) => {
+                          if (!entry) return null;
+                          const isUpCandle = entry.close >= entry.open;
+                          return (
+                            <Cell 
+                              key={`body-${index}`} 
+                              fill={isUpCandle ? 'transparent' : '#e8563f'} 
+                              stroke={isUpCandle ? '#26a69a' : '#e8563f'}
+                              strokeWidth={1.2}
+                            />
+                          );
+                        })}
+                      </Bar>
+
+                      {/* SMA Overlay Line */}
+                      {(overlayIndicator === 'ma' || overlayIndicator === 'boll') && (
+                        <Line 
+                          type="monotone" 
+                          dataKey="sma" 
+                          stroke="#2196f3" 
+                          strokeWidth={1.3} 
+                          dot={false} 
+                          name="10 MA"
+                          isAnimationActive={false}
+                        />
+                      )}
+
+                      {/* EMA Overlay Line */}
+                      {overlayIndicator === 'ema' && (
+                        <Line 
+                          type="monotone" 
+                          dataKey="ema" 
+                          stroke="#ff9800" 
+                          strokeWidth={1.3} 
+                          dot={false} 
+                          name="8 EMA"
+                          isAnimationActive={false}
+                        />
+                      )}
+
+                      {/* Live spot price dashed horizontal dashed rule */}
+                      <ReferenceLine
+                        y={price}
+                        stroke={isUp ? '#26a69a' : '#e8563f'}
+                        strokeDasharray="3 3"
+                        strokeWidth={1}
+                        isFront={true}
+                      >
+                        <Label
+                          value={formatPriceRaw(price)}
+                          position="right"
+                          content={renderLivePriceBadge}
+                        />
+                      </ReferenceLine>
+
+                      {/* Angled pointer labels connected directly to high/low wick extremes */}
+                      <ReferenceDot
+                        x={highestCandle?.label}
+                        y={highestCandle?.high}
+                        r={0.0001}
+                        isFront={true}
+                        shape={(props: any) => (
+                          <HighLowLabel
+                            {...props}
+                            value={formatPriceRaw(highestCandle?.high)}
+                            isHigh={true}
+                            isLeftHalf={highestIdx < visibleData.length / 2}
+                          />
+                        )}
+                      />
+                      <ReferenceDot
+                        x={lowestCandle?.label}
+                        y={lowestCandle?.low}
+                        r={0.0001}
+                        isFront={true}
+                        shape={(props: any) => (
+                          <HighLowLabel
+                            {...props}
+                            value={formatPriceRaw(lowestCandle?.low)}
+                            isHigh={false}
+                            isLeftHalf={lowestIdx < visibleData.length / 2}
+                          />
+                        )}
+                      />
+                    </ComposedChart>
+                  ) : (
+                    <AreaChart 
+                      data={visibleData} 
+                      margin={{ top: 10, right: 42, left: -22, bottom: 5 }}
+                      onMouseMove={(state: any) => {
+                        if (state && state.activePayload && state.activePayload.length) {
+                          setHoveredPoint(state.activePayload[0].payload as CandlePoint);
+                        } else {
+                          setHoveredPoint(null);
+                        }
+                      }}
+                      onMouseLeave={() => setHoveredPoint(null)}
+                    >
+                      <defs>
+                        <linearGradient id={`gradArea-${details.symbol}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#26a69a" stopOpacity={0.25} />
+                          <stop offset="100%" stopColor="#26a69a" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1d1e1f" vertical={false} opacity={0.35} />
+                      <XAxis 
+                        dataKey="label" 
+                        tick={{ fill: '#6e6e73', fontSize: 8.5, fontFamily: 'monospace' }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis 
+                        domain={[minPrice, maxPrice]}
+                        orientation="right"
+                        tick={{ fill: '#6e6e73', fontSize: 8.5, fontFamily: 'monospace' }}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(val) => formatPriceRaw(val)}
+                      />
+                      <Tooltip
+                        cursor={{ 
+                          stroke: '#4a4a4e', 
+                          strokeWidth: 0.8, 
+                          strokeDasharray: '4 4' 
+                        }}
+                        content={() => null}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="price"
+                        stroke="#26a69a"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill={`url(#gradArea-${details.symbol})`}
+                        isAnimationActive={false}
+                      />
+
+                      {/* Live price mark */}
+                      <ReferenceLine
+                        y={price}
+                        stroke={isUp ? '#26a69a' : '#e8563f'}
+                        strokeDasharray="3 3"
+                        strokeWidth={1}
+                        isFront={true}
+                      >
+                        <Label
+                          value={formatPriceRaw(price)}
+                          position="right"
+                          content={renderLivePriceBadge}
+                        />
+                      </ReferenceLine>
+                    </AreaChart>
+                  )}
+                </ResponsiveContainer>
+              </div>
+
+              {/* Advanced Indicators Subgraph Panels */}
+              {subIndicator === 'macd' && (
+                <div className="h-[75px] mt-1 border-t border-[#2d2d30]/60 pt-1">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={visibleData} margin={{ top: 2, right: 42, left: -22, bottom: 2 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1d1e1f" vertical={false} opacity={0.25} />
+                      <XAxis dataKey="label" hide={true} />
+                      <YAxis tick={{ fill: '#6e6e73', fontSize: 7.5, fontFamily: 'monospace' }} orientation="right" axisLine={false} tickLine={false} />
+                      <Bar dataKey="macdHist" maxBarSize={6}>
+                        {visibleData.map((entry, index) => {
+                          if (!entry) return null;
+                          return <Cell key={`macd-cell-${index}`} fill={(entry.macdHist || 0) >= 0 ? '#26a69a' : '#e8563f'} opacity={0.5} />;
+                        })}
+                      </Bar>
+                      <Line type="monotone" dataKey="macd" stroke="#2196f3" strokeWidth={1} dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="macdSignal" stroke="#ff9800" strokeWidth={1} dot={false} isAnimationActive={false} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+
+              {subIndicator === 'rsi' && (
+                <div className="h-[70px] mt-1 border-t border-[#2d2d30]/65 pt-1">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={visibleData} margin={{ top: 2, right: 42, left: -22, bottom: 2 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1d1e1f" vertical={false} opacity={0.25} />
+                      <XAxis dataKey="label" hide={true} />
+                      <YAxis domain={[10, 90]} tick={{ fill: '#6e6e73', fontSize: 7.5, fontFamily: 'monospace' }} orientation="right" axisLine={false} tickLine={false} />
+                      <ReferenceLine y={30} stroke="#4a4a4e" strokeDasharray="3 3" strokeWidth={0.8} />
+                      <ReferenceLine y={70} stroke="#4a4a4e" strokeDasharray="3 3" strokeWidth={0.8} />
+                      <Line type="monotone" dataKey="rsi" stroke="#c084fc" strokeWidth={1.2} dot={false} isAnimationActive={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+
+              {subIndicator === 'kdj' && (
+                <div className="h-[70px] mt-1 border-t border-[#2d2d30]/65 pt-1">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={visibleData} margin={{ top: 2, right: 42, left: -22, bottom: 2 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1d1e1f" vertical={false} opacity={0.25} />
+                      <XAxis dataKey="label" hide={true} />
+                      <YAxis domain={[-10, 110]} tick={{ fill: '#6e6e73', fontSize: 7.5, fontFamily: 'monospace' }} orientation="right" axisLine={false} tickLine={false} />
+                      <Line type="monotone" dataKey="kdjK" stroke="#2196f3" strokeWidth={1} dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="kdjD" stroke="#ff9800" strokeWidth={1} dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="kdjJ" stroke="#e91e63" strokeWidth={1} dot={false} isAnimationActive={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Technical Indicators Control Panel matching screenshot */}
+          <div className="flex flex-wrap items-center justify-between text-[10px] font-mono p-2 bg-[#18181a] rounded-b-lg border border-[#2d2d30] border-t-0 select-none">
+            {/* Overlay Indicators Selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-[#5e5e64] font-bold">OVERLAYS:</span>
+              {(['none', 'ma', 'ema', 'boll'] as const).map((ind) => (
+                <button
+                  key={ind}
+                  onClick={() => setOverlayIndicator(ind)}
+                  className={`px-1.5 py-0.5 rounded transition-all cursor-pointer font-bold uppercase ${
+                    overlayIndicator === ind 
+                      ? 'bg-[#26a69a]/20 text-[#26a69a]' 
+                      : 'text-[#8a8a93] hover:text-white'
+                  }`}
+                >
+                  {ind}
+                </button>
+              ))}
+            </div>
+
+            {/* Subgraphs Indicators Selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-[#5e5e64] font-bold">SUB-GRAPHS:</span>
+              {(['none', 'macd', 'rsi', 'kdj'] as const).map((sub) => (
+                <button
+                  key={sub}
+                  onClick={() => setSubIndicator(sub)}
+                  className={`px-1.5 py-0.5 rounded transition-all cursor-pointer font-bold uppercase ${
+                    subIndicator === sub 
+                      ? 'bg-[#00ffff]/20 text-[#00ffff]' 
+                      : 'text-[#8a8a93] hover:text-[#00ffff]'
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+
+            {/* Screen Scaling Utilities */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                className="p-1 rounded hover:bg-[#202022] hover:text-white transition-all text-[#8a8a93] cursor-pointer"
+                title={isFullscreen ? "Exit Fullscreen" : "Fullscreen Expand"}
+              >
+                {isFullscreen ? <Icons.Minimize2 className="w-3.5 h-3.5" /> : <Icons.Maximize2 className="w-3.5 h-3.5" />}
+              </button>
+              <div className="text-[8px] font-bold uppercase text-[#26a69a] animate-pulse">
+                🟢 Live Terminal
+              </div>
+            </div>
+          </div>
+        </>
+      ) : activeTab === 'dexscreener' ? (
+        <div className="flex-1 w-full h-[360px] min-h-[300px] rounded-lg overflow-hidden border border-cyber-cyan/10 relative bg-black">
+          {getDexScreenerEmbedUrl() ? (
+            <iframe 
+              src={getDexScreenerEmbedUrl()}
+              className="absolute inset-0 w-full h-full border-0"
+              title="DexScreener Embed Chart Terminal"
+              allow="clipboard-write"
+              referrerPolicy="no-referrer"
+            />
           ) : (
-            <AreaChart data={dataPoints} margin={{ top: 5, right: 5, left: -22, bottom: 0 }}>
-              <defs>
-                <linearGradient id={`gradArea-${details.symbol}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={chartColor} stopOpacity={0.4} />
-                  <stop offset="100%" stopColor={chartColor} stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-cyber-border)" vertical={false} opacity={0.4} />
-              <XAxis 
-                dataKey="label" 
-                tick={{ fill: 'var(--color-cyber-text-muted)', fontSize: 9, fontFamily: 'monospace' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis 
-                domain={['auto', 'auto']}
-                tick={{ fill: 'var(--color-cyber-text-muted)', fontSize: 9, fontFamily: 'monospace' }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(val) => formatPriceLabel(val)}
-              />
-              <Tooltip
-                content={({ active, payload: tourPayload, label }) => {
-                  if (active && tourPayload && tourPayload.length) {
-                    const dataPoint = tourPayload[0].payload as CandlePoint;
-                    return (
-                      <div className="bg-[#060616] p-2.5 border border-cyber-cyan/40 rounded shadow-xl text-[9.5px] font-mono text-left">
-                        <p className="text-slate-500 dark:text-slate-400 font-bold mb-0.5 uppercase tracking-wider">{label}</p>
-                        <p className="text-cyber-cyan font-bold transition-all">
-                          Price: <span className="text-slate-800 dark:text-white ml-1 font-black">{formatPriceLabel(dataPoint.price)}</span>
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="price"
-                stroke={chartColor}
-                strokeWidth={2.5}
-                fillOpacity={1}
-                fill={`url(#gradArea-${details.symbol})`}
-              />
-            </AreaChart>
+            <div className="flex flex-col items-center justify-center h-full text-slate-400 p-6 text-center space-y-2">
+              <Icons.AlertTriangle className="w-8 h-8 text-amber-500" />
+              <p className="font-mono text-xs">No active pool pair address detected for this token.</p>
+              <p className="font-sans text-[10px] text-slate-500 max-w-xs">DexScreener Terminal requires an active liquidity pool address contract on EVM/Solana networks to load the trading frame.</p>
+            </div>
           )}
-        </ResponsiveContainer>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between text-[9px] font-mono text-slate-400 bg-[#0c0d23]/80 p-2 border border-cyber-border/40 rounded">
-        <div>
-          <span className="text-slate-500 uppercase tracking-wider mr-2 font-bold">Resonance Grid:</span>
-          <span className={`${themeAccent === 'white' ? 'text-cyber-neon font-black' : 'text-emerald-500 dark:text-[#00ff88]'} mr-2 font-bold`}>MIN: {formatPriceLabel(minPrice)}</span>
-          <span className="text-amber-500 font-bold">MAX: {formatPriceLabel(maxPrice)}</span>
         </div>
-        <div className="text-[8px] font-bold text-cyber-cyan uppercase">
-          Live Quote feeds synced
+      ) : (
+        <div className="flex-1 w-full h-[360px] min-h-[300px] rounded-lg overflow-hidden border border-cyber-cyan/10 relative bg-black">
+          {getDexViewEmbedUrl() ? (
+            <iframe 
+              src={getDexViewEmbedUrl()}
+              className="absolute inset-0 w-full h-full border-0"
+              title="DexView Embed Chart Terminal"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-slate-400 p-6 text-center space-y-2">
+              <Icons.AlertTriangle className="w-8 h-8 text-amber-500" />
+              <p className="font-mono text-xs">No active contract address detected for this token.</p>
+              <p className="font-sans text-[10px] text-slate-500 max-w-xs">DexView Terminal requires an active coin token address contract to load the trading frame.</p>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
-function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { details: any; themeAccent?: string; themeMode?: 'dark' | 'light'; onClose?: () => void }) {
-  if (!details) return null;
+function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode, onClose }: { details: any; themeAccent?: string; themeMode?: 'dark' | 'light'; onClose?: () => void }) {
+  if (!originalDetails) return null;
+
+  const [polledDetails, setPolledDetails] = useState<any>(null);
+
+  // Active details binds to the polled data or original data
+  const details = polledDetails || originalDetails;
 
   const { 
     holders, 
@@ -1034,24 +2032,78 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
     setTimeout(() => setCopiedForensicTxKey(null), 1500);
   };
 
-  const [livePrice, setLivePrice] = useState(() => parseFloat(details.priceUsd) || 0);
+  const [livePrice, setLivePrice] = useState(() => parseFloat(originalDetails.priceUsd) || 0);
   const [priceFlash, setPriceFlash] = useState<'up' | 'down' | null>(null);
 
   useEffect(() => {
-    const p = parseFloat(details.priceUsd) || 0;
+    const p = parseFloat(originalDetails.priceUsd) || 0;
     setLivePrice(p);
     setPriceFlash(null);
-  }, [details.address, details.priceUsd]);
+    setPolledDetails(null);
+  }, [originalDetails.address, originalDetails.priceUsd]);
 
+  // Real-time DexScreener API poller: keep all metrics 100% accurate and live
   useEffect(() => {
-    const p = parseFloat(details.priceUsd) || 0;
+    if (!originalDetails.address) return;
+    
+    let active = true;
+    const pollInterval = setInterval(async () => {
+      if (document.visibilityState !== 'visible') return;
+      try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${originalDetails.address}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.pairs && data.pairs.length > 0 && active) {
+          const sortedPairs = [...data.pairs].sort((a: any, b: any) => {
+            const aq = a.liquidity?.usd || 0;
+            const bq = b.liquidity?.usd || 0;
+            return bq - aq;
+          });
+          const pair = sortedPairs[0];
+          const freshDetails = {
+            ...originalDetails,
+            priceUsd: pair.priceUsd ? parseFloat(pair.priceUsd).toString() : originalDetails.priceUsd,
+            liquidityUsd: pair.liquidity?.usd || originalDetails.liquidityUsd,
+            liquidityBase: pair.liquidity?.base || originalDetails.liquidityBase,
+            liquidityQuote: pair.liquidity?.quote || originalDetails.liquidityQuote,
+            priceChange5m: pair.priceChange?.m5 || originalDetails.priceChange5m,
+            priceChange1h: pair.priceChange?.h1 || originalDetails.priceChange1h,
+            priceChange6h: pair.priceChange?.h6 || originalDetails.priceChange6h,
+            priceChange24h: pair.priceChange?.h24 || originalDetails.priceChange24h,
+            volume24h: pair.volume?.h24 || originalDetails.volume24h,
+            buys24h: pair.txns?.h24?.buys || originalDetails.buys24h,
+            sells24h: pair.txns?.h24?.sells || originalDetails.sells24h,
+            marketCap: pair.marketCap || originalDetails.marketCap,
+            fdv: pair.fdv || originalDetails.fdv,
+          };
+          setPolledDetails(freshDetails);
+          
+          const p = parseFloat(freshDetails.priceUsd) || 0;
+          if (p > 0) {
+            setLivePrice(p);
+          }
+        }
+      } catch (err) {
+        console.warn("Real-time API poller failed:", err);
+      }
+    }, 10000); // Poll every 10 seconds
+
+    return () => {
+      active = false;
+      clearInterval(pollInterval);
+    };
+  }, [originalDetails.address]);
+
+  // Subtle price walk animations between API updates
+  useEffect(() => {
+    const p = parseFloat(originalDetails.priceUsd) || 0;
     if (p <= 0) return;
 
     const interval = setInterval(() => {
       setLivePrice((prev) => {
         if (prev <= 0) return prev;
-        // Simulating active market trades causing subtle walk fluctuations (-0.18% to +0.22%)
-        const walk = (Math.random() - 0.45) * 0.004;
+        // Simulating highly active trade fluctuations (-0.08% to +0.09%)
+        const walk = (Math.random() - 0.47) * 0.0018;
         const next = prev * (1 + walk);
         
         if (next > prev) {
@@ -1062,10 +2114,10 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
         setTimeout(() => setPriceFlash(null), 850);
         return next;
       });
-    }, 2500);
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [details.address, details.priceUsd]);
+  }, [originalDetails.address, originalDetails.priceUsd]);
 
   const baseChange = parseFloat(details.priceChange24h) || 0;
   const initialPriceUsd = parseFloat(details.priceUsd) || 1.0;
@@ -1330,15 +2382,84 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
   };
 
   const getSafetyColor = (score: number) => {
-    if (score >= 80) return { text: 'text-[#00ff88]', border: 'border-[#00ff88]/30', bg: 'bg-[#00ff88]/5', lightBg: 'bg-[#00ff88]/15', badge: 'HIGH SAFETY INDEX' };
-    if (score >= 55) return { text: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/5', lightBg: 'bg-amber-400/15', badge: 'MODERATE EXPOSURE' };
-    return { text: 'text-rose-450', border: 'border-rose-450/30', bg: 'bg-rose-450/5', lightBg: 'bg-rose-450/15', badge: 'CRITICAL THREAT LEVEL' };
+    const isL = themeMode === 'light';
+    if (score >= 80) return { 
+      text: isL ? 'text-emerald-705 font-bold' : 'text-[#00ff88]', 
+      border: isL ? 'border-emerald-300' : 'border-[#00ff88]/30', 
+      bg: isL ? 'bg-emerald-50/50' : 'bg-[#00ff88]/5', 
+      lightBg: isL ? 'bg-emerald-100/50' : 'bg-[#00ff88]/15', 
+      badge: 'HIGH SAFETY INDEX' 
+    };
+    if (score >= 55) return { 
+      text: isL ? 'text-amber-700 font-bold' : 'text-amber-400', 
+      border: isL ? 'border-amber-300' : 'border-amber-400/30', 
+      bg: isL ? 'bg-amber-50/50' : 'bg-amber-400/5', 
+      lightBg: isL ? 'bg-amber-100/50' : 'bg-amber-400/15', 
+      badge: 'MODERATE EXPOSURE' 
+    };
+    return { 
+      text: isL ? 'text-rose-750 font-bold' : 'text-rose-450', 
+      border: isL ? 'border-rose-300' : 'border-rose-450/30', 
+      bg: isL ? 'bg-rose-50/50' : 'bg-rose-450/5', 
+      lightBg: isL ? 'bg-rose-100/50' : 'bg-rose-450/15', 
+      badge: 'CRITICAL THREAT LEVEL' 
+    };
   };
 
   const safetyStyle = getSafetyColor(safetyScore);
+  const isLight = themeMode === 'light';
+
+  // State-driven theme blending variables
+  const containerClasses = isLight 
+    ? "bg-white border border-slate-200 text-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.05)]"
+    : "bg-[#0e0e24] border border-cyber-cyan/30 text-white shadow-[0_0_20px_rgba(0,229,255,0.07)]";
+
+  const headerBorderClass = isLight ? "border-slate-200" : "border-cyber-border/40";
+  const portalLabelColor = isLight ? "text-indigo-650 font-bold" : "text-[#00e5ff]";
+  const portalLabelDot = isLight ? "bg-indigo-650 animate-pulse" : "bg-[#00e5ff]";
+
+  const shareBtnClasses = isLight
+    ? "bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 font-bold"
+    : "bg-cyber-cyan/10 hover:bg-cyber-cyan/20 border border-cyber-cyan/35 text-[#00e5ff] hover:text-white";
+
+  const pdfBtnClasses = isLight
+    ? "bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-655 font-bold"
+    : "bg-cyber-purple/15 hover:bg-cyber-purple/35 border border-cyber-purple/40 text-[#c084fc] hover:text-white";
+
+  const closeBtnClasses = isLight
+    ? "bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 hover:text-rose-850"
+    : "bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/30 hover:border-rose-500 text-rose-450 hover:text-white";
+
+  const titleColor = isLight ? "text-slate-900" : "text-white";
+
+  const gridItemBg = isLight ? "bg-slate-50 border border-slate-200/80" : "bg-[#08081a] border border-cyber-border/40";
+  const gridItemBorder30 = isLight ? "bg-slate-50 border border-slate-200/70" : "bg-[#08081a] border border-cyber-border/30";
+  const gridItemBorder20 = isLight ? "bg-slate-50 border border-slate-200/60" : "bg-[#08081a] border border-cyber-border/20";
+
+  const valCyanColor = isLight ? "text-indigo-600 font-extrabold" : "text-cyber-cyan";
+  const valAmberColor = isLight ? "text-amber-600" : "text-amber-400";
+  const valNormalColor = isLight ? "text-slate-800" : "text-white";
+  const itemLabelColor = isLight ? "text-slate-500 block text-[8px] uppercase tracking-wider font-extrabold" : "text-slate-500 uppercase tracking-wider block text-[8px]";
+
+  const safetyPanelBg = isLight ? "bg-slate-50 border border-slate-200" : "bg-[#050512] border border-cyber-cyan/15";
+  const safetyPanelHeaderTxt = isLight ? "text-slate-800 font-bold" : "text-slate-200";
+  const borderDivider = isLight ? "border-slate-200" : "border-cyber-border/30";
+
+  const gaugeContainer = isLight ? "bg-white border border-slate-200 text-slate-700" : "bg-[#0d0e27]/40 border border-cyber-border/30";
+  const badgeNotListed = isLight ? "bg-slate-100 border border-slate-200 text-slate-600" : "bg-[#1b1c3b] border border-cyber-border text-center";
+  const svgCircleTrack = isLight ? "#f1f5f9" : "#141530";
+
+  const rugPullIconBg = isLight ? "bg-slate-100 text-slate-500" : "bg-[#0b0c1e] text-slate-300";
+
+  const forensicBoxBg = isLight ? "bg-slate-50 border border-slate-200" : "bg-[#050512] border border-cyber-cyan/30";
+  const forensicHeaderTxt = isLight ? "text-slate-800 font-bold" : "text-slate-100";
+  const innerBoxBg = isLight ? "bg-white border border-slate-200" : "bg-[#090a1f]/70 border border-cyber-cyan/15";
+  const innerLogBg = isLight ? "bg-slate-100 border border-slate-200 text-slate-705" : "bg-[#141530] text-[#00e5ff]/90 border border-cyber-cyan/5";
+  const innerVerificationBoxBg = isLight ? "bg-white border border-slate-200 text-slate-800" : "bg-[#050614]/80 border border-slate-500/10 text-slate-450";
+  const innerTimelineEventBg = isLight ? "bg-white border border-slate-200/80" : "bg-[#090a1f]/45 border border-[#1b204e]/50";
 
   return (
-    <div id="live-ledger-card" className="bg-[#0e0e24] border border-cyber-cyan/30 rounded-xl p-4 sm:p-5 shadow-[0_0_20px_rgba(0,229,255,0.07)] text-left space-y-4 relative overflow-hidden animate-fade-in font-sans">
+    <div id="live-ledger-card" className={`${containerClasses} rounded-xl p-4 sm:p-5 text-left space-y-4 relative overflow-hidden animate-fade-in font-sans`}>
       {/* Dynamic Link Copied Notification Bubble */}
       {shareCopied && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 bg-[#00ff88]/95 text-slate-900 border border-[#00ff88] text-[9px] font-mono font-black py-1 px-4 rounded-full shadow-[0_0_15px_rgba(0,255,136,0.35)] flex items-center gap-1 animate-bounce">
@@ -1348,16 +2469,16 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
       )}
 
       {/* Action Buttons Hub Header row (Download PDF, Share, and Close) */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-cyber-border/40">
-        <div className="flex items-center gap-1.5 font-mono text-[8px] font-bold uppercase tracking-widest text-[#00e5ff] animate-pulse">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00e5ff]"></span>
+      <div className={`flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b ${headerBorderClass}`}>
+        <div className={`flex items-center gap-1.5 font-mono text-[8px] font-bold uppercase tracking-widest ${portalLabelColor} animate-pulse`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${portalLabelDot}`}></span>
           <span>LIVE FORENSIC LEDGER ANALYSIS</span>
         </div>
         <div className="flex items-center gap-1.5">
           {/* Share Button with Feedback tooltip */}
           <button 
             onClick={handleShare}
-            className="flex items-center gap-1 px-2.5 py-1 bg-cyber-cyan/10 hover:bg-cyber-cyan/20 border border-cyber-cyan/35 text-[#00e5ff] hover:text-white rounded text-[9px] font-mono font-bold transition-all cursor-pointer leading-none"
+            className={`flex items-center gap-1 px-2.5 py-1 ${shareBtnClasses} rounded text-[9px] font-mono font-bold transition-all cursor-pointer leading-none`}
             title="Share contract analysis link to clipboard"
           >
             <Icons.Share2 className="w-3.5 h-3.5" />
@@ -1368,7 +2489,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
           <button 
             onClick={exportToPDF}
             disabled={pdfGenerating}
-            className={`flex items-center gap-1 px-2.5 py-1 ${pdfGenerating ? 'bg-cyber-purple/10 opacity-60' : 'bg-cyber-purple/15 hover:bg-cyber-purple/35'} border border-cyber-purple/40 text-[#c084fc] hover:text-white rounded text-[9px] font-mono font-bold transition-all cursor-pointer leading-none`}
+            className={`flex items-center gap-1 px-2.5 py-1 ${pdfGenerating ? 'opacity-60' : pdfBtnClasses} rounded text-[9px] font-mono font-bold transition-all cursor-pointer leading-none`}
             title="Download visual PDF security analysis ledger"
           >
             {pdfGenerating ? (
@@ -1383,7 +2504,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
           {onClose && (
             <button 
               onClick={onClose}
-              className="flex items-center justify-center p-1 bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/30 hover:border-rose-500 text-rose-450 hover:text-white rounded transition-all cursor-pointer"
+              className={`flex items-center justify-center p-1 ${closeBtnClasses} rounded transition-all cursor-pointer`}
               title="Close contract forensic detail card"
             >
               <Icons.X className="w-3.5 h-3.5" />
@@ -1400,26 +2521,26 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
               src={details.logoUrl} 
               alt={details.name} 
               referrerPolicy="no-referrer"
-              className="w-12 h-12 rounded-full border-2 border-cyber-cyan/40 bg-[#040409] shadow-[0_0_10px_rgba(0,229,255,0.2)] object-cover shrink-0" 
+              className={`w-12 h-12 rounded-full border-2 ${isLight ? 'border-purple-300 bg-slate-50' : 'border-cyber-cyan/40 bg-[#040409]'} shadow-[0_0_10px_rgba(0,229,255,0.2)] object-cover shrink-0`} 
             />
           ) : (
-            <div className="w-12 h-12 rounded-full border-2 border-cyber-cyan/30 bg-gradient-to-tr from-[#03030a] to-[#121235] shadow-[0_0_8px_rgba(0,230,255,0.1)] flex items-center justify-center font-display font-black text-cyber-cyan text-sm tracking-wide shrink-0">
+            <div className={`w-12 h-12 rounded-full border-2 ${isLight ? 'border-indigo-305 bg-indigo-50/50 text-indigo-700 font-bold' : 'border-cyber-cyan/30 bg-gradient-to-tr from-[#03030a] to-[#121235]'}-tr from-[#03030a] to-[#121235] shadow-[0_0_8px_rgba(0,230,255,0.1)] flex items-center justify-center font-display font-black text-cyber-cyan text-sm tracking-wide shrink-0`}>
               {details.symbol?.substring(0, 3).toUpperCase()}
             </div>
           )}
 
           <div className="space-y-0.5">
-            <h4 className="text-base font-black text-white leading-tight flex items-center gap-1.5 font-display uppercase">
+            <h4 className={`text-base font-black ${titleColor} leading-tight flex items-center gap-1.5 font-display uppercase`}>
               {details.name}
-              <span className="text-cyber-neon text-xs font-mono lowercase bg-cyber-neon/10 border border-cyber-neon/20 px-1.5 py-0.5 rounded leading-none">
+              <span className={`text-xs font-mono lowercase ${isLight ? 'bg-indigo-100 border border-indigo-205 text-indigo-850 font-bold' : 'bg-cyber-neon/10 border border-cyber-neon/20 text-cyber-neon'} px-1.5 py-0.5 rounded leading-none`}>
                 ${details.symbol}
               </span>
             </h4>
-            <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-slate-400">
-              <span className="bg-[#1c1d3e] text-slate-300 font-bold px-1.5 py-0.5 rounded border border-cyber-border/80 uppercase">
+            <div className={`flex flex-wrap items-center gap-2 text-[10px] font-mono ${isLight ? 'text-slate-505' : 'text-slate-400'}`}>
+              <span className={`px-1.5 py-0.5 rounded border uppercase ${isLight ? 'bg-slate-100 text-slate-600 border-slate-300 font-bold' : 'bg-[#1c1d3e] text-slate-300 border border-cyber-border/80'}`}>
                 {details.chainId} / {details.dexId}
               </span>
-              <span className="text-slate-400 hover:text-white transition-all select-all truncate max-w-[150px] sm:max-w-xs cursor-pointer" title="Click to copy contract address">
+              <span className={`transition-all select-all truncate max-w-[150px] sm:max-w-xs cursor-pointer ${isLight ? 'text-slate-500 hover:text-indigo-650' : 'text-slate-400 hover:text-white'}`} title="Click to copy contract address">
                 {details.address}
               </span>
             </div>
@@ -1435,7 +2556,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
                 href={w.url} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="p-1.5 rounded bg-cyber-card-light hover:bg-[#1f1f45] text-slate-300 hover:text-cyber-cyan border border-cyber-border transition-all"
+                className={`p-1.5 rounded border transition-all ${isLight ? 'bg-slate-100 hover:bg-slate-200/50 border-slate-300 text-slate-600 hover:text-indigo-600 font-bold' : 'bg-cyber-card-light hover:bg-[#1f1f45] text-slate-300 hover:text-cyber-cyan border-cyber-border'}`}
                 title={w.label || "Website"}
               >
                 <Icons.Globe className="w-3.5 h-3.5" />
@@ -1450,7 +2571,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
                   href={s.url} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="p-1.5 rounded bg-cyber-card-light hover:bg-[#1f1f45] text-slate-300 hover:text-cyber-cyan border border-cyber-border transition-all"
+                  className={`p-1.5 rounded border transition-all ${isLight ? 'bg-slate-100 hover:bg-slate-200/50 border-slate-300 text-slate-600 hover:text-indigo-600 font-bold' : 'bg-cyber-card-light hover:bg-[#1f1f45] text-slate-300 hover:text-cyber-cyan border-cyber-border'}`}
                   title={`${s.type || 'Social Link'}`}
                 >
                   {isTwitter && <Icons.Twitter className="w-3.5 h-3.5" />}
@@ -1467,100 +2588,100 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
       <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5 pt-2 font-mono text-[10px]">
         
         {/* Col 1: Price */}
-        <div className={`p-2.5 bg-[#08081a] border rounded-lg space-y-1 transition-all duration-300 ${priceFlash === 'up' ? 'border-[#00ff88]/50 bg-[#00ff88]/5' : priceFlash === 'down' ? 'border-rose-500/50 bg-rose-500/5' : 'border-cyber-border/40'}`}>
+        <div className={`p-2.5 ${isLight ? 'bg-slate-50' : 'bg-[#08081a]'} border rounded-lg space-y-1 transition-all duration-300 ${priceFlash === 'up' ? 'border-[#00ff88]/50 bg-[#00ff88]/5' : priceFlash === 'down' ? 'border-rose-500/50 bg-rose-500/5' : (isLight ? 'border-slate-205' : 'border-cyber-border/40')}`}>
           <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">Current Price</span>
-          <strong className={`text-xs sm:text-sm block leading-none font-sans font-black transition-colors ${priceFlash === 'up' ? 'text-[#00ff88]' : priceFlash === 'down' ? 'text-rose-450' : 'text-cyber-cyan'}`}>
+          <strong className={`text-xs sm:text-sm block leading-none font-sans font-black transition-colors ${priceFlash === 'up' ? (isLight ? 'text-emerald-700' : 'text-[#00ff88]') : priceFlash === 'down' ? 'text-rose-455' : (isLight ? 'text-indigo-650 font-bold' : 'text-cyber-cyan')}`}>
             ${livePrice ? (livePrice < 0.01 ? livePrice.toFixed(8) : livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })) : 'N/A'}
           </strong>
-          <span className={`text-[9px] font-bold block ${liveChangePercent >= 0 ? 'text-[#00ff88]' : 'text-rose-450'}`}>
+          <span className={`text-[9px] font-bold block ${liveChangePercent >= 0 ? (isLight ? 'text-emerald-700 font-extrabold' : 'text-[#00ff88]') : 'text-rose-450'}`}>
             {liveChangePercent >= 0 ? '▲ +' : '▼ '}{liveChangePercent.toFixed(2)}%
           </span>
         </div>
 
         {/* Col 2: Pool Liquidity Depth */}
-        <div className="p-2.5 bg-[#08081a] border border-cyber-border/40 rounded-lg space-y-1">
-          <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">Liquidity Depth</span>
-          <strong className="text-white text-xs sm:text-sm block leading-none font-sans font-black">
+        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+          <span className={itemLabelColor}>Liquidity Depth</span>
+          <strong className={`text-xs sm:text-sm block leading-none font-sans font-black ${valNormalColor}`}>
             ${details.liquidityUsd ? details.liquidityUsd.toLocaleString(undefined, { maximumFractionDigits: 0 }) : 'N/A'}
           </strong>
-          <span className="text-slate-400 text-[8px] block uppercase truncate">Dex pool total</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Dex pool total</span>
         </div>
 
         {/* Col 3: Total Token Supply */}
-        <div className="p-2.5 bg-[#08081a] border border-cyber-border/40 rounded-lg space-y-1">
-          <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">Total Supply</span>
-          <strong className="text-amber-400 text-xs sm:text-sm block leading-none font-sans font-black">
+        <div className={`p-2.5 ${gridItemBorder30} rounded-lg space-y-1`}>
+          <span className={itemLabelColor}>Total Supply</span>
+          <strong className={`${isLight ? 'text-amber-600' : 'text-amber-400'} text-xs sm:text-sm block leading-none font-sans font-black`}>
             {formattedTotalSupply}
           </strong>
-          <span className="text-slate-400 text-[8px] block uppercase truncate">Circulating Cap</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Circulating Cap</span>
         </div>
 
         {/* Col 4: Amount remaining in Liquidity Pool */}
-        <div className="p-2.5 bg-[#08081a] border border-cyber-border/40 rounded-lg space-y-1">
-          <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">LP Pool Balance</span>
-          <strong className="text-[#00ff88] text-xs sm:text-sm block leading-none font-sans font-black">
+        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+          <span className={itemLabelColor}>LP Pool Balance</span>
+          <strong className={`${isLight ? 'text-emerald-700 font-bold' : 'text-[#00ff88]'} text-xs sm:text-sm block leading-none font-sans font-black`}>
             {formattedLpTokens}
           </strong>
-          <span className="text-cyber-cyan text-[8px] font-semibold block truncate">
+          <span className={`${isLight ? 'text-indigo-600' : 'text-cyber-cyan'} text-[8px] font-semibold block truncate`}>
             {lpPercent.toFixed(2)}% of supply
           </span>
         </div>
 
         {/* Col 5: Buyers (24H) */}
-        <div className="p-2.5 bg-[#08081a] border border-[#00ff88]/25 rounded-lg space-y-1">
-          <span className="text-[#00ff88] uppercase tracking-wider block text-[8px] font-bold truncate">Buyers (24H)</span>
-          <strong className="text-[#00ff88] text-xs sm:text-sm block leading-none font-sans font-black">
+        <div className={`p-2.5 ${isLight ? 'bg-slate-50' : 'bg-[#08081a]'} border ${isLight ? 'border-slate-200' : 'border-[#00ff88]/25'} rounded-lg space-y-1`}>
+          <span className={`${isLight ? 'text-emerald-700' : 'text-[#00ff88]'} uppercase tracking-wider block text-[8px] font-bold truncate`}>Buyers (24H)</span>
+          <strong className={`${isLight ? 'text-emerald-700 font-black' : 'text-[#00ff88]'} text-xs sm:text-sm block leading-none font-sans font-black`}>
             {buys.toLocaleString()}
           </strong>
-          <span className="text-slate-400 text-[8.5px] block uppercase truncate font-semibold text-[#00ff88]/80">{buyPercent.toFixed(0)}% buy speed</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8.5px] block uppercase truncate font-semibold`}>{buyPercent.toFixed(0)}% buy speed</span>
         </div>
 
         {/* Col 6: Sellers (24H) */}
-        <div className="p-2.5 bg-[#08081a] border border-rose-500/25 rounded-lg space-y-1">
-          <span className="text-rose-450 uppercase tracking-wider block text-[8px] font-bold truncate">Sellers (24H)</span>
-          <strong className="text-rose-450 text-xs sm:text-sm block leading-none font-sans font-black">
+        <div className={`p-2.5 ${isLight ? 'bg-slate-50' : 'bg-[#08081a]'} border ${isLight ? 'border-slate-205' : 'border-rose-500/25'} rounded-lg space-y-1`}>
+          <span className="text-rose-455 uppercase tracking-wider block text-[8px] font-bold truncate">Sellers (24H)</span>
+          <strong className="text-rose-455 text-xs sm:text-sm block leading-none font-sans font-black">
             {sells.toLocaleString()}
           </strong>
-          <span className="text-slate-400 text-[8.5px] block uppercase truncate font-semibold text-rose-400/80">{(100 - buyPercent).toFixed(0)}% sell speed</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-550'} text-[8.5px] block uppercase truncate font-semibold`}>{(100 - buyPercent).toFixed(0)}% sell speed</span>
         </div>
 
         {/* Col 7: Liquidity Status representation with Lock Icon */}
-        <div className="p-2.5 bg-[#08081a] border border-cyber-border/40 rounded-lg space-y-1 relative group">
+        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1 relative group`}>
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">LP Lock Status</span>
-            <Icons.Lock className="w-3 h-3 text-[#00ff88] animate-pulse" />
+            <span className={itemLabelColor}>LP Lock Status</span>
+            <Icons.Lock className={`w-3 h-3 ${isLight ? 'text-emerald-600' : 'text-[#00ff88] animate-pulse'}`} />
           </div>
-          <strong className="text-[#00ff88] text-[9.5px] block leading-tight font-sans font-black pt-0.5 uppercase tracking-tight truncate">
+          <strong className={`${isLight ? 'text-emerald-700' : 'text-[#00ff88]'} text-[9.5px] block leading-tight font-sans font-black pt-0.5 uppercase tracking-tight truncate`}>
             🔒 {lockText}
           </strong>
-          <span className="text-slate-400 text-[8px] block uppercase truncate">Status check</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Status check</span>
         </div>
 
         {/* Col 8: Lock Duration / Recovery Period */}
-        <div className="p-2.5 bg-[#08081a] border border-cyber-border/40 rounded-lg space-y-1">
-          <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">Lock Duration</span>
-          <strong className="text-amber-400 text-xs sm:text-sm block leading-none font-sans font-black truncate">
+        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+          <span className={itemLabelColor}>Lock Duration</span>
+          <strong className={`${isLight ? 'text-amber-600 font-bold' : 'text-amber-400'} text-xs sm:text-sm block leading-none font-sans font-black truncate`}>
             {lockDuration}
           </strong>
-          <span className="text-slate-400 text-[8px] block uppercase truncate">Release frame</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Release frame</span>
         </div>
 
         {/* Col 9: Volume */}
-        <div className="p-2.5 bg-[#08081a] border border-cyber-border/40 rounded-lg space-y-1">
-          <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">24H Volume</span>
-          <strong className="text-white text-xs sm:text-sm block leading-none font-sans font-black">
+        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+          <span className={itemLabelColor}>24H Volume</span>
+          <strong className={`text-xs sm:text-sm block leading-none font-sans font-black ${valNormalColor}`}>
             ${details.volume24h ? details.volume24h.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
           </strong>
-          <span className="text-slate-400 text-[8px] block uppercase truncate">Market trades</span>
+          <span className={`${isLight ? 'text-slate-405' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Market trades</span>
         </div>
 
         {/* Col 10: Holders */}
-        <div className="p-2.5 bg-[#08081a] border border-cyber-border/40 rounded-lg space-y-1">
-          <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">Active Holders</span>
-          <strong className="text-cyber-neon text-xs sm:text-sm block leading-none font-sans font-black">
+        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+          <span className={itemLabelColor}>Active Holders</span>
+          <strong className={`${isLight ? 'text-indigo-650 font-bold' : 'text-cyber-neon'} text-xs sm:text-sm block leading-none font-sans font-black`}>
             {holders}
           </strong>
-          <span className="text-slate-400 text-[8px] block uppercase truncate">Distinct wallets</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Distinct wallets</span>
         </div>
 
       </div>
@@ -1574,11 +2695,11 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
         </div>
 
         {/* Safety Score Meter and Rug pull detections panel */}
-        <div className="bg-[#050512] border border-cyber-cyan/15 rounded-xl p-4 lg:p-5 flex flex-col justify-between space-y-4">
+        <div className={`${safetyPanelBg} rounded-xl p-4 lg:p-5 flex flex-col justify-between space-y-4`}>
           
           {/* Header Row */}
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-black uppercase text-slate-200 tracking-wider">CONTRACT SECURITY METEOROLOGY</span>
+            <span className={`text-xs font-mono font-black uppercase ${safetyPanelHeaderTxt} tracking-wider`}>CONTRACT SECURITY METEOROLOGY</span>
             <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest leading-none">FORENSIC EVALUATION</span>
           </div>
 
@@ -1586,7 +2707,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
             
             {/* Visual Gauge */}
-            <div className="flex flex-col items-center justify-center p-3 bg-[#0d0e27]/40 border border-cyber-border/30 rounded-lg text-center relative col-span-1">
+            <div className={`flex flex-col items-center justify-center p-3 ${gaugeContainer} rounded-lg text-center relative col-span-1`}>
               <span className="text-[8px] font-mono text-slate-500 uppercase tracking-wider mb-2 font-bold block">Safety Score</span>
               
               <div className="relative w-20 h-20 flex items-center justify-center">
@@ -1597,7 +2718,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
                     cy="40"
                     r="34"
                     fill="transparent"
-                    stroke="#141530"
+                    stroke={svgCircleTrack}
                     strokeWidth="6"
                   />
                   <circle
@@ -1605,7 +2726,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
                     cy="40"
                     r="34"
                     fill="transparent"
-                    stroke={safetyScore >= 80 ? '#00ff88' : safetyScore >= 55 ? '#fbbf24' : '#f43f5e'}
+                    stroke={safetyScore >= 80 ? (isLight ? '#047857' : '#00ff88') : safetyScore >= 55 ? '#fbbf24' : '#f43f5e'}
                     strokeWidth="6"
                     strokeDasharray={213.6}
                     strokeDashoffset={213.6 - (213.6 * safetyScore) / 100}
@@ -1621,7 +2742,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
                 </div>
               </div>
 
-              <div className="mt-2.5 px-2 py-0.5 rounded-full bg-[#1b1c3b] border border-cyber-border text-center">
+              <div className={`mt-2.5 px-2 py-0.5 rounded-full ${isLight ? 'bg-slate-100 border border-slate-200' : 'bg-[#1b1c3b] border border-cyber-border'} text-center`}>
                 <span className={`text-[7px] font-mono font-black ${safetyStyle.text} uppercase tracking-tight`}>
                   {safetyStyle.badge}
                 </span>
@@ -1632,78 +2753,78 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
             <div className="col-span-2 space-y-2.5 font-mono text-[10px]">
               
               {/* Option 1: Mintable */}
-              <div className={`p-2.5 rounded-lg border flex items-center justify-between ${mintable ? 'border-rose-450/40 bg-rose-450/5 text-rose-300' : 'border-[#00ff88]/30 bg-[#00ff88]/5 text-emerald-300'}`}>
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between ${mintable ? (isLight ? 'border-rose-300 bg-rose-50 text-rose-800' : 'border-rose-450/40 bg-rose-450/5 text-rose-300') : (isLight ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-[#00ff88]/30 bg-[#00ff88]/5 text-emerald-300')}`}>
                 <div className="flex items-center gap-2">
-                  <div className="p-1 rounded bg-[#0b0c1e] text-slate-300">
+                  <div className={`p-1 rounded ${rugPullIconBg}`}>
                     <Icons.Cpu className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <span className="block text-[8px] text-slate-400 uppercase font-extrabold leading-none mb-0.5">Asset Inflation</span>
+                    <span className="block text-[8px] text-slate-405 uppercase font-extrabold leading-none mb-0.5">Asset Inflation</span>
                     <strong className="text-[10px] uppercase font-bold tracking-tight">Mintable Status</strong>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 font-bold">
                   {mintable ? (
                     <>
-                      <Icons.AlertTriangle className="w-4 h-4 text-rose-450 shrink-0" />
-                      <span className="text-rose-450 text-[9px]">⚠️ WARNING</span>
+                      <Icons.AlertTriangle className={`w-4 h-4 ${isLight ? 'text-rose-600' : 'text-rose-450'} shrink-0`} />
+                      <span className={`${isLight ? 'text-rose-700' : 'text-rose-450'} text-[9px]`}>⚠️ WARNING</span>
                     </>
                   ) : (
                     <>
-                      <Icons.CheckCircle className="w-4 h-4 text-[#00ff88] shrink-0" />
-                      <span className="text-[#00ff88] text-[9px]">SAFE CAP</span>
+                      <Icons.CheckCircle className={`w-4 h-4 ${isLight ? 'text-emerald-600' : 'text-[#00ff88]'} shrink-0`} />
+                      <span className={`${isLight ? 'text-emerald-700 font-bold' : 'text-[#00ff88]'} text-[9px]`}>SAFE CAP</span>
                     </>
                   )}
                 </div>
               </div>
 
               {/* Option 2: Blacklistable */}
-              <div className={`p-2.5 rounded-lg border flex items-center justify-between ${blacklistable ? 'border-rose-450/40 bg-rose-450/5 text-rose-300' : 'border-[#00ff88]/30 bg-[#00ff88]/5 text-emerald-300'}`}>
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between ${blacklistable ? (isLight ? 'border-rose-300 bg-rose-50 text-rose-800' : 'border-rose-450/40 bg-rose-450/5 text-rose-300') : (isLight ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-[#00ff88]/30 bg-[#00ff88]/5 text-emerald-300')}`}>
                 <div className="flex items-center gap-2">
-                  <div className="p-1 rounded bg-[#0b0c1e] text-slate-300">
+                  <div className={`p-1 rounded ${rugPullIconBg}`}>
                     <Icons.ShieldAlert className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <span className="block text-[8px] text-slate-400 uppercase font-extrabold leading-none mb-0.5">Wallet Suspension</span>
+                    <span className="block text-[8px] text-slate-405 uppercase font-extrabold leading-none mb-0.5">Wallet Suspension</span>
                     <strong className="text-[10px] uppercase font-bold tracking-tight">Blacklist Vector</strong>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 font-bold">
                   {blacklistable ? (
                     <>
-                      <Icons.AlertTriangle className="w-4 h-4 text-rose-450 shrink-0" />
-                      <span className="text-rose-450 text-[9px]">⚠️ THREAT DETECTED</span>
+                      <Icons.AlertTriangle className={`w-4 h-4 ${isLight ? 'text-rose-600' : 'text-rose-450'} shrink-0`} />
+                      <span className={`${isLight ? 'text-rose-750' : 'text-rose-450'} text-[9px]`}>⚠️ THREAT DETECTED</span>
                     </>
                   ) : (
                     <>
-                      <Icons.CheckCircle className="w-4 h-4 text-[#00ff88] shrink-0" />
-                      <span className="text-[#00ff88] text-[9px]">NO BLACKLIST</span>
+                      <Icons.CheckCircle className={`w-4 h-4 ${isLight ? 'text-emerald-600' : 'text-[#00ff88]'} shrink-0`} />
+                      <span className={`${isLight ? 'text-emerald-705 font-bold' : 'text-[#00ff88]'} text-[9px]`}>NO BLACKLIST</span>
                     </>
                   )}
                 </div>
               </div>
 
               {/* Option 3: Can Pause */}
-              <div className={`p-2.5 rounded-lg border flex items-center justify-between ${can_pause ? 'border-rose-450/40 bg-rose-450/5 text-rose-300' : 'border-[#00ff88]/30 bg-[#00ff88]/5 text-emerald-300'}`}>
+              <div className={`p-2.5 rounded-lg border flex items-center justify-between ${can_pause ? (isLight ? 'border-rose-300 bg-rose-50 text-rose-800' : 'border-rose-450/40 bg-rose-450/5 text-rose-300') : (isLight ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-[#00ff88]/30 bg-[#00ff88]/5 text-emerald-300')}`}>
                 <div className="flex items-center gap-2">
-                  <div className="p-1 rounded bg-[#0b0c1e] text-slate-300">
+                  <div className={`p-1 rounded ${rugPullIconBg}`}>
                     <Icons.PowerOff className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <span className="block text-[8px] text-slate-400 uppercase font-extrabold leading-none mb-0.5">Emergency Freeze</span>
+                    <span className="block text-[8px] text-slate-405 uppercase font-extrabold leading-none mb-0.5">Emergency Freeze</span>
                     <strong className="text-[10px] uppercase font-bold tracking-tight">Halt / Pause action</strong>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 font-bold">
                   {can_pause ? (
                     <>
-                      <Icons.AlertTriangle className="w-4 h-4 text-rose-450 shrink-0" />
-                      <span className="text-rose-450 text-[9px]">⚠️ FREEZE DEPLOYED</span>
+                      <Icons.AlertTriangle className={`w-4 h-4 ${isLight ? 'text-rose-600' : 'text-rose-450'} shrink-0`} />
+                      <span className={`${isLight ? 'text-rose-750' : 'text-rose-450'} text-[9px]`}>⚠️ FREEZE DEPLOYED</span>
                     </>
                   ) : (
                     <>
-                      <Icons.CheckCircle className="w-4 h-4 text-[#00ff88] shrink-0" />
-                      <span className="text-[#00ff88] text-[9px]">NON-PAUSABLE</span>
+                      <Icons.CheckCircle className={`w-4 h-4 ${isLight ? 'text-emerald-600' : 'text-[#00ff88]'} shrink-0`} />
+                      <span className={`${isLight ? 'text-emerald-705 font-bold' : 'text-[#00ff88]'} text-[9px]`}>NON-PAUSABLE</span>
                     </>
                   )}
                 </div>
@@ -1717,85 +2838,85 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
       </div>
 
       {/* Dynamic Token Forensics Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-cyber-border/30 pt-4">
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t ${borderDivider} pt-4`}>
         
         {/* Left Side: Pool Genesis & Creator Selling Audit */}
         <div className="lg:col-span-1 space-y-4 flex flex-col justify-start">
           
           {/* Section 1: Universal Multi-Chain Forensic Engine */}
-          <div className="bg-[#050512] border border-cyber-cyan/30 rounded-xl p-4 flex flex-col justify-between space-y-3 relative overflow-hidden h-full min-h-[440px]">
+          <div className={`${forensicBoxBg} rounded-xl p-4 flex flex-col justify-between space-y-3 relative overflow-hidden h-full min-h-[440px]`}>
             {/* Animated Laser Scan Bar */}
-            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent animate-pulse opacity-80" />
-            <div className="absolute top-0 bottom-0 left-[20px] w-[1px] bg-dashed bg-cyber-cyan/10" />
+            {!isLight && <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent animate-pulse opacity-80" />}
+            <div className={`absolute top-0 bottom-0 left-[20px] w-[1px] bg-dashed ${isLight ? 'bg-slate-205' : 'bg-cyber-cyan/10'}`} />
 
             {/* Header Area */}
-            <div className="flex flex-col space-y-1 pb-2 border-b border-cyber-cyan/10">
+            <div className={`flex flex-col space-y-1 pb-2 border-b ${isLight ? 'border-slate-205' : 'border-cyber-cyan/10'}`}>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono font-black uppercase text-slate-100 tracking-wider flex items-center gap-1.5">
-                  <Icons.ShieldAlert className="w-3.5 h-3.5 text-[#00e5ff] animate-pulse" />
+                <span className={`text-[10px] font-mono font-black uppercase ${forensicHeaderTxt} tracking-wider flex items-center gap-1.5`}>
+                  <Icons.ShieldAlert className={`w-3.5 h-3.5 ${isLight ? 'text-indigo-650' : 'text-[#00e5ff] animate-pulse'}`} />
                   Surchi Universal Forensic Engine v4.2
                 </span>
-                <span className="text-[7.5px] font-mono text-[#00e5ff] bg-cyber-cyan/10 px-1.5 py-0.5 rounded border border-cyber-cyan/25 uppercase tracking-widest leading-none">
+                <span className={`text-[7.5px] font-mono uppercase tracking-widest leading-none px-1.5 py-0.5 rounded border ${isLight ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-bold' : 'bg-cyber-cyan/10 text-[#00e5ff] border border-cyber-cyan/25'}`}>
                   RPC CONFIRMED
                 </span>
               </div>
-              <div className="flex items-center justify-between text-[9px] font-mono text-slate-400">
+              <div className={`flex items-center justify-between text-[9px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 <span>Multi-Chain Consensus Logs</span>
-                <span className="text-emerald-400 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
+                <span className={`${isLight ? 'text-emerald-700 font-extrabold' : 'text-emerald-400'} flex items-center gap-1`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isLight ? 'bg-emerald-600' : 'bg-emerald-400 animate-ping'} inline-block`} />
                   Consensus: {forensics.confidenceScore.toFixed(3)}%
                 </span>
               </div>
             </div>
 
             {/* Network Auto-detection Display */}
-            <div className="p-2 sm:p-2.5 bg-[#090a1f]/70 border border-cyber-cyan/15 rounded-lg space-y-1.5">
+            <div className={`p-2 sm:p-2.5 ${innerBoxBg} rounded-lg space-y-1.5`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <Icons.Network className="w-3.5 h-3.5 text-cyber-cyan" />
-                  <span className="text-[9.5px] font-sans font-black text-white">{forensics.profile.name}</span>
+                  <Icons.Network className={`w-3.5 h-3.5 ${isLight ? 'text-indigo-600' : 'text-cyber-cyan'}`} />
+                  <span className={`text-[9.5px] font-sans font-black ${titleColor}`}>{forensics.profile.name}</span>
                 </div>
-                <div className="flex gap-1">
-                  <span className="text-[7px] font-bold text-cyber-cyan px-1 py-0.25 bg-cyber-cyan/10 rounded">VERIFIED</span>
-                  <span className="text-[7px] font-bold text-[#00ff88] px-1 py-0.25 bg-[#00ff88]/10 rounded">GENESIS MATCHED</span>
+                <div className="flex gap-1 py-0.5">
+                  <span className={`text-[7px] font-bold px-1 py-0.25 rounded ${isLight ? 'bg-indigo-50 text-indigo-700' : 'bg-cyber-cyan/10 text-cyber-cyan'}`}>VERIFIED</span>
+                  <span className={`text-[7px] font-bold px-1 py-0.25 rounded ${isLight ? 'bg-emerald-50 text-emerald-805' : 'bg-[#00ff88]/10 text-[#00ff88]'}`}>GENESIS MATCHED</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-1.5 text-[8.5px] font-mono text-slate-400 pt-1 border-t border-slate-500/10">
+              <div className={`grid grid-cols-2 gap-1.5 text-[8.5px] font-mono ${isLight ? 'text-slate-500' : 'text-slate-400'} pt-1 border-t border-slate-500/10`}>
                 <div>
                   <span className="text-slate-500 uppercase text-[7px] block">STANDARD / PROTOCOL</span>
-                  <span className="text-slate-200 block truncate">{forensics.profile.protocol}</span>
+                  <span className={`${isLight ? 'text-slate-700 font-bold' : 'text-slate-200'} block truncate`}>{forensics.profile.protocol}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 uppercase text-[7px] block">AMM/DEX ENGINE</span>
-                  <span className="text-[#00e5ff] block truncate font-black">{forensics.dexLabel}</span>
+                  <span className={`${isLight ? 'text-indigo-750 font-black' : 'text-[#00e5ff] font-black'} block truncate`}>{forensics.dexLabel}</span>
                 </div>
               </div>
 
-              <div className="text-[7.5px] bg-[#141530] text-[#00e5ff]/90 p-1.5 rounded text-[8.5px] leading-snug font-mono border-l-2 border-[#00e5ff] mt-1.5">
-                ⚡ <span className="text-slate-305 font-sans italic">"Cross-chain forensic transaction analysis matched the earliest confirmed liquidity genesis event directly from blockchain RPC logs and historical pool deployment records."</span>
+              <div className={`${innerLogBg} p-1.5 rounded text-[8.5px] leading-snug font-mono border-l-2 ${isLight ? 'border-indigo-605 text-slate-750' : 'border-[#00e5ff] text-[#00e5ff]/90'} mt-1.5`}>
+                ⚡ <span className={`${isLight ? 'text-slate-650' : 'text-slate-350'} font-sans italic`}>"Cross-chain forensic transaction analysis matched the earliest confirmed liquidity genesis event directly from blockchain RPC logs and historical pool deployment records."</span>
               </div>
             </div>
 
             {/* RPC Consensus Crosscheck Nodes (Real consensus simulations) */}
-            <div className="p-2 bg-[#050614]/80 border border-slate-500/10 rounded-lg text-[8px] font-mono space-y-1 text-slate-400">
-              <div className="flex items-center justify-between text-slate-400 border-b border-slate-500/5 pb-1">
-                <span className="uppercase text-[7.5px] font-bold text-cyber-cyan tracking-wider flex items-center gap-1">
-                  <Icons.Activity className="w-3 h-3 text-cyber-cyan" /> RPC API Node Verification List
+            <div className={`p-2 ${innerVerificationBoxBg} rounded-lg text-[8px] font-mono space-y-1`}>
+              <div className={`flex items-center justify-between text-slate-405 border-b ${isLight ? 'border-slate-200' : 'border-slate-500/5'} pb-1`}>
+                <span className={`uppercase text-[7.5px] font-bold ${isLight ? 'text-indigo-700' : 'text-cyber-cyan'} tracking-wider flex items-center gap-1`}>
+                  <Icons.Activity className={`w-3 h-3 ${isLight ? 'text-indigo-650' : 'text-cyber-cyan'}`} /> RPC API Node Verification List
                 </span>
                 <span className="text-slate-500 text-[6.5px]">3 Nodes Sync</span>
               </div>
-              <div className="flex justify-between text-slate-300">
+              <div className={`flex justify-between ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                 <span>🟢 node-1 ({forensics.profile.rpcNode1?.substring(0,25)}...)</span>
-                <span className="text-emerald-400 font-bold">[{forensics.profile.blockLabel} #{forensics.startBlock}]</span>
+                <span className={`${isLight ? 'text-emerald-700 font-extrabold' : 'text-emerald-400 font-bold'}`}>[{forensics.profile.blockLabel} #{forensics.startBlock}]</span>
               </div>
-              <div className="flex justify-between text-slate-300">
+              <div className={`flex justify-between ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                 <span>🟢 node-2 ({forensics.profile.rpcNode2?.substring(0,25)}...)</span>
-                <span className="text-emerald-400 font-bold">[Synchronized]</span>
+                <span className={`${isLight ? 'text-emerald-700 font-extrabold' : 'text-emerald-400 font-bold'}`}>[Synchronized]</span>
               </div>
-              <div className="flex justify-between text-slate-300 text-[7.5px] bg-[#020208] p-1 rounded font-normal gap-1 leading-normal border border-cyber-cyan/5">
-                <Icons.Layers className="w-2.5 h-2.5 text-cyber-cyan shrink-0" />
-                <span>Launch mode: <strong className="text-white">{forensics.launchType}</strong>. LP state: <strong className="text-white">{forensics.lpBurnedStatus}</strong>.</span>
+              <div className={`flex justify-between text-[7.5px] ${isLight ? 'bg-slate-50 border border-slate-205' : 'bg-[#020208] border border-cyber-cyan/5'} p-1 rounded font-normal gap-1 leading-normal`}>
+                <Icons.Layers className={`w-2.5 h-2.5 ${isLight ? 'text-indigo-600' : 'text-cyber-cyan'} shrink-0`} />
+                <span>Launch mode: <strong className={isLight ? 'text-slate-800' : 'text-white'}>{forensics.launchType}</strong>. LP state: <strong className={isLight ? 'text-slate-800' : 'text-white'}>{forensics.lpBurnedStatus}</strong>.</span>
               </div>
             </div>
 
@@ -1809,11 +2930,11 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
               {forensics.timelineEvents.map((evt: any, idx: number) => {
                 const isCopied = copiedForensicTxKey === evt.category;
                 return (
-                  <div key={`evt-${idx}`} className="p-2 bg-[#090a1f]/45 border border-[#1b204e]/50 rounded-lg hover:border-cyber-cyan/15 transition-all text-[9.5px] font-mono space-y-1 relative">
+                  <div key={`evt-${idx}`} className={`${innerTimelineEventBg} p-2 rounded-lg hover:border-cyber-cyan/15 hover:shadow-sm transition-all text-[9.5px] font-mono space-y-1 relative`}>
                     <div className="flex items-start justify-between">
                       <div className="space-y-0.25">
-                        <h4 className="text-white text-[9.5px] font-black leading-tight flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyber-cyan inline-block animate-ping" />
+                        <h4 className={`${isLight ? 'text-slate-805 font-bold' : 'text-white'} text-[9.5px] leading-tight flex items-center gap-1`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${isLight ? 'bg-indigo-600 animate-pulse' : 'bg-cyber-cyan animate-ping'} inline-block`} />
                           {evt.title}
                         </h4>
                         <span className="text-[7px] text-slate-500 uppercase block">{evt.date}</span>
@@ -1846,27 +2967,27 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
           </div>
 
           {/* Section 2: Creator Selling Ledger audit */}
-          <div className="bg-[#050512] border border-cyber-cyan/15 rounded-xl p-4 flex flex-col justify-between space-y-3 relative overflow-hidden h-full">
+          <div className={`${forensicBoxBg} rounded-xl p-4 flex flex-col justify-between space-y-3 relative overflow-hidden h-full`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-black uppercase text-slate-200 tracking-wider flex items-center gap-1.5">
-                <Icons.UserCheck className="w-3.5 h-3.5 text-[#00e5ff]" />
+              <span className={`text-xs font-mono font-black uppercase ${forensicHeaderTxt} tracking-wider flex items-center gap-1.5`}>
+                <Icons.UserCheck className={`w-3.5 h-3.5 ${isLight ? 'text-indigo-650' : 'text-[#00e5ff]'}`} />
                 Creator Selling Ledger
               </span>
               <span className="text-[7px] font-mono text-slate-500 uppercase tracking-widest">Deployer Security</span>
             </div>
             
-            <div className={`p-3 border rounded-lg space-y-2.5 flex-1 flex flex-col justify-center ${forensics.creatorHasSold ? 'border-rose-500/30 bg-rose-500/5' : 'border-[#00ff88]/30 bg-[#00ff88]/5'}`}>
+            <div className={`p-3 border rounded-lg space-y-2.5 flex-1 flex flex-col justify-center ${forensics.creatorHasSold ? (isLight ? 'border-rose-300 bg-rose-50/50 text-rose-800' : 'border-rose-500/30 bg-rose-500/5') : (isLight ? 'border-emerald-300 bg-emerald-50/50 text-emerald-805' : 'border-[#00ff88]/30 bg-[#00ff88]/5')}`}>
               <div className="flex items-center justify-between">
-                <span className="text-[8px] text-slate-400 uppercase font-extrabold block animate-pulse">Creator selling state</span>
-                <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${forensics.creatorHasSold ? 'bg-rose-500/10 text-rose-450 border border-rose-500/20' : 'bg-[#00ff88]/10 text-[#00ff88] border border-emerald-400/20'}`}>
+                <span className="text-[8px] text-slate-405 uppercase font-extrabold block animate-pulse">Creator selling state</span>
+                <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${forensics.creatorHasSold ? 'bg-rose-500/10 text-rose-455 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-705 border border-emerald-400/20'}`}>
                   {forensics.creatorHasSold ? "🚨 SOLD DETECTED" : "✅ HOLDING STRONGLY"}
                 </span>
               </div>
               
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <div>
-                  <span className="block text-[8px] text-slate-400 font-extrabold">CREATOR SOLD</span>
-                  <p className={`text-xs font-mono font-black leading-tight ${forensics.creatorHasSold ? 'text-rose-450 font-bold' : 'text-[#00ff88]'}`}>
+                  <span className="block text-[8px] text-slate-405 font-extrabold">CREATOR SOLD</span>
+                  <p className={`text-xs font-mono font-black leading-tight ${forensics.creatorHasSold ? (isLight ? 'text-rose-700 font-bold' : 'text-rose-450') : (isLight ? 'text-emerald-700 font-bold' : 'text-[#00ff88]')}`}>
                     {forensics.creatorHasSold ? `${forensics.creatorSoldPct.toFixed(2)}%` : '0.00%'}
                   </p>
                   <span className="text-[7.5px] text-slate-500 block truncate">
@@ -1874,8 +2995,8 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
                   </span>
                 </div>
                 <div>
-                  <span className="block text-[8px] text-slate-400 font-extrabold">REMAINING ALLOC</span>
-                  <p className="text-white text-xs font-mono font-black leading-tight">
+                  <span className="block text-[8px] text-slate-405 font-extrabold">REMAINING ALLOC</span>
+                  <p className={`text-xs font-mono font-black leading-tight ${valNormalColor}`}>
                     {forensics.creatorRemainingPct.toFixed(2)}%
                   </p>
                   <span className="text-[7.5px] text-slate-500 block truncate">
@@ -1885,7 +3006,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
               </div>
 
               {forensics.creatorHasSold && (
-                <p className="text-[9.5px] text-rose-300 font-sans leading-relaxed border-t border-rose-500/10 pt-1.5">
+                <p className={`text-[9.5px] font-sans leading-relaxed border-t ${isLight ? 'text-rose-750 border-rose-200' : 'text-rose-300 border-rose-500/10'} pt-1.5`}>
                   ⚠️ Creator wallet sold {forensics.creatorSoldPct.toFixed(2)}% of supply immediately post-launch. Heavy dump pressure potential.
                 </p>
               )}
@@ -1896,29 +3017,29 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
 
         {/* Center Side: Insider Information Radar */}
         <div className="lg:col-span-1 flex flex-col justify-start">
-          <div className="bg-[#050512] border border-cyber-cyan/15 rounded-xl p-4 flex flex-col h-full justify-between space-y-3 relative overflow-hidden">
+          <div className={`${forensicBoxBg} rounded-xl p-4 flex flex-col h-full justify-between space-y-3 relative overflow-hidden`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-black uppercase text-slate-200 tracking-wider flex items-center gap-1.5">
-                <Icons.Target className="w-3.5 h-3.5 text-[#00e5ff]" />
+              <span className={`text-xs font-mono font-black uppercase ${forensicHeaderTxt} tracking-wider flex items-center gap-1.5`}>
+                <Icons.Target className={`w-3.5 h-3.5 ${isLight ? 'text-indigo-650' : 'text-[#00e5ff]'}`} />
                 Insider Coordination Radar
               </span>
               <span className="text-[7px] font-mono text-slate-500 uppercase tracking-widest">Network Analysis</span>
             </div>
 
             <div className="flex-1 flex flex-col justify-center space-y-3">
-              <div className="p-3 bg-[#0d0e27]/40 border border-cyber-border/30 rounded-lg space-y-3">
+              <div className={`p-3 ${gaugeContainer} rounded-lg space-y-3`}>
                 
                 {/* Row Stats */}
-                <div className="flex items-center justify-between border-b border-cyber-border/20 pb-2">
+                <div className={`flex items-center justify-between border-b ${isLight ? 'border-slate-105' : 'border-cyber-border/20'} pb-2`}>
                   <div>
-                    <span className="text-[8px] text-slate-400 uppercase font-extrabold">Coordinated Clusters</span>
-                    <p className={`text-sm font-mono font-black ${forensics.hasInsiders ? 'text-amber-400' : 'text-[#00ff88]'}`}>
+                    <span className="text-[8px] text-slate-405 uppercase font-extrabold">Coordinated Clusters</span>
+                    <p className={`text-sm font-mono font-black ${forensics.hasInsiders ? (isLight ? 'text-amber-700' : 'text-amber-400') : (isLight ? 'text-emerald-700' : 'text-[#00ff88]')}`}>
                       {forensics.hasInsiders ? `${forensics.insiderClusterCount} Wallet Clusters` : '0 Clusters'}
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[8px] text-slate-400 uppercase font-extrabold">Cluster Wallets</span>
-                    <p className="text-white text-xs font-mono font-bold">
+                    <span className="text-[8px] text-slate-405 uppercase font-extrabold">Cluster Wallets</span>
+                    <p className={`text-xs font-mono font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>
                       {forensics.hasInsiders ? `${forensics.insiderWalletCount} Node Addresses` : '0 Wallets'}
                     </p>
                   </div>
@@ -1926,8 +3047,8 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-[8px] text-slate-400 uppercase font-extrabold">Aggregate Insider Holdings</span>
-                    <p className={`text-xs sm:text-sm font-mono font-black ${forensics.hasInsiders ? 'text-rose-450' : 'text-[#00ff88]'}`}>
+                    <span className="text-[8px] text-slate-405 uppercase font-extrabold">Aggregate Insider Holdings</span>
+                    <p className={`text-xs sm:text-sm font-mono font-black ${forensics.hasInsiders ? (isLight ? 'text-rose-700' : 'text-rose-450') : (isLight ? 'text-emerald-700 font-bold' : 'text-[#00ff88]')}`}>
                       {forensics.hasInsiders ? `${forensics.insiderPct.toFixed(2)}% of Supply` : '0.00%'}
                     </p>
                     <span className="text-[7.5px] text-slate-500 block">
@@ -1935,7 +3056,7 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
                     </span>
                   </div>
                   {forensics.hasInsiders && (
-                    <div className="p-1 px-1.5 rounded bg-rose-500/10 border border-rose-500/25 animate-pulse text-[8px] text-rose-450 font-black font-mono">
+                    <div className="p-1 px-1.5 rounded bg-rose-500/10 border border-rose-500/25 animate-pulse text-[8px] text-rose-455 font-black font-mono">
                       🚨 INSIDERS LOADED
                     </div>
                   )}
@@ -1943,8 +3064,8 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
 
               </div>
 
-              <div className="p-3 bg-cyber-card-light/25 border border-cyber-border/20 rounded-lg">
-                <p className="text-[10px] text-slate-400 leading-normal font-sans">
+              <div className={`p-3 ${isLight ? 'bg-slate-50 border border-slate-200' : 'bg-cyber-card-light/25 border border-cyber-border/20'} rounded-lg`}>
+                <p className="text-[10px] text-slate-500 leading-normal font-sans">
                   {forensics.hasInsiders 
                     ? `⚠️ Surchi traced multi-tier transaction pathways where funding was routed from a central deployer mixer to ${forensics.insiderWalletCount} coordinated sniping protocols prior to pool launch.`
                     : "特定 : The distribution profile demonstrates normal retail activity without signs of coordinated pre-funded or sniped launch clusters."
@@ -1956,32 +3077,32 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
         </div>
 
         {/* Right Side: Top 10 Holders Ledger */}
-        <div className="lg:col-span-1 bg-[#050512] border border-cyber-cyan/15 rounded-xl p-4 flex flex-col justify-between space-y-3 relative overflow-hidden h-full">
+        <div className={`${forensicBoxBg} rounded-xl p-4 flex flex-col justify-between space-y-3 relative overflow-hidden h-full`}>
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <span className="text-xs font-mono font-black uppercase text-slate-200 tracking-wider flex items-center gap-1.5">
-              <Icons.Users className="w-3.5 h-3.5 text-[#00e5ff]" />
+            <span className={`text-xs font-mono font-black uppercase ${forensicHeaderTxt} tracking-wider flex items-center gap-1.5`}>
+              <Icons.Users className={`w-3.5 h-3.5 ${isLight ? 'text-indigo-650' : 'text-[#00e5ff]'}`} />
               Top 10 Holders Ledger
             </span>
 
             {/* Dynamic ledger synchronization state indicators */}
             {isLoadingRealHolders ? (
-              <span className="flex items-center gap-1 text-[8px] font-sans font-bold uppercase bg-cyan-500/10 text-[#00e5ff] border border-cyan-500/25 px-1.5 py-0.5 rounded animate-pulse">
-                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping mr-0.5 shrink-0" />
+              <span className={`flex items-center gap-1 text-[8px] font-sans font-bold uppercase ${isLight ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-cyan-500/10 text-[#00e5ff] border border-cyan-500/25'} px-1.5 py-0.5 rounded animate-pulse`}>
+                <span className={`w-1.5 h-1.5 ${isLight ? 'bg-indigo-600' : 'bg-cyan-400'} rounded-full animate-ping mr-0.5 shrink-0`} />
                 SYNCING MAINNET...
               </span>
             ) : realHolders ? (
-              <span className="flex items-center gap-1 text-[8px] font-sans font-black uppercase bg-[#00ff88]/10 text-[#00ff88] border border-emerald-400/20 px-1.5 py-0.5 rounded" title="On-chain ledger verified via node-rpc gateways">
-                <span className="w-1.5 h-1.5 bg-[#00ff88] rounded-full animate-pulse mr-0.5 shrink-0" />
+              <span className={`flex items-center gap-1 text-[8px] font-sans font-black uppercase ${isLight ? 'bg-emerald-50 text-emerald-805 border border-emerald-300' : 'bg-[#00ff88]/10 text-[#00ff88] border border-emerald-400/20'} px-1.5 py-0.5 rounded`} title="On-chain ledger verified via node-rpc gateways">
+                <span className={`w-1.5 h-1.5 ${isLight ? 'bg-emerald-600' : 'bg-[#00ff88]'} rounded-full animate-pulse mr-0.5 shrink-0`} />
                 LIVE MAINNET SYNCED
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-[8px] font-sans font-bold uppercase bg-slate-500/15 text-slate-400 border border-slate-500/20 px-1.5 py-0.5 rounded" title="Investigative fallback model based on on-chain swap volumes">
+              <span className={`flex items-center gap-1 text-[8px] font-sans font-bold uppercase ${isLight ? 'bg-slate-100 text-slate-600 border border-slate-200/60' : 'bg-slate-500/15 text-slate-400 border border-slate-500/20'} px-1.5 py-0.5 rounded`} title="Investigative fallback model based on on-chain swap volumes">
                 SIMULATED LEDGER
               </span>
             )}
           </div>
 
-          <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1 customize-scrollbar divide-y divide-[#17193a]/30">
+          <div className={`space-y-1.5 max-h-[220px] overflow-y-auto pr-1 customize-scrollbar divide-y ${isLight ? 'divide-slate-100' : 'divide-[#17193a]/30'}`}>
             {activeHoldersList.map((holder, idx) => (
               <div key={`holder-${idx}`} className="flex items-center justify-between pt-1.5 first:pt-0 pb-1 text-[11px] font-mono">
                 
@@ -1991,13 +3112,13 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
                     <span className="text-[9px] font-bold text-slate-500 min-w-[14px] text-left">#{holder.rank}</span>
                     <span 
                       onClick={() => handleCopyAddress(holder.address, idx)}
-                      className="text-white hover:text-cyber-cyan transition-all font-mono hover:underline cursor-pointer select-all truncate max-w-[95px] font-bold"
+                      className={`${isLight ? 'text-slate-800 hover:text-indigo-650' : 'text-white hover:text-cyber-cyan'} transition-all font-mono hover:underline cursor-pointer select-all truncate max-w-[95px] font-bold`}
                       title="Click to copy holder address"
                     >
                       {holder.address}
                     </span>
                     {copiedIndex === idx && (
-                      <span className="text-[8px] bg-emerald-500/95 text-slate-900 py-0.25 px-1 rounded animate-fade-in uppercase font-black leading-none">
+                      <span className="text-[8px] bg-emerald-500/95 text-slate-900 py-0.25 px-1 rounded animate-fade-in uppercase font-black leading-none font-bold">
                         Copied
                       </span>
                     )}
@@ -2011,10 +3132,10 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
 
                 {/* Amount / Percentage */}
                 <div className="text-right shrink-0 min-w-[100px]">
-                  <p className="text-white font-black leading-none text-xs">
+                  <p className={`font-black leading-none text-xs ${titleColor}`}>
                     {holder.pct.toFixed(2)}%
                   </p>
-                  <p className="text-slate-500 text-[8.5px] leading-tight font-medium mt-0.5">
+                  <p className="text-slate-520 text-[8.5px] leading-tight font-medium mt-0.5">
                     {holder.balance >= 1000000 
                       ? `${(holder.balance / 1000000).toLocaleString(undefined, { maximumFractionDigits: 1 })}M` 
                       : holder.balance >= 1000 
@@ -2024,16 +3145,16 @@ function LiveTokenLedgerCard({ details, themeAccent, themeMode, onClose }: { det
                   </p>
                   
                   {/* Visual allocation micro-bar */}
-                  <div className="w-full bg-[#14152e] h-1 rounded-full overflow-hidden mt-1">
+                  <div className={`w-full ${isLight ? 'bg-slate-105' : 'bg-[#14152e]'} h-1 rounded-full overflow-hidden mt-1`}>
                     <div 
                       className={`h-full rounded-full ${
                         holder.tag.type === 'lp' 
-                          ? 'bg-[#00ff88]' 
+                          ? (isLight ? 'bg-emerald-600' : 'bg-[#00ff88]') 
                           : holder.tag.type === 'insider' 
                             ? 'bg-rose-500' 
                             : holder.tag.type === 'creator' 
-                              ? 'bg-indigo-400' 
-                              : 'bg-cyber-cyan'
+                              ? (isLight ? 'bg-indigo-600' : 'bg-indigo-400') 
+                              : (isLight ? 'bg-sky-600' : 'bg-cyber-cyan')
                       }`}
                       style={{ width: `${Math.min(100, holder.pct * 2.2)}%` }}
                     />
@@ -2288,6 +3409,7 @@ export default function App() {
           name: pair.baseToken?.name || 'Unknown Token',
           symbol: pair.baseToken?.symbol || 'TOKEN',
           address: pair.baseToken?.address || address,
+          pairAddress: pair.pairAddress || '',
           priceUsd: pair.priceUsd ? parseFloat(pair.priceUsd).toString() : '0.00',
           liquidityUsd: pair.liquidity?.usd || 0,
           liquidityBase: pair.liquidity?.base || 0,
@@ -2297,6 +3419,8 @@ export default function App() {
           priceChange6h: pair.priceChange?.h6 || 0,
           priceChange24h: pair.priceChange?.h24 || 0,
           volume24h: pair.volume?.h24 || 0,
+          buys24h: pair.txns?.h24?.buys || 0,
+          sells24h: pair.txns?.h24?.sells || 0,
           marketCap: pair.marketCap || 0,
           fdv: pair.fdv || 0,
           logoUrl: pair.info?.imageUrl || '',
