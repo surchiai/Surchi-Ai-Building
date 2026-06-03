@@ -19,6 +19,85 @@ export const MODULES: ModuleConfig[] = [
     accentColor: 'cyan'
   },
   {
+    id: 'neural_sentiment_engine',
+    name: 'Neural Sentiment Engine',
+    description: 'Deconstruct aggregate on-chain sentiment clusters, community fear parameters, and social chatter models to uncover price-shifting catalysts.',
+    icon: 'Brain',
+    inputs: [
+      {
+        key: 'token',
+        label: 'Target Token / Ticker / Community Asset',
+        type: 'text',
+        placeholder: 'e.g., SURCHI, SOL, BONK, or community ticker...'
+      },
+      {
+        key: 'sentimentScale',
+        label: 'Sentiment Filter Depth',
+        type: 'select',
+        placeholder: 'Select chatter sample size...',
+        options: [
+          { label: 'Standard (Top 1,000 Social Elements)', value: 'standard' },
+          { label: 'Extended Deep Scan (Top 10,000 Social Nodes)', value: 'heavy' }
+        ],
+        defaultValue: 'standard'
+      }
+    ],
+    buttonText: 'Compute Neural Sentiment',
+    statusText: 'Mapping Cognitive Chatter Channels...',
+    accentColor: 'purple'
+  },
+  {
+    id: 'smart_money_tracker',
+    name: 'Smart Money Tracker',
+    description: 'Execute high-precision wallet tracking on top Whale accounts, development cluster nodes, and venture-tier capital routes.',
+    icon: 'Wallet',
+    inputs: [
+      {
+        key: 'wallet',
+        label: 'Target Wallet Address or Cluster Name',
+        type: 'text',
+        placeholder: 'e.g., Whalewallet.sol, 0x123..., or Surchi Dev Core...'
+      }
+    ],
+    buttonText: 'Audit Capital Flow Vectors',
+    statusText: 'Deconstructing Capital Trails...',
+    accentColor: 'cyan'
+  },
+  {
+    id: 'rug_radar',
+    name: 'Rug Radar',
+    description: 'Continuous monitoring of smart contract properties, dynamic sell-tax anomalies, LP locks, and creator withdrawal queues.',
+    icon: 'Radio',
+    inputs: [
+      {
+        key: 'address',
+        label: 'Contract Address (CA) or Token',
+        type: 'text',
+        placeholder: 'e.g., Provide token contract address to scan...'
+      }
+    ],
+    buttonText: 'Scan for Suspicious Signatures',
+    statusText: 'Synchronizing Cybernetic Sentinel Feeds...',
+    accentColor: 'green'
+  },
+  {
+    id: 'agent_deployer',
+    name: 'Agent Deployer',
+    description: 'Structure, test, and host dedicated AI agents, autonomous traders, and sentiment monitoring bots directly on decentralized infrastructure clouds.',
+    icon: 'Cpu',
+    inputs: [
+      {
+        key: 'directives',
+        label: 'Custom Persona Directives & Trade Constraints',
+        type: 'textarea',
+        placeholder: 'e.g., Watch BONK liquidity pool. If sentiment score drops below 40%, automatically route 5% LP to USDC reserve bucket...'
+      }
+    ],
+    buttonText: 'Compile & Launch Autonomous Agent',
+    statusText: 'Synthesizing Agent Neural Nodes...',
+    accentColor: 'purple'
+  },
+  {
     id: 'smart_auditor',
     name: 'Smart Contract Auditor',
     description: 'Provide any token contract address to perform dynamic deep security checks, honeypot audits, freeze/mint checks, and multi-chain risk diagnostics.',

@@ -33,6 +33,10 @@ import HolderIntelligence from './components/HolderIntelligence';
 import { SurchiTokenMetrics } from './components/SurchiTokenMetrics';
 import SurchiLivePortal from './components/SurchiLivePortal';
 import UniversalTokenAnalyzer from './components/UniversalTokenAnalyzer';
+import CampaignAnalytics from './components/CampaignAnalytics';
+import LiquidityLocker from './components/LiquidityLocker';
+import IntelligenceArchives from './components/IntelligenceArchives';
+import AlertsManager from './components/AlertsManager';
 
 
 // Helper to dynamically render Lucide icons from database tags
@@ -3461,6 +3465,10 @@ export default function App() {
     type: 'ad' | 'token' | 'stake';
   } | null>(null);
   const [formInputs, setFormInputs] = useState<Record<string, string>>({});
+  const [selectedEvmSubnet, setSelectedEvmSubnet] = useState<'ethereum' | 'base' | 'arbitrum' | 'optimism' | 'polygon'>('ethereum');
+
+  const walletInputVal = formInputs['wallet'] || '';
+  const detectedNetwork = walletInputVal.trim().startsWith('0x') ? 'evm' : (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(walletInputVal.trim()) ? 'solana' : null);
   
   // ABOUT Modal state controls
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -3507,7 +3515,26 @@ export default function App() {
     if (saved) {
       try { return JSON.parse(saved); } catch (_) {}
     }
-    return [];
+    return [
+      {
+        id: 'default-seed-1',
+        moduleId: 'token_analyzer',
+        moduleName: 'Token Analyzer',
+        timestamp: new Date().toLocaleString(),
+        payload: { token: '8BnovQY...rMn (SURCHI)' },
+        content: `### 🛡️ Core Ledger Diagnostic Report: SURCHI SECURE PROTOCOL
+1. **PRICE SUMMARY**
+   *   **Price**: \$0.0425 USD
+   *   **Volume**: \$450,225 USD
+   *   **Price Change 24H**: +12.4%
+2. **MARKET SENTIMENT**
+   *   Index is **78/100** (Greed), showing continuous capital inflow.
+3. **RISK SCORE & SUMMARY**
+   *   Calculated Security Safety Score: **98/100**
+   *   Mint restrictions: PASS
+   *   Transfer pauses: PASS`
+      }
+    ];
   });
 
   // Follow-up AI chats
@@ -3585,6 +3612,7 @@ export default function App() {
   const [liveTokenInfo, setLiveTokenInfo] = useState<any>(null);
   const [isFetchingTokenDetails, setIsFetchingTokenDetails] = useState(false);
   const [lastDetectedAddress, setLastDetectedAddress] = useState('');
+  const [lastDetectedWalletAddress, setLastDetectedWalletAddress] = useState('');
   const [tokenNotFoundAddress, setTokenNotFoundAddress] = useState<string | null>(null);
 
   // Helper to validate standard blockchain addresses (EVM, Solana, TRON)
@@ -3682,6 +3710,25 @@ export default function App() {
     }
   }, [formInputs.token, activeModuleId]);
 
+  useEffect(() => {
+    if (activeModuleId !== 'smart_money_tracker') return;
+    
+    const walletVal = formInputs.wallet?.trim() || '';
+    
+    // Check if it's a valid Solana or EVM address
+    const isSol = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(walletVal);
+    const isEvm = /^0x[a-fA-F0-9]{40}$/.test(walletVal);
+    
+    if (walletVal && (isSol || isEvm)) {
+      if (walletVal !== lastDetectedWalletAddress) {
+        setLastDetectedWalletAddress(walletVal);
+        handleRunAnalysis(undefined, { ...formInputs, wallet: walletVal });
+      }
+    } else if (!walletVal) {
+      setLastDetectedWalletAddress('');
+    }
+  }, [formInputs.wallet, activeModuleId, lastDetectedWalletAddress]);
+
   const activeModule = MODULES.find(m => m.id === activeModuleId) || MODULES[0];
 
   // Primary Analyzer runner
@@ -3712,6 +3759,13 @@ export default function App() {
 
     const finalLiveDetails = customLiveDetails !== undefined ? customLiveDetails : liveTokenInfo;
 
+    let finalPayload = { ...payloadToSubmit };
+    if (activeModuleId === 'smart_money_tracker') {
+      const walletVal = payloadToSubmit.wallet || '';
+      const isSol = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(walletVal.trim());
+      finalPayload.chain = isSol ? 'solana' : selectedEvmSubnet;
+    }
+
     try {
       const response = await fetch('/api/ai/analyze', {
         method: 'POST',
@@ -3719,7 +3773,7 @@ export default function App() {
         body: JSON.stringify({
           module: activeModuleId,
           payload: {
-            ...payloadToSubmit,
+            ...finalPayload,
             liveDetails: finalLiveDetails
           }
         })
@@ -3734,8 +3788,8 @@ export default function App() {
           moduleName: activeModule.name,
           timestamp: new Date().toLocaleString(),
           payload: {
-            ...payloadToSubmit,
-            liveDetails: finalLiveDetails
+            ...finalPayload,
+            liveDetails: data.payload || finalLiveDetails
           },
           content: data.content,
           citations: data.citations,
@@ -4143,7 +4197,21 @@ export default function App() {
                             }`}>
                               <SurchiIcon name={m.icon} className="w-4 h-4" />
                             </div>
-                            <span className="truncate">{m.name}</span>
+                            <div className="flex-1 min-w-0 flex items-center justify-between gap-1.5 overflow-hidden text-left">
+                              <span className="truncate">{m.name}</span>
+                              {m.id === 'neural_sentiment_engine' && (
+                                <span className="text-[8px] font-bold font-mono px-1 py-0.5 rounded bg-cyber-purple/15 text-cyber-purple border border-cyber-purple/35 leading-none uppercase shrink-0 scale-90">LIVE FEED</span>
+                              )}
+                              {m.id === 'smart_money_tracker' && (
+                                <span className="text-[8px] font-bold font-mono px-1 py-0.5 rounded bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/35 leading-none uppercase shrink-0 scale-90">98.2%</span>
+                              )}
+                              {m.id === 'rug_radar' && (
+                                <span className="text-[8px] font-bold font-mono px-1 py-0.5 rounded bg-[#00ff88]/15 text-[#00ff88] border border-[#00ff88]/35 leading-none uppercase shrink-0 scale-90">SECURE</span>
+                              )}
+                              {m.id === 'agent_deployer' && (
+                                <span className="text-[8px] font-bold font-mono px-1 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/35 leading-none uppercase shrink-0 scale-90">SOL v2</span>
+                              )}
+                            </div>
                             {isActive && (
                               <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
                                 themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon shadow-[0_0_6px_#00ff88]'
@@ -4157,8 +4225,6 @@ export default function App() {
                     return (
                       <>
                         {renderedFiltered}
-
-                        {/* Custom Create ad button */}
                         <button
                           key="custom_create_ad"
                           onClick={() => {
@@ -4186,7 +4252,7 @@ export default function App() {
                           <div className={`p-1 rounded ${
                             activeCustomPage === 'create_ad'
                               ? themeMode === 'light'
-                                ? 'text-indigo-600 bg-indigo-50'
+                                ? 'text-indigo-600 bg-indigo-555'
                                 : 'text-cyber-neon bg-cyber-bg' 
                               : themeMode === 'light'
                                 ? 'text-slate-400 group-hover:text-indigo-650'
@@ -4201,6 +4267,30 @@ export default function App() {
                             }`}></span>
                           )}
                         </button>
+
+                        {/* Sub-item: Campaign Analytics nested under Create ad */}
+                        <div className="pl-6 pt-0.5 pb-1 flex flex-col gap-1 -mt-1.5 mb-1.5">
+                          <button
+                            key="custom_campaign_analytics"
+                            onClick={() => {
+                              setActiveCustomPage('campaign_analytics');
+                              setCurrentResult(null);
+                              setIsMenuOpen(false);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={`w-full flex items-center gap-2 py-1.5 px-2.5 rounded-md text-[11px] font-mono transition-all cursor-pointer text-left border ${
+                              activeCustomPage === 'campaign_analytics'
+                                ? themeMode === 'light'
+                                  ? 'bg-indigo-50/50 text-indigo-705 border-indigo-200'
+                                  : 'bg-cyber-card-light text-cyber-cyan border-cyber-cyan/35 shadow-[0_0_6px_rgba(0,229,255,0.1)]'
+                                : 'text-slate-500 hover:text-slate-350 border-transparent hover:bg-cyber-card/30'
+                            }`}
+                          >
+                            <Icons.CornerDownRight className="w-3 h-3 text-slate-600 shrink-0" />
+                            <span className="truncate">Campaign Analytics</span>
+                            <span className="ml-auto text-[8px] bg-cyber-cyan/10 text-cyber-cyan px-1 rounded font-normal scale-90 border border-cyber-cyan/20">LIVE</span>
+                          </button>
+                        </div>
 
                         {/* Custom Create token button */}
                         <button
@@ -4230,7 +4320,7 @@ export default function App() {
                           <div className={`p-1 rounded ${
                             activeCustomPage === 'create_token'
                               ? themeMode === 'light'
-                                ? 'text-indigo-600 bg-indigo-50'
+                                ? 'text-indigo-600 bg-indigo-555'
                                 : 'text-cyber-neon bg-cyber-bg' 
                               : themeMode === 'light'
                                 ? 'text-slate-400 group-hover:text-indigo-650'
@@ -4245,6 +4335,30 @@ export default function App() {
                             }`}></span>
                           )}
                         </button>
+
+                        {/* Sub-item: Liquidity Locker nested under Create token */}
+                        <div className="pl-6 pt-0.5 pb-1 flex flex-col gap-1 -mt-1.5 mb-1.5">
+                          <button
+                            key="custom_liquidity_locker"
+                            onClick={() => {
+                              setActiveCustomPage('liquidity_locker');
+                              setCurrentResult(null);
+                              setIsMenuOpen(false);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={`w-full flex items-center gap-2 py-1.5 px-2.5 rounded-md text-[11px] font-mono transition-all cursor-pointer text-left border ${
+                              activeCustomPage === 'liquidity_locker'
+                                ? themeMode === 'light'
+                                  ? 'bg-indigo-50/50 text-indigo-705 border-indigo-200'
+                                  : 'bg-cyber-card-light text-[#00ff88] border-cyber-neon/35 shadow-[0_0_6px_rgba(0,255,136,0.1)]'
+                                : 'text-slate-500 hover:text-slate-350 border-transparent hover:bg-cyber-card/30'
+                            }`}
+                          >
+                            <Icons.CornerDownRight className="w-3 h-3 text-slate-600 shrink-0" />
+                            <span className="truncate">Liquidity Locker</span>
+                            <span className="ml-auto text-[8px] bg-[#00ff88]/10 text-[#00ff88] px-1 rounded font-normal scale-90 border border-[#00ff88]/20">LOCK</span>
+                          </button>
+                        </div>
 
                         {/* Custom Staking button */}
                         <button
@@ -4415,6 +4529,63 @@ export default function App() {
                       {historyList.length} saves
                     </span>
                   )}
+                </div>
+
+                {/* Core Bottom Tier & Storage Widgets: Intelligence Archives and Alerts Manager */}
+                <div className="grid grid-cols-2 gap-2 font-mono pb-1">
+                  <button
+                    onClick={() => {
+                      setActiveCustomPage('intelligence_archives');
+                      setCurrentResult(null);
+                      setIsMenuOpen(false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className={`py-2 px-1.5 rounded-md cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 text-[8.5px] select-none text-center border font-bold ${
+                      activeCustomPage === 'intelligence_archives'
+                        ? themeMode === 'light'
+                          ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                          : 'bg-cyber-card-light border-cyber-purple text-cyber-purple-light shadow-[0_0_8px_rgba(235,0,255,0.15)]'
+                        : themeMode === 'light'
+                          ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
+                          : 'bg-[#100c1e] hover:bg-[#1a1332] text-slate-350 hover:text-white border border-cyber-border/80'
+                    }`}
+                    title="Open Saved Reports Intelligence Archives"
+                  >
+                    <div className="flex items-center gap-1">
+                      <Icons.FolderHeart className="w-3.5 h-3.5 text-cyber-purple shrink-0" />
+                      <span className="text-[8px] bg-cyber-purple/15 text-cyber-purple border border-cyber-purple/35 px-1 py-0.5 rounded font-black scale-90 leading-none">
+                        {historyList.length} SAVES
+                      </span>
+                    </div>
+                    <span>INTEL ARCHIVES</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveCustomPage('alerts_manager');
+                      setCurrentResult(null);
+                      setIsMenuOpen(false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className={`py-2 px-1.5 rounded-md cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 text-[8.5px] select-none text-center border font-bold ${
+                      activeCustomPage === 'alerts_manager'
+                        ? themeMode === 'light'
+                          ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                          : 'bg-cyber-card-light border-cyber-cyan text-cyber-cyan shadow-[0_0_8px_rgba(0,229,255,0.15)]'
+                        : themeMode === 'light'
+                          ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
+                          : 'bg-[#081216] hover:bg-[#0c1f26] text-slate-350 hover:text-[#00ff88] border border-cyber-border/80'
+                    }`}
+                    title="AI-Sentinel Discord Webhook Alerts Manager"
+                  >
+                    <div className="flex items-center gap-1">
+                      <Icons.Bell className="w-3.5 h-3.5 text-cyber-cyan shrink-0 animate-pulse" />
+                      <span className="text-[8px] bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/35 px-1 py-0.5 rounded font-black scale-90 leading-none animate-bounce">
+                        ACTIVE
+                      </span>
+                    </div>
+                    <span>ALERTS MONITOR</span>
+                  </button>
                 </div>
                 
                 <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
@@ -4670,6 +4841,31 @@ export default function App() {
                   volume24h={surchiMetrics.volume24h}
                   themeMode={themeMode}
                 />
+              ) : activeCustomPage === 'campaign_analytics' ? (
+                <CampaignAnalytics onClose={() => setActiveCustomPage(null)} themeMode={themeMode} />
+              ) : activeCustomPage === 'liquidity_locker' ? (
+                <LiquidityLocker onClose={() => setActiveCustomPage(null)} themeMode={themeMode} />
+              ) : activeCustomPage === 'intelligence_archives' ? (
+                <IntelligenceArchives
+                  historyList={historyList}
+                  activeModuleId={activeModuleId}
+                  onReload={(h) => {
+                    handleReloadHistory(h);
+                    setActiveCustomPage(null);
+                  }}
+                  onDelete={(id) => {
+                    const filtered = historyList.filter(item => item.id !== id);
+                    setHistoryList(filtered);
+                  }}
+                  onPurge={() => {
+                    setHistoryList([]);
+                    localStorage.removeItem('surchi_history');
+                  }}
+                  onClose={() => setActiveCustomPage(null)}
+                  themeMode={themeMode}
+                />
+              ) : activeCustomPage === 'alerts_manager' ? (
+                <AlertsManager onClose={() => setActiveCustomPage(null)} themeMode={themeMode} />
               ) : activeCustomPage === 'crypto_news' ? (
                 <div className="space-y-8 animate-fade-in text-left">
                   {/* Custom Header Title Accent */}
@@ -4940,11 +5136,28 @@ export default function App() {
                     }`}>
                       <Icons.Sparkles className={`w-3.5 h-3.5 ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-cyan'}`} /> active forensics module
                     </div>
-                    <h2 className={`text-2xl md:text-3xl font-bold tracking-tight font-display flex items-center gap-3 ${
+                    <h2 className={`text-2xl md:text-3xl font-bold tracking-tight font-display flex items-center gap-3 flex-wrap ${
                       themeMode === 'light' ? 'text-slate-900' : 'text-white'
                     }`}>
                       <SurchiIcon name={activeModule.icon} className={`w-7 h-7 ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'}`} />
                       {activeModule.name}
+                      {activeModule.id === 'smart_money_tracker' && detectedNetwork && (
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border tracking-wider animate-pulse ${
+                          detectedNetwork === 'solana'
+                            ? 'bg-[#00ff88]/15 border-[#00ff88]/30 text-[#00ff88]'
+                            : 'bg-[#00e5ff]/15 border-[#00e5ff]/30 text-[#00e5ff]'
+                        }`}>
+                          {detectedNetwork === 'solana' ? (
+                            <>
+                              <Icons.Zap className="w-3.5 h-3.5 text-[#00ff88]" /> Solana Detected
+                            </>
+                          ) : (
+                            <>
+                              <Icons.Layers className="w-3.5 h-3.5 text-[#00e5ff]" /> EVM: {selectedEvmSubnet.toUpperCase()}
+                            </>
+                          )}
+                        </span>
+                      )}
                     </h2>
                     <p className={`text-xs leading-relaxed max-w-2xl font-mono ${
                       themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'
@@ -4977,18 +5190,49 @@ export default function App() {
                             </label>
 
                             {input.type === 'text' && (
-                              <input
-                                type="text"
-                                required
-                                value={formInputs[input.key] || ''}
-                                onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                                placeholder={input.placeholder}
-                                className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all ${
-                                  themeMode === 'light'
-                                    ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
-                                    : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
-                                }`}
-                              />
+                              <>
+                                <input
+                                  type="text"
+                                  required
+                                  value={formInputs[input.key] || ''}
+                                  onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                  placeholder={input.placeholder}
+                                  className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all ${
+                                    themeMode === 'light'
+                                      ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
+                                      : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
+                                  }`}
+                                />
+                                {activeModule.id === 'smart_money_tracker' && input.key === 'wallet' && detectedNetwork === 'evm' && (
+                                  <div className="mt-3 p-3 rounded-lg border flex flex-col gap-2 text-left animate-fade-in font-mono bg-[#00e5ff]/5 border-[#00e5ff]/20">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1.5">
+                                      <Icons.Network className="w-3.5 h-3.5 text-[#00e5ff]" /> Select EVM Network Segment:
+                                    </span>
+                                    <div className="flex flex-wrap gap-2 pt-0.5">
+                                      {(['ethereum', 'base', 'arbitrum', 'optimism', 'polygon'] as const).map(subnet => (
+                                        <button
+                                          key={subnet}
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedEvmSubnet(subnet);
+                                          }}
+                                          className={`px-3 py-1.5 rounded text-[10px] font-extrabold border transition-all cursor-pointer ${
+                                            selectedEvmSubnet === subnet
+                                              ? themeMode === 'light'
+                                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm'
+                                                : 'bg-[#00e5ff] border-[#00e5ff] text-[#04040a] shadow-[0_0_10px_rgba(0,229,255,0.3)]'
+                                              : themeMode === 'light'
+                                                ? 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                                                : 'bg-[#03030f]/60 border-cyber-border text-slate-400 hover:text-white'
+                                          }`}
+                                        >
+                                          {subnet.toUpperCase()}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </>
                             )}
 
                             {input.type === 'textarea' && (
@@ -5237,7 +5481,7 @@ export default function App() {
                   /* STANDARD MARKDOWN STYLE WORK AREA */
                   <div className="p-4 sm:p-6 md:p-8 text-left max-w-full overflow-hidden select-text text-slate-300 antialiased font-mono">
                     
-                    {currentResult.payload?.liveDetails && (
+                    {currentResult.payload?.liveDetails && activeModuleId !== 'smart_money_tracker' && (
                       <div className="mb-6">
                         <LiveTokenLedgerCard details={currentResult.payload.liveDetails} themeAccent={themeAccent} themeMode={themeMode} onClose={() => setCurrentResult(null)} />
                       </div>

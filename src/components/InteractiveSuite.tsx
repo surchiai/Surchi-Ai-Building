@@ -60,6 +60,8 @@ export default function InteractiveSuite({
       return <TweetWriterDashboard content={content} onRefresh={onRefresh} />;
     case 'competitor_analysis':
       return <CompetitorAnalysisDashboard payload={payload} content={content} />;
+    case 'smart_money_tracker':
+      return <SmartMoneyTrackerDashboard payload={payload} content={content} />;
     default:
       return <StandardMarkdownViewer content={content} />;
   }
@@ -2096,6 +2098,127 @@ function CompetitorAnalysisDashboard({ payload }: SubComponentProps) {
 // STANDARD FALLBACK MARKDOWN VIEWER
 interface StandardMarkdownViewerProps {
   content: string;
+}
+
+function SmartMoneyTrackerDashboard({ payload, content }: SubComponentProps) {
+  const live = (payload?.liveDetails || {}) as any;
+  const chain = (live.chain || 'ethereum').toLowerCase();
+  const address = live.address || payload?.wallet || '0x';
+  const nativeBalance = live.nativeBalance || '0.00';
+  const recentFlows = live.recentFlows || [];
+
+  const { copiedKey, triggerCopy } = useCopy();
+
+  const coinSymbol = chain === 'solana' ? 'SOL' : 'ETH';
+  const chainName = chain === 'solana' ? 'Solana' : chain === 'base' ? 'Base' : chain === 'ethereum' ? 'Ethereum' : chain.toUpperCase();
+
+  const isSolana = chain === 'solana';
+  const borderGlow = isSolana ? 'hover:border-[#00ff88]/50 hover:shadow-[0_0_12px_rgba(0,255,136,0.1)]' : 'hover:border-cyber-cyan/50 hover:shadow-[0_0_12px_rgba(0,229,255,0.1)]';
+
+  return (
+    <div className="bg-[#04040a] rounded-xl border border-cyber-border p-4 sm:p-6 space-y-6 text-[#ffffff] font-mono text-left select-text relative overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Target Address Card */}
+        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl space-y-3">
+          <span className="text-[9px] text-slate-500 uppercase font-black block">INDEXED TARGET ADDRESS</span>
+          <div className="flex items-center justify-between bg-[#020206] p-2.5 rounded border border-cyber-border/60">
+            <span className="text-xs text-white break-all font-sans select-all pr-2">{address}</span>
+            <button
+              type="button"
+              onClick={() => triggerCopy(address, 'addr')}
+              className="p-1 rounded hover:bg-[#15152a] text-slate-400 hover:text-cyber-cyan cursor-pointer shrink-0 transition-colors"
+              title="Copy address"
+            >
+              {copiedKey === 'addr' ? (
+                <Icons.Check className="w-3.5 h-3.5 text-cyber-green animate-bounce" />
+              ) : (
+                <Icons.Clipboard className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </div>
+          <span className="text-[9px] text-slate-400 block font-semibold uppercase">Network Segment: {chainName}</span>
+        </div>
+
+        {/* Address Balance Section */}
+        <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl flex flex-col justify-center">
+          <span className="text-[9px] text-slate-500 uppercase block font-bold">ADDRESS CURRENT BALANCE</span>
+          <span className="text-2xl font-black text-[#00ff88] block mt-1 tracking-tight">
+            {nativeBalance} {coinSymbol}
+          </span>
+          <span className="text-[9px] text-slate-400 block mt-1">Live query resolved via index nodes</span>
+        </div>
+      </div>
+
+      {/* On-Chain Flow (Inflows & Outflows) */}
+      <div className="space-y-3.5">
+        <h4 className="text-xs font-bold text-slate-300 uppercase flex items-center gap-1.5 border-b border-cyber-border pb-2">
+          <Icons.Activity className="w-4 h-4 text-cyber-cyan" />
+          On-Chain Capital Flow (Inflows & Outflows)
+        </h4>
+        <div className="space-y-2">
+          {recentFlows.length === 0 ? (
+            <div className="p-4 rounded-lg bg-[#020206] border border-cyber-border text-center text-slate-500 italic text-[11px]">
+              No transactions detected in recent indexer blocks.
+            </div>
+          ) : (
+            recentFlows.map((flow: any, idx: number) => {
+              const isIn = flow.type === 'inflow';
+              return (
+                <div
+                  key={idx}
+                  className={`p-3 rounded-lg border flex items-center justify-between gap-4 transition-all duration-300 ${borderGlow} ${
+                    isIn
+                      ? 'bg-[#00ff88]/5 border-[#00ff88]/20'
+                      : 'bg-rose-950/5 border-rose-500/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      isIn ? 'bg-[#00ff88]/10 text-[#00ff88]' : 'bg-rose-500/10 text-rose-500'
+                    }`}>
+                      {isIn ? (
+                        <Icons.ArrowUpRight className="w-4 h-4 rotate-45" />
+                      ) : (
+                        <Icons.ArrowDownRight className="w-4 h-4" />
+                      )}
+                    </div>
+                    <div>
+                      <span className={`text-[10px] font-black uppercase tracking-wider block ${
+                        isIn ? 'text-[#00ff88]' : 'text-rose-500'
+                      }`}>
+                        {isIn ? 'Inflow' : 'Outflow'}
+                      </span>
+                      {flow.hash ? (
+                        <span className="text-[9px] text-slate-500 block font-mono pr-2 mt-0.5 max-w-[150px] sm:max-w-md truncate">
+                          TX: {flow.hash}
+                        </span>
+                      ) : (
+                        <span className="text-[9px] text-slate-500 block font-mono mt-0.5">
+                          On-Chain Settlement
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-xs font-black block font-mono ${
+                      isIn ? 'text-[#00ff88]' : 'text-rose-500'
+                    }`}>
+                      {isIn ? '+' : '-'}{flow.amount.toLocaleString(undefined, { maximumFractionDigits: 4 })} {flow.asset}
+                    </span>
+                    {flow.time && (
+                      <span className="text-[8px] text-slate-500 block mt-0.5">
+                        {new Date(flow.time).toLocaleTimeString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function StandardMarkdownViewer({ content }: StandardMarkdownViewerProps) {
