@@ -177,12 +177,13 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }
         {/* Subtle Cyber Neon glow background accent */}
         <div className="absolute top-0 right-0 w-24 h-24 bg-cyber-cyan/3 rounded-full blur-xl pointer-events-none group-hover:bg-cyber-cyan/5 transition-all duration-300"></div>
 
-        <div className="flex flex-row flex-wrap items-center justify-between gap-3 relative z-10">
+        <div className="flex flex-col gap-3 relative z-10 w-full text-left">
           
-          {/* LEFT SIDE: Price & Status, with MCAP underneath */}
-          <div className="flex flex-col gap-2 py-0.5 shrink-0">
-            {/* SURCHI Price & Status Container */}
-            <div className="space-y-0.5">
+          {/* ROW 1: Price / Status on the left, Buy / Refresh on the right */}
+          <div className="flex items-center justify-between gap-3 w-full">
+            
+            {/* Price & Status Container */}
+            <div className="flex flex-col gap-0.5 shrink-0 text-left">
               <div className="flex items-center gap-1.5 text-[8px] font-mono font-bold text-cyber-text-muted tracking-widest uppercase select-none">
                 <span>$SURCHI PRICE</span>
                 <Icons.TrendingUp className="w-2.5 h-2.5 text-emerald-600 dark:text-[#00ff88]" />
@@ -217,8 +218,54 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }
               </div>
             </div>
 
-            {/* Market Cap - Aligned perfectly on a single line matching the premium terminal design */}
-            <div className="flex items-center gap-2 text-xs font-mono select-none font-bold">
+            {/* upper right corner: Buy button & Quick refresh */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* BUY $SURCHI Transaction Portal Button */}
+              <a
+                href="https://raydium.io/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[8px] font-mono font-extrabold tracking-widest uppercase no-underline hover:scale-[1.03] active:scale-[0.97] transition-all cursor-pointer select-none border shrink-0 ${
+                  themeMode === 'light'
+                    ? 'bg-emerald-50 hover:bg-emerald-100/90 text-emerald-700 border-emerald-300 shadow-sm'
+                    : 'text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_8px_rgba(0,255,136,0.12)] hover:shadow-[0_0_12px_rgba(0,255,136,0.25)]'
+                }`}
+              >
+                <Icons.Coins className={`w-3 h-3 shrink-0 ${themeMode === 'light' ? 'text-emerald-600' : 'text-[#00ff88]'}`} />
+                <span>BUY $SURCHI</span>
+                <Icons.ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-70" />
+              </a>
+
+              {/* Quick Refresh Icon */}
+              <div className="flex items-center gap-1 shrink-0">
+                {lastUpdated && (
+                  <span className="text-[7px] font-mono text-cyber-text-muted hidden xl:inline tracking-wider select-none">
+                    CALIBRATED: {lastUpdated.toLocaleTimeString()}
+                  </span>
+                )}
+                <button
+                  onClick={(e) => { e.stopPropagation(); fetchSurchiMetrics(true); }}
+                  disabled={loading || refreshing}
+                  className={`p-1 rounded-md disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center shrink-0 border ${
+                    themeMode === 'light'
+                      ? 'bg-slate-50 hover:bg-slate-100 text-indigo-600 hover:text-indigo-800 border-slate-300'
+                      : 'bg-cyber-card-light text-cyber-cyan hover:text-cyber-text border border-cyber-cyan/15 hover:border-cyber-cyan'
+                  }`}
+                  title="Synchronise on-chain telemetry tools"
+                >
+                  <Icons.RefreshCw className={`w-2.5 h-2.5 ${refreshing ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ROW 2: Market Cap on the Left, Volume on the Right (Opposite of Market Cap) */}
+          <div className="flex items-center justify-between gap-3 w-full border-t border-cyber-cyan/15 pt-2">
+            
+            {/* Market Cap (MCAP) */}
+            <div className="flex items-center gap-1.5 text-xs font-mono select-none font-bold">
               <span className="text-[8px] font-black text-cyber-text-muted tracking-widest uppercase">MCAP</span>
               <Icons.Layers className="w-2.5 h-2.5 text-cyber-cyan/85 shrink-0" />
               {loading ? (
@@ -234,54 +281,23 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }
                 </span>
               )}
             </div>
-          </div>
 
-          {/* RIGHT/FAR-RIGHT SIDE: 24H Volume with minimal spacing inside unified card */}
-          <div className="flex flex-row items-center gap-2 sm:gap-3 shrink-0 ml-auto">
-            
-            {/* 24H Volume Compact Indicator Widget */}
-            <div className="px-2.5 py-1 bg-cyber-card-light border border-cyber-cyan/15 rounded-lg flex items-center gap-2">
-              <div className="p-0.5 rounded bg-emerald-500/10 border border-cyber-green/10 shrink-0">
-                <Icons.Activity className="w-3 h-3 text-cyber-green" />
-              </div>
-              <div className="space-y-0.5">
-                <span className="text-[7.5px] font-mono font-bold text-cyber-text-muted tracking-widest uppercase block leading-none select-none">
-                  VOLUME
-                </span>
-                {loading ? (
-                  <div className="h-3 w-10 bg-cyber-card-light/40 rounded animate-pulse"></div>
-                ) : (
-                  <div>
-                    <div className="text-xs font-mono font-black text-cyber-text tracking-tight leading-none">
-                      {formatLargeNum(metrics.volume24h)}
-                    </div>
-                    <span className="text-[6.5px] font-sans text-cyber-text-muted uppercase block font-semibold leading-none mt-0.5 select-none text-left">
-                      {metrics.isListed ? '24H SWAPS' : 'Inactive'}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Quick Refresh Icon with dynamic status */}
-            <div className="flex items-center gap-1.5 pl-0.5 shrink-0">
-              {lastUpdated && (
-                <span className="text-[7px] font-mono text-cyber-text-muted hidden xl:inline tracking-wider select-none">
-                  CALIBRATED: {lastUpdated.toLocaleTimeString()}
+            {/* Volume (VOL) - Mirrored opposite text flow and alignment */}
+            <div className="flex items-center gap-1.5 text-xs font-mono select-none font-bold">
+              {!loading && (
+                <span className={`text-[6.5px] font-sans font-extrabold uppercase px-1 py-0.5 rounded leading-none ${metrics.isListed ? 'text-cyber-green/95 bg-cyber-green/8' : 'text-cyber-text-muted bg-slate-500/10'}`}>
+                  {metrics.isListed ? '24H SWAPS' : 'INACTIVE'}
                 </span>
               )}
-              <button
-                onClick={(e) => { e.stopPropagation(); fetchSurchiMetrics(true); }}
-                disabled={loading || refreshing}
-                className={`p-1 rounded-lg disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center shrink-0 border ${
-                  themeMode === 'light'
-                    ? 'bg-slate-50 hover:bg-slate-100 text-indigo-600 hover:text-indigo-800 border-slate-300'
-                    : 'bg-cyber-card-light text-cyber-cyan hover:text-cyber-text border border-cyber-cyan/15 hover:border-cyber-cyan'
-                }`}
-                title="Synchronise on-chain telemetry tools"
-              >
-                <Icons.RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
-              </button>
+              {loading ? (
+                <div className="h-3.5 w-12 bg-cyber-card-light/40 rounded animate-pulse"></div>
+              ) : (
+                <span className="text-xs sm:text-sm font-black text-cyber-text tracking-tight leading-none">
+                  {formatLargeNum(metrics.volume24h)}
+                </span>
+              )}
+              <Icons.Activity className="w-2.5 h-2.5 text-cyber-green/85 shrink-0" />
+              <span className="text-[8px] font-black text-cyber-text-muted tracking-widest uppercase">VOL</span>
             </div>
 
           </div>

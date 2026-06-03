@@ -21,6 +21,8 @@ interface HolderIntelligenceProps {
   priceUsd: number;
   symbol: string;
   activeHoldersList: Holder[];
+  themeMode?: 'dark' | 'light';
+  themeAccent?: string;
 }
 
 export default function HolderIntelligence({
@@ -30,6 +32,8 @@ export default function HolderIntelligence({
   priceUsd,
   symbol,
   activeHoldersList,
+  themeMode = 'dark',
+  themeAccent = 'cyan',
 }: HolderIntelligenceProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [chartType, setChartType] = useState<'pie' | 'bar' | 'treemap'>('treemap');
@@ -39,6 +43,31 @@ export default function HolderIntelligence({
   const [refreshSeed, setRefreshSeed] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isLight = themeMode === 'light';
+  const cardBg = isLight ? 'bg-white border-slate-200/90 shadow-lg shadow-slate-100/50' : 'border-cyber-cyan/15 bg-[#03030c] shadow-lg shadow-cyber-cyan/5';
+  const headBg = isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070719] border-cyber-cyan/10';
+  const boxBg = isLight ? 'bg-slate-50 border-slate-100' : 'bg-[#060616] border-cyber-border/30';
+  const innerCardBg = isLight ? 'bg-[#fbfcfd] border-slate-200/70' : 'bg-[#050514] border-cyber-border/30';
+  
+  const textTitle = isLight ? 'text-slate-800' : 'text-slate-100';
+  const textSub = isLight ? 'text-slate-500' : 'text-slate-400';
+  const textBody = isLight ? 'text-slate-650' : 'text-slate-200';
+  const textWhiteDark = isLight ? 'text-slate-850' : 'text-white';
+  const borderLine = isLight ? 'border-slate-200/70' : 'border-cyber-border/20';
+
+  const greenText = isLight ? 'text-emerald-600' : 'text-[#00ff88]';
+  const redText = isLight ? 'text-rose-600' : 'text-rose-455';
+  const amberText = isLight ? 'text-amber-600 font-bold' : 'text-amber-500';
+  const blueText = isLight ? 'text-blue-600' : 'text-cyber-cyan';
+
+  const tooltipStyle = {
+    backgroundColor: isLight ? '#ffffff' : '#050514',
+    borderColor: isLight ? '#cbd5e1' : '#1b204e',
+    color: isLight ? '#1e293b' : '#ffffff',
+    fontSize: '9px',
+    fontFamily: 'monospace'
+  };
 
   // Auto-refresh hook simulating mainnet socket validation updates
   useEffect(() => {
@@ -430,24 +459,24 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
   };
 
   return (
-    <div className="border border-cyber-cyan/15 rounded-xl bg-[#03030c] shadow-lg shadow-cyber-cyan/5 overflow-hidden mt-4">
+    <div className={`border rounded-xl transition-all overflow-hidden mt-4 ${cardBg}`}>
       
       {/* Container Toggle Head */}
-      <div className="flex items-center justify-between p-4 bg-[#070719] border-b border-cyber-cyan/10">
+      <div className={`flex items-center justify-between p-4 border-b ${headBg}`}>
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyber-cyan/25 text-cyber-cyan animate-pulse">
+          <div className={`p-1.5 rounded-lg border text-cyber-cyan animate-pulse ${isLight ? 'bg-indigo-50 border-indigo-200 text-indigo-500' : 'bg-cyan-500/10 border-cyber-cyan/25'}`}>
             <Icons.Activity className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-[12px] text-slate-100 uppercase tracking-widest font-mono">
+              <span className={`font-extrabold text-[12px] uppercase tracking-widest font-mono ${textTitle}`}>
                 Institutional-Grade Holder Intelligence
               </span>
-              <span className="px-2 py-0.5 rounded text-[7.5px] bg-[#00ff88]/10 border border-emerald-400/20 text-[#00ff88] font-black uppercase tracking-wider">
+              <span className={`px-2 py-0.5 rounded text-[7.5px] font-black uppercase tracking-wider ${isLight ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-[#00ff88]/10 border border-emerald-400/20 text-[#00ff88]'}`}>
                 NANSEN PRO ACTIVE
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 font-sans mt-0.5">
+            <p className={`text-[10px] font-sans mt-0.5 ${textSub}`}>
               Multi-tiered node tracing, Pareto concentration indexes, smart wallet clusters.
             </p>
           </div>
@@ -456,10 +485,14 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
           {/* Active Refresh Indicator */}
           <button 
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold transition-all border ${
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold transition-all border cursor-pointer ${
               autoRefresh 
-                ? 'bg-[#00ff88]/10 border-[#00ff88]/20 text-[#00ff88]' 
-                : 'bg-slate-500/10 border-slate-500/20 text-slate-400'
+                ? isLight 
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700 font-extrabold' 
+                  : 'bg-[#00ff88]/10 border-[#00ff88]/20 text-[#00ff88]' 
+                : isLight 
+                  ? 'bg-slate-100 border-slate-200 text-slate-500' 
+                  : 'bg-slate-500/10 border-slate-500/20 text-slate-400'
             }`}
           >
             <Icons.RefreshCw className={`w-3 h-3 ${autoRefresh ? 'animate-spin' : ''}`} />
@@ -468,7 +501,7 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
           
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isLight ? 'text-slate-500 hover:text-slate-800 hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
           >
             {isExpanded ? <Icons.ChevronUp className="w-4.5 h-4.5" /> : <Icons.ChevronDown className="w-4.5 h-4.5" />}
           </button>
@@ -482,74 +515,86 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             
             {/* Concentration Risk Meter */}
-            <div className={`col-span-1 border rounded-lg p-3.5 flex flex-col justify-between ${metrics.riskBg}`}>
-              <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider font-bold">
+            <div className={`col-span-1 border rounded-lg p-3.5 flex flex-col justify-between ${
+              metrics.riskLevel === 'High Risk'
+                ? isLight ? 'bg-red-50 border-red-200' : 'bg-rose-500/10 border-rose-500/25'
+                : metrics.riskLevel === 'Medium Risk'
+                  ? isLight ? 'bg-amber-50 border-amber-200' : 'bg-amber-500/10 border-amber-500/25'
+                  : isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-[#00ff88]/10 border-cyber-cyan/20'
+            }`}>
+              <span className={`text-[9px] font-mono uppercase tracking-wider font-bold ${textSub}`}>
                 Trace Allocation Index
               </span>
               <div className="my-1.5">
-                <span className={`text-xl font-black font-mono leading-none tracking-tight block ${metrics.riskColor}`}>
+                <span className={`text-xl font-black font-mono leading-none tracking-tight block ${
+                  metrics.riskLevel === 'High Risk'
+                    ? redText
+                    : metrics.riskLevel === 'Medium Risk'
+                      ? amberText
+                      : greenText
+                }`}>
                   {metrics.riskLevel}
                 </span>
-                <span className="text-white text-3xl font-black font-mono tracking-tight block mt-1.5">
+                <span className={`text-3xl font-black font-mono tracking-tight block mt-1.5 ${textWhiteDark}`}>
                   {metrics.top100Pct.toFixed(1)}%
                 </span>
               </div>
-              <p className="text-[9px] text-slate-400 leading-normal font-sans pt-1 border-t border-slate-500/15">
+              <p className={`text-[9px] leading-normal font-sans pt-1 border-t ${borderLine} ${textSub}`}>
                 Calculated index of top 100 non-burn on-chain vaults against circulating supply.
               </p>
             </div>
 
             {/* Quick Metrics columns */}
-            <div className="col-span-1 bg-[#060616] border border-cyber-border/30 rounded-lg p-3.5 flex flex-col justify-between">
-              <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">
+            <div className={`col-span-1 border rounded-lg p-3.5 flex flex-col justify-between ${boxBg}`}>
+              <span className={`text-[9px] font-mono uppercase tracking-wider ${textSub}`}>
                 Active Whales Count
               </span>
               <div className="my-1">
-                <span className="text-white text-3xl font-black font-mono tracking-tight block">
-                  {metrics.whaleCount} <span className="text-xs text-cyber-cyan font-bold">WALLETS</span>
+                <span className={`text-3xl font-black font-mono tracking-tight block ${textWhiteDark}`}>
+                  {metrics.whaleCount} <span className={`text-xs font-bold ${isLight ? 'text-indigo-600' : 'text-cyber-cyan'}`}>WALLETS</span>
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono mt-1.5 block">
+                <span className={`text-[10px] font-mono mt-1.5 block ${textSub}`}>
                   Holding &ge; 1.0% each ({metrics.totalWhalesPercentage.toFixed(1)}% combined)
                 </span>
               </div>
-              <span className="text-[8px] font-mono text-[#00ff88] uppercase tracking-wider bg-[#00ff88]/5 border border-[#00ff88]/15 px-1.5 py-0.5 rounded text-center block mt-1">
+              <span className={`text-[8px] font-mono uppercase tracking-wider border px-1.5 py-0.5 rounded text-center block mt-1 ${isLight ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-[#00ff88]/5 border border-[#00ff88]/15 text-[#00ff88]'}`}>
                 High Liquidity Whales
               </span>
             </div>
 
-            <div className="col-span-1 bg-[#060616] border border-cyber-border/30 rounded-lg p-3.5 flex flex-col justify-between">
-              <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">
+            <div className={`col-span-1 border rounded-lg p-3.5 flex flex-col justify-between ${boxBg}`}>
+              <span className={`text-[9px] font-mono uppercase tracking-wider ${textSub}`}>
                 Average Vault Balance
               </span>
               <div className="my-1">
-                <span className="text-white text-2xl font-black font-mono tracking-tight block truncate text-cyber-cyan">
+                <span className={`text-2xl font-black font-mono tracking-tight block truncate ${isLight ? 'text-indigo-600 font-extrabold' : 'text-cyber-cyan'}`}>
                   {metrics.avgHolding.toFixed(2)}%
                 </span>
-                <span className="text-[9.5px] text-slate-400 font-mono mt-1 block">
+                <span className={`text-[9.5px] font-mono mt-1 block ${textSub}`}>
                   {((totalSupply * (metrics.avgHolding / 100))).toLocaleString(undefined, { maximumFractionDigits: 0 })} {symbol}
                 </span>
               </div>
-              <span className="text-[8px] font-mono text-slate-400 uppercase tracking-wider bg-slate-500/10 border border-slate-500/15 px-1.5 py-0.5 rounded text-center block mt-1">
+              <span className={`text-[8px] font-mono uppercase tracking-wider border px-1.5 py-0.5 rounded text-center block mt-1 ${isLight ? 'bg-slate-100 border-slate-205 text-slate-500' : 'bg-slate-500/10 border border-slate-500/15 text-slate-400'}`}>
                 Average cap per top 100 node
               </span>
             </div>
 
-            <div className="col-span-1 bg-[#060616] border border-cyber-border/30 rounded-lg p-3.5 flex flex-col justify-between">
-              <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">
+            <div className={`col-span-1 border rounded-lg p-3.5 flex flex-col justify-between ${boxBg}`}>
+              <span className={`text-[9px] font-mono uppercase tracking-wider ${textSub}`}>
                 Largest Individual Cap
               </span>
               <div className="my-1">
-                <span className="text-white text-3xl font-black font-mono tracking-tight block">
+                <span className={`text-3xl font-black font-mono tracking-tight block ${textWhiteDark}`}>
                   {metrics.largestHolder.toFixed(1)}%
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono mt-1.5 block">
+                <span className={`text-[10px] font-mono mt-1.5 block ${textSub}`}>
                   {((totalSupply * (metrics.largestHolder / 100))).toLocaleString(undefined, { maximumFractionDigits: 0 })} {symbol}
                 </span>
               </div>
               <span className={`text-[8px] font-mono uppercase tracking-wider border px-1.5 py-0.5 rounded text-center block mt-1 ${
                 metrics.largestHolder > 25.0 
-                  ? 'bg-rose-500/10 border-rose-500/25 text-rose-450' 
-                  : 'bg-emerald-500/10 border-emerald-500/20 text-[#00ff88]'
+                  ? isLight ? 'bg-rose-50 border-rose-200 text-rose-705' : 'bg-rose-500/10 border-rose-500/25 text-rose-450' 
+                  : isLight ? 'bg-emerald-50 border-emerald-100 text-emerald-700 font-bold' : 'bg-emerald-500/10 border border-emerald-500/20 text-[#00ff88]'
               }`}>
                 {metrics.largestHolder > 25.0 ? "CRITICAL DOMINATION" : "SAFE THRESHOLD"}
               </span>
@@ -561,23 +606,25 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-1.5">
             
             {/* Chart Block */}
-            <div className="lg:col-span-7 bg-[#050514] border border-cyber-border/30 rounded-lg p-4 flex flex-col justify-between">
-              <div className="flex items-center justify-between border-b border-cyber-border/20 pb-2.5 mb-3 flex-wrap gap-2">
+            <div className={`lg:col-span-7 rounded-lg p-4 flex flex-col justify-between border ${innerCardBg}`}>
+              <div className={`flex items-center justify-between border-b pb-2.5 mb-3 flex-wrap gap-2 ${borderLine}`}>
                 <div className="flex items-center gap-1.5">
-                  <Icons.PieChart className="w-4 h-4 text-cyber-cyan" />
-                  <span className="text-[10px] font-mono font-extrabold uppercase text-slate-200 tracking-wider">
+                  <Icons.PieChart className={`w-4 h-4 ${isLight ? 'text-indigo-600' : 'text-cyber-cyan'}`} />
+                  <span className={`text-[10px] font-mono font-extrabold uppercase tracking-wider ${textTitle}`}>
                     Allocation Weight Distribution
                   </span>
                 </div>
-                <div className="flex items-center bg-black/40 border border-[#1b204e] rounded p-0.5 text-[8px] font-bold font-mono">
+                <div className={`flex items-center rounded p-0.5 text-[8px] font-bold font-mono border ${isLight ? 'bg-slate-100 border-slate-305' : 'bg-black/40 border-[#1b204e]'}`}>
                   {(['pie', 'bar', 'treemap'] as const).map(type => (
                     <button
                       key={type}
                       onClick={() => setChartType(type)}
-                      className={`px-2 py-1 rounded transition-all uppercase ${
+                      className={`px-2 py-1 rounded transition-all uppercase cursor-pointer ${
                         chartType === type 
-                          ? 'bg-cyber-cyan/15 border border-cyber-cyan/25 text-[#00e5ff]' 
-                          : 'text-slate-500 hover:text-white'
+                          ? isLight 
+                            ? 'bg-white text-indigo-700 border border-slate-200 font-extrabold shadow-sm' 
+                            : 'bg-cyber-cyan/15 border border-cyber-cyan/25 text-[#00e5ff]' 
+                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
                       }`}
                     >
                       {type}
@@ -605,7 +652,7 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                         ))}
                       </Pie>
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#050514', borderColor: '#1b204e', color: '#fff', fontSize: '9px', fontFamily: 'monospace' }} 
+                        contentStyle={tooltipStyle} 
                         formatter={(val: number) => [`${val.toFixed(2)}%`, 'Supply Weight']}
                       />
                     </PieChart>
@@ -613,10 +660,10 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                 ) : chartType === 'bar' ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barChartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                      <XAxis dataKey="name" stroke="#52525b" fontSize={8} tickLine={false} />
-                      <YAxis stroke="#52525b" fontSize={8} tickLine={false} />
+                      <XAxis dataKey="name" stroke={isLight ? "#64748b" : "#52525b"} fontSize={8} tickLine={false} />
+                      <YAxis stroke={isLight ? "#64748b" : "#52525b"} fontSize={8} tickLine={false} />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#050514', borderColor: '#1b204e', color: '#fff', fontSize: '9px', fontFamily: 'monospace' }}
+                        contentStyle={tooltipStyle}
                         formatter={(val: number) => [`${val}%`, 'Allocation']}
                       />
                       <Bar dataKey="Percentage" radius={[4, 4, 0, 0]}>
@@ -629,33 +676,33 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                 ) : (
                   /* Custom Gorgeous Treemap Visualization */
                   <div className="w-full h-full grid grid-cols-12 gap-1.5 p-1">
-                    <div className="col-span-5 bg-gradient-to-br from-cyan-600/25 to-cyan-500/5 border border-cyan-400/30 rounded p-2 flex flex-col justify-between select-none">
-                      <span className="text-[8px] text-cyan-400 font-bold tracking-widest block">TOP 10 WALLETS</span>
-                      <span className="text-xl font-black text-white block mt-2">
+                    <div className={`col-span-5 border rounded p-2 flex flex-col justify-between select-none ${isLight ? 'bg-cyan-50 border-cyan-200' : 'bg-gradient-to-br from-cyan-600/25 to-cyan-500/5 border-cyan-400/30'}`}>
+                      <span className={`text-[8px] font-bold tracking-widest block font-mono ${isLight ? 'text-cyan-705' : 'text-cyan-400'}`}>TOP 10 WALLETS</span>
+                      <span className={`text-xl font-black block mt-2 ${textWhiteDark}`}>
                         {pieChartData.find(d => d?.name?.includes("Top 10"))?.value?.toFixed(1) || '0.0'}%
                       </span>
-                      <span className="text-[7.5px] text-slate-500 block">Major Concentration</span>
+                      <span className={`text-[7.5px] block ${textSub}`}>Major Concentration</span>
                     </div>
-                    <div className="col-span-4 bg-gradient-to-br from-blue-600/25 to-blue-500/5 border border-blue-400/30 rounded p-2 flex flex-col justify-between select-none">
-                      <span className="text-[8px] text-blue-400 font-bold tracking-widest block">WALLETS 11-50</span>
-                      <span className="text-lg font-black text-white block mt-2">
+                    <div className={`col-span-4 border rounded p-2 flex flex-col justify-between select-none ${isLight ? 'bg-blue-50 border-blue-200' : 'bg-gradient-to-br from-blue-600/25 to-blue-505/5 border-blue-400/30'}`}>
+                      <span className={`text-[8px] font-bold tracking-widest block font-mono ${isLight ? 'text-blue-705' : 'text-blue-400'}`}>WALLETS 11-50</span>
+                      <span className={`text-lg font-black block mt-2 ${textWhiteDark}`}>
                         {(
                           (pieChartData.find(d => d?.name?.includes("11-25"))?.value || 0) + 
                           (pieChartData.find(d => d?.name?.includes("26-50"))?.value || 0)
                         ).toFixed(1)}%
                       </span>
-                      <span className="text-[7.5px] text-slate-500 block">Active Backers</span>
+                      <span className={`text-[7.5px] block ${textSub}`}>Active Backers</span>
                     </div>
                     <div className="col-span-3 h-full flex flex-col gap-1">
-                      <div className="flex-1 bg-[#10b981]/10 border border-[#10b981]/20 rounded p-1.5 flex flex-col justify-between">
-                        <span className="text-[7px] text-[#10b981] font-bold">RETAIL FLOATING</span>
-                        <span className="text-xs font-black text-white block">
+                      <div className={`flex-1 border rounded p-1.5 flex flex-col justify-between ${isLight ? 'bg-emerald-50 border-emerald-250 text-emerald-705' : 'bg-[#10b981]/10 border border-[#10b981]/20'}`}>
+                        <span className="text-[7px] font-bold font-mono">RETAIL FLOAT</span>
+                        <span className={`text-xs font-black block ${textWhiteDark}`}>
                           {metrics.untrackedPct.toFixed(1)}%
                         </span>
                       </div>
-                      <div className="flex-1 bg-[#8b5cf6]/10 border border-[#8b5cf6]/20 rounded p-1.5 flex flex-col justify-between">
-                        <span className="text-[7px] text-[#a855f7] font-bold">WALLETS 51-100</span>
-                        <span className="text-xs font-black text-white block">
+                      <div className={`flex-1 border rounded p-1.5 flex flex-col justify-between ${isLight ? 'bg-purple-50 border-purple-250 text-purple-705' : 'bg-[#8b5cf6]/10 border border-[#8b5cf6]/20'}`}>
+                        <span className="text-[7px] font-bold font-mono font-mono">WALLETS 51-100</span>
+                        <span className={`text-xs font-black block ${textWhiteDark}`}>
                           {pieChartData.find(d => d?.name?.includes("51-100"))?.value?.toFixed(1) || '0.0'}%
                         </span>
                       </div>
@@ -669,8 +716,8 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                 {pieChartData.map((lbl, idx) => (
                   <div key={idx} className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: lbl.color }} />
-                    <span className="text-slate-400 font-medium">{lbl.name}:</span>
-                    <span className="text-white font-black">{lbl.value.toFixed(1)}%</span>
+                    <span className={`${textSub} font-medium`}>{lbl.name}:</span>
+                    <span className={`${textWhiteDark} font-black`}>{lbl.value.toFixed(1)}%</span>
                   </div>
                 ))}
               </div>
@@ -678,23 +725,23 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
             </div>
 
             {/* Module 3: Tier Distribution Analytics */}
-            <div className="lg:col-span-5 bg-[#050514] border border-cyber-border/30 rounded-lg p-4 flex flex-col justify-between text-left">
-              <div className="flex items-center justify-between border-b border-cyber-border/20 pb-3 mb-2 flex-wrap gap-2">
-                <span className="text-[10px] font-mono font-black uppercase text-slate-200 tracking-wider flex items-center gap-1.5">
-                  <Icons.Award className="w-4 h-4 text-[#00ff88]" />
+            <div className={`lg:col-span-5 rounded-lg p-4 flex flex-col justify-between text-left border ${innerCardBg}`}>
+              <div className={`flex items-center justify-between border-b pb-3 mb-2 flex-wrap gap-2 ${borderLine}`}>
+                <span className={`text-[10px] font-mono font-black uppercase tracking-wider flex items-center gap-1.5 ${textTitle}`}>
+                  <Icons.Award className="w-4 h-4 text-[#ffc107]" />
                   Active Tier Distribution Levels
                 </span>
-                <span className="text-[7.5px] text-slate-500 font-mono tracking-wider">DYNAMIC USD HURDLES</span>
+                <span className={`text-[7.5px] font-mono tracking-wider ${textSub}`}>DYNAMIC USD HURDLES</span>
               </div>
 
               <div className="space-y-1.5 customize-scrollbar overflow-y-auto max-h-[195px] pr-1 font-mono">
                 {tierDistribution.map((tier, idx) => (
-                  <div key={idx} className="flex flex-col gap-0.5 border-b border-[#14152e]/40 pb-1.5 last:border-0 last:pb-0">
+                  <div key={idx} className={`flex flex-col gap-0.5 border-b pb-1.5 last:border-0 last:pb-0 ${isLight ? 'border-slate-150/80' : 'border-[#14152e]/40'}`}>
                     <div className="flex items-center justify-between text-[10px]">
                       <div className="flex items-center gap-1.5 font-bold">
                         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tier.color }} />
-                        <span className="text-white truncate max-w-[85px]">{tier.name}</span>
-                        <span className="text-slate-500 text-[8px] font-medium">({tier.count.toLocaleString()} addresses)</span>
+                        <span className={`truncate max-w-[85px] ${textWhiteDark}`}>{tier.name}</span>
+                        <span className={`${textSub} text-[8px] font-medium`}>({tier.count.toLocaleString()} addresses)</span>
                       </div>
                       <div className="text-right">
                         <span className="text-white font-extrabold mr-1.5">{tier.pct.toFixed(2)}%</span>
@@ -704,7 +751,7 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                       </div>
                     </div>
                     {/* Progress visual bar */}
-                    <div className="w-full bg-[#121226]/60 h-1.5 rounded-full overflow-hidden mt-1 flex">
+                    <div className={`w-full h-1.5 rounded-full overflow-hidden mt-1 flex ${isLight ? 'bg-slate-100' : 'bg-[#121226]/60'}`}>
                       <div 
                         className="h-full rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(100, tier.pct)}%`, backgroundColor: tier.color }}
@@ -722,35 +769,39 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-1.5">
             
             {/* Wallet depth by thresholds */}
-            <div className="lg:col-span-6 bg-[#050514] border border-cyber-border/30 rounded-lg p-4 flex flex-col justify-between text-left">
-              <div className="flex items-center justify-between border-b border-cyber-border/20 pb-3 mb-2 flex-wrap gap-2">
-                <span className="text-[10px] font-mono font-black uppercase text-slate-200 tracking-wider flex items-center gap-1.5">
-                  <Icons.Target className="w-4 h-4 text-indigo-400" />
+            <div className={`lg:col-span-6 rounded-lg p-4 flex flex-col justify-between text-left border ${innerCardBg}`}>
+              <div className={`flex items-center justify-between border-b pb-3 mb-2 flex-wrap gap-2 ${borderLine}`}>
+                <span className={`text-[10px] font-mono font-black uppercase tracking-wider flex items-center gap-1.5 ${textTitle}`}>
+                  <Icons.Target className={`w-4 h-4 ${isLight ? 'text-indigo-600' : 'text-indigo-400'}`} />
                   Whale Wallet Depth by Dollar Hurdle
                 </span>
-                <span className="text-[7.5px] text-slate-500 font-mono">Live Market Cap Synchronized</span>
+                <span className={`text-[7.5px] font-mono ${textSub}`}>Live Market Cap Synchronized</span>
               </div>
 
               <div className="space-y-1.5 font-mono text-[10.5px]">
                 {depthAnalytics.map((depth, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-1 bg-[#060618] border border-cyber-border/20 px-3.5 rounded-lg">
+                  <div key={idx} className={`flex items-center justify-between py-1 border px-3.5 rounded-lg ${boxBg}`}>
                     <div className="flex items-center gap-2">
-                      <span className="text-slate-500 font-bold font-mono">Wallet holding &ge;</span>
-                      <span className="text-[#00ff88] font-black">{depth.thresholdLabel}</span>
+                      <span className={`font-bold font-mono ${textSub}`}>Wallet holding &ge;</span>
+                      <span className={`font-black ${isLight ? 'text-indigo-600' : 'text-[#00ff88]'}`}>{depth.thresholdLabel}</span>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-white font-extrabold leading-tight">
-                          {depth.count.toLocaleString()} <span className="text-[8px] font-bold text-slate-500">WALLETS</span>
+                        <p className={`font-extrabold leading-tight ${textWhiteDark}`}>
+                          {depth.count.toLocaleString()} <span className={`text-[8px] font-bold ${textSub}`}>WALLETS</span>
                         </p>
-                        <p className="text-slate-500 text-[8.5px] font-medium leading-none">
+                        <p className={`text-[8.5px] font-medium leading-none ${textSub}`}>
                           {depth.supplyPct.toFixed(2)}% of supply held
                         </p>
                       </div>
                       <span className={`text-[8.5px] px-1.5 rounded font-black tracking-wider leading-none py-1 block ${
                         depth.trend === 'up' 
-                          ? 'bg-emerald-500/10 border border-emerald-500/15 text-emerald-450' 
-                          : 'bg-rose-500/10 border border-rose-500/15 text-rose-450'
+                          ? isLight 
+                            ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' 
+                            : 'bg-emerald-500/10 border border-emerald-500/15 text-emerald-450' 
+                          : isLight 
+                            ? 'bg-rose-50 border border-rose-200 text-rose-700' 
+                            : 'bg-rose-500/10 border border-rose-500/15 text-rose-450'
                       }`}>
                         {depth.trendLabel}
                       </span>
@@ -761,35 +812,35 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
             </div>
 
             {/* Risk Intelligence Modules */}
-            <div className="lg:col-span-6 bg-[#050514] border border-cyber-border/30 rounded-lg p-4 flex flex-col justify-between text-left">
-              <div className="flex items-center justify-between border-b border-cyber-border/20 pb-3 mb-2">
-                <span className="text-[10px] font-mono font-black uppercase text-slate-200 tracking-wider flex items-center gap-1.5">
-                  <Icons.ShieldAlert className="w-4 h-4 text-rose-450 animate-pulse" />
+            <div className={`lg:col-span-6 rounded-lg p-4 flex flex-col justify-between text-left border ${innerCardBg}`}>
+              <div className={`flex items-center justify-between border-b pb-3 mb-2 ${borderLine}`}>
+                <span className={`text-[10px] font-mono font-black uppercase tracking-wider flex items-center gap-1.5 ${textTitle}`}>
+                  <Icons.ShieldAlert className="w-4 h-4 text-rose-500 animate-pulse" />
                   Surchi Risk Domination Intelligence
                 </span>
-                <span className="px-1.5 py-0.5 rounded text-[8px] bg-rose-500/10 border border-rose-500/30 text-rose-450 font-black">
+                <span className={`px-1.5 py-0.5 rounded text-[8px] font-black ${isLight ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-rose-500/10 border border-rose-500/30 text-rose-450'}`}>
                   REAL-TIME RISK LEDGER
                 </span>
               </div>
 
-              <div className="space-y-1.5 max-h-[195px] overflow-y-auto customize-scrollbar pr-1 divide-y divide-[#17193a]/40">
+              <div className={`space-y-1.5 max-h-[195px] overflow-y-auto customize-scrollbar pr-1 divide-y ${isLight ? 'divide-slate-200/60' : 'divide-[#17193a]/40'}`}>
                 {riskFlags.map((flag, idx) => (
                   <div key={idx} className="pt-2 first:pt-0 pb-1 flex items-start gap-2 text-[10.5px]">
                     <span className={`mt-0.5 px-1.5 rounded text-[7px] font-bold shrink-0 py-0.25 font-mono ${
                       flag.risk === 'high' 
-                        ? 'bg-red-500/15 border border-red-500/30 text-red-500' 
+                        ? isLight ? 'bg-red-50 border border-red-200 text-red-600' : 'bg-red-500/15 border border-red-500/30 text-red-500' 
                         : flag.risk === 'medium' 
-                          ? 'bg-amber-500/15 border border-amber-500/30 text-amber-500' 
-                          : 'bg-[#00ff88]/15 border border-[#00ff88]/30 text-[#00ff88]'
+                          ? isLight ? 'bg-amber-50 border border-amber-200 text-amber-700' : 'bg-amber-500/15 border border-amber-500/30 text-amber-500' 
+                          : isLight ? 'bg-emerald-50 border border-emerald-250 text-emerald-700 font-bold' : 'bg-[#00ff88]/15 border border-[#00ff88]/30 text-[#00ff88]'
                     }`}>
                       {flag.risk.toUpperCase()}
                     </span>
                     <div>
-                      <p className="text-white font-extrabold font-mono text-[10.5px] leading-tight flex items-center gap-1 uppercase">
+                      <p className={`font-extrabold font-mono text-[10.5px] leading-tight flex items-center gap-1 uppercase ${textWhiteDark}`}>
                         {flag.title}
                         {flag.risk === 'high' && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />}
                       </p>
-                      <p className="text-slate-400 font-sans text-[10.2px] leading-normal mt-0.5">
+                      <p className={`font-sans text-[10.2px] leading-normal mt-0.5 ${textSub}`}>
                         {flag.message}
                       </p>
                     </div>
@@ -801,16 +852,16 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
           </div>
 
           {/* Export Controls and synchronizations */}
-          <div className="pt-3 border-t border-cyber-border/30 flex flex-col sm:flex-row items-center justify-between gap-3 bg-black/30 p-3 rounded-lg border border-cyber-border/20">
-            <div className="flex items-center gap-2 text-[9.5px] font-mono text-slate-400">
-              <Icons.Info className="w-4 h-4 text-cyan-500 shrink-0" />
+          <div className={`pt-3 border-t flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-lg border ${borderLine} ${isLight ? 'bg-slate-50' : 'bg-black/30'}`}>
+            <div className={`flex items-center gap-2 text-[9.5px] font-mono ${textSub}`}>
+              <Icons.Info className={`w-4 h-4 shrink-0 ${isLight ? 'text-indigo-600' : 'text-cyan-500'}`} />
               <span>Multi-chain compatibility verified for ETH, SOL, BSC, Base, Arbitrum, Avalanche, Polygon on live RPC instances.</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-end shrink-0">
               <button 
                 onClick={handleExportCSV}
                 disabled={!!exporting}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase transition-all bg-[#0a2316]/90 border border-[#00ff88]/20 hover:border-[#00ff88]/50 hover:bg-[#00361d] text-[#00ff88] disabled:opacity-50"
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase transition-all cursor-pointer disabled:opacity-50 ${isLight ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-[#0a2316]/90 border border-[#00ff88]/20 hover:border-[#00ff88]/50 hover:bg-[#00361d] text-[#00ff88]'}`}
               >
                 <Icons.Download className="w-3.5 h-3.5" />
                 <span>{exporting === 'CSV' ? "Compiling LEDGER..." : "EXPORT CSV REPORT"}</span>
@@ -818,7 +869,7 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
               <button 
                 onClick={handleExportPNG}
                 disabled={!!exporting}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase transition-all bg-cyan-950/90 border border-cyber-cyan/30 hover:border-cyber-cyan/60 hover:bg-cyan-900 text-[#00e5ff] disabled:opacity-50"
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase transition-all cursor-pointer disabled:opacity-50 ${isLight ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-cyan-950/90 border border-cyber-cyan/30 hover:border-cyber-cyan/60 hover:bg-cyan-900 text-[#00e5ff]'}`}
               >
                 <Icons.Download className="w-3.5 h-3.5" />
                 <span>EXPORT REAL AUDIT</span>

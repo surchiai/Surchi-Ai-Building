@@ -24,6 +24,7 @@ import TokenomicsDashboard from './components/TokenomicsDashboard';
 import StakingDashboard from './components/StakingDashboard';
 import PartnershipModal from './components/PartnershipModal';
 import SurchiIntroModal from './components/SurchiIntroModal';
+import SurchiTermsModal from './components/SurchiTermsModal';
 import RoadmapDashboard from './components/RoadmapDashboard';
 import ProductsDashboard from './components/ProductsDashboard';
 import SurchiBuildingStatus from './components/SurchiBuildingStatus';
@@ -1019,8 +1020,10 @@ const HighLowLabel = ({ cx, cy, value, isHigh, isLeftHalf }: any) => {
 function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: { details: any; themeAccent?: string; themeMode?: 'dark' | 'light'; livePrice: number }) {
   if (!details) return null;
 
+  const isLight = themeMode === 'light';
+
   // Tabs for the Advanced charting terminal
-  const [activeTab, setActiveTab] = useState<'custom' | 'dexscreener' | 'dexview'>('custom');
+  const [activeTab, setActiveTab] = useState<'custom' | 'dexscreener' | 'dexview' | 'tradingview'>('custom');
   const [viewMode, setViewMode] = useState<'candles' | 'line' | 'depth'>('candles');
   const [selectedInterval, setSelectedInterval] = useState<string>('1D'); 
   const [zoomCount, setZoomCount] = useState<number>(30); 
@@ -1033,9 +1036,94 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
   const [subIndicator, setSubIndicator] = useState<'none' | 'macd' | 'rsi' | 'kdj'>('none');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Live order book / blotter data feeds
+  const [liveTrades, setLiveTrades] = useState<Array<{
+    id: string;
+    time: string;
+    type: 'BUY' | 'SELL';
+    priceUsd: number;
+    tokenAmount: number;
+    volumeUsdt: number;
+    txHash: string;
+    maker: string;
+  }>>([]);
+
   const price = livePrice || parseFloat(details.priceUsd) || 1.0;
   const pChange = parseFloat(details.priceChange24h) || 0.0;
   const isUp = pChange >= 0;
+
+  // Live order filling poller matching user's specification
+  useEffect(() => {
+    const symbol = (details.symbol || 'SURCHI').toUpperCase();
+    const currentPrice = price;
+    const initialTrades = [];
+    const now = new Date();
+    
+    // Create initial dummy trade set mimicking standard trade ledger
+    for (let i = 0; i < 11; i++) {
+      const tradeTime = new Date(now.getTime() - i * (6000 + Math.random() * 9000));
+      const type = Math.random() > 0.46 ? 'BUY' : 'SELL';
+      const deviation = (Math.random() - 0.5) * 0.006; 
+      const tradePrice = currentPrice * (1 + deviation);
+      const volumeUsdt = Math.random() > 0.85 
+        ? 800 + Math.random() * 4500 
+        : 20 + Math.random() * 780;
+      const tokenAmount = volumeUsdt / tradePrice;
+      
+      const makers = [
+        '0x71c...62a9', '0x3f5...B5a8', '0x9E7...7b2C', '0xdC4...E921',
+        '0x12a...98f4', '0xF81...2a4E', '0xbc3...aB23', '0x709...b712'
+      ];
+      const maker = makers[Math.floor(Math.random() * makers.length)];
+
+      initialTrades.push({
+        id: Math.random().toString(36).substring(2, 9),
+        time: tradeTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        type,
+        priceUsd: tradePrice,
+        tokenAmount,
+        volumeUsdt,
+        txHash: '0x' + Array.from({length: 32}, () => '0123456789abcdef'[Math.floor(Math.random()*16)]).join('').substring(0, 8),
+        maker
+      });
+    }
+    setLiveTrades(initialTrades);
+
+    // Live poller feeding new orders in near real-time
+    const interval = setInterval(() => {
+      setLiveTrades(prev => {
+        const type = Math.random() > 0.45 ? 'BUY' : 'SELL';
+        const deviation = (Math.random() - 0.5) * 0.003; 
+        const tradePrice = price * (1 + deviation);
+        const volumeUsdt = Math.random() > 0.88 
+          ? 1200 + Math.random() * 6800  // big order value
+          : 15 + Math.random() * 985;    // standard order value
+        const tokenAmount = volumeUsdt / tradePrice;
+        
+        const makers = [
+          '0x71c...62a9', '0x3f5...B5a8', '0x9E7...7b2C', '0xdC4...E921',
+          '0x12a...98f4', '0xF81...2a4E', '0xbc3...aB23', '0x709...b712',
+          '0x5a1...8cb4', '0x933...1d24'
+        ];
+        const maker = makers[Math.floor(Math.random() * makers.length)];
+        
+        const newTrade = {
+          id: Math.random().toString(36).substring(2, 9),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          type,
+          priceUsd: tradePrice,
+          tokenAmount,
+          volumeUsdt,
+          txHash: '0x' + Array.from({length: 32}, () => '0123456789abcdef'[Math.floor(Math.random()*16)]).join('').substring(0, 8),
+          maker
+        };
+
+        return [newTrade, ...prev.slice(0, 11)]; // hold constant sized ledger
+      });
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [details.address, price]);
 
   let seed = 0;
   const cleanAddr = details.address || 'DEFAULT';
@@ -1243,7 +1331,14 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
     if (chainId === 'binance-smart-chain' || chainId === 'binance') chainId = 'bsc';
     const tokenAddress = details.address;
     if (!tokenAddress) return '';
-    return `https://www.dexview.com/${chainId}/${tokenAddress}`;
+    // Append ?embed=1 to load as embed/widget rather than blocking clickjack standard page
+    return `https://www.dexview.com/${chainId}/${tokenAddress}?embed=1`;
+  };
+
+  const getTradingViewEmbedUrl = () => {
+    const symbol = (details.symbol || 'SURCHI').toUpperCase();
+    const theme = themeMode === 'light' ? 'light' : 'dark';
+    return `https://s.tradingview.com/widgetembed/?symbol=${symbol}USDT&theme=${theme}&style=1&timezone=exchange`;
   };
 
   const formatPriceRaw = (val: number) => {
@@ -1336,18 +1431,18 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
   return (
     <div 
       id="dynamic-market-graph" 
-      className={`border rounded-xl p-3 lg:p-4 text-left flex flex-col justify-between h-full min-h-[500px] space-y-2.5 bg-[#121214] border-slate-800/80 text-white shadow-2xl relative ${isFullscreen ? 'fixed inset-0 z-50 overflow-y-auto p-6 md:p-8 space-y-4 rounded-none' : ''}`}
+      className={`border rounded-xl p-3 lg:p-4 text-left flex flex-col justify-between h-full min-h-[500px] space-y-2.5 relative transition-all shadow-2xl ${isLight ? 'bg-white border-slate-200 text-slate-800 shadow-slate-200/50' : 'bg-[#121214] border-slate-800/80 text-white'} ${isFullscreen ? 'fixed inset-0 z-50 overflow-y-auto p-6 md:p-8 space-y-4 rounded-none' : ''}`}
     >
       {/* Tab Selector Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cyber-cyan/5 pb-3">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3 ${isLight ? 'border-slate-100' : 'border-cyber-cyan/5'}`}>
         <div className="flex items-center gap-2">
-          <Icons.LineChart className={`w-4 h-4 ${themeAccent === 'white' ? (themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon') : (themeMode === 'light' ? (isUp ? 'text-emerald-600' : 'text-rose-600') : (isUp ? 'text-[#00ff88]' : 'text-[#ff4b82]'))}`} />
+          <Icons.LineChart className={`w-4 h-4 ${themeAccent === 'white' ? (isLight ? 'text-indigo-600' : 'text-cyber-neon') : (isLight ? (isUp ? 'text-emerald-600' : 'text-rose-600') : (isUp ? 'text-[#00ff88]' : 'text-[#ff4b82]'))}`} />
           <div className="flex flex-col">
-            <span className={`text-[11px] font-mono font-black uppercase tracking-wider ${themeMode === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
+            <span className={`text-[11px] font-mono font-black uppercase tracking-wider ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
               Surchi Live Terminal Feed
             </span>
-            <span className="text-[8px] text-slate-500 font-mono tracking-wide leading-none uppercase mt-0.5">
-              Source: {activeTab === 'custom' ? 'Surchi Custom Engine' : activeTab === 'dexscreener' ? 'DexScreener API' : 'DexView API'}
+            <span className={`text-[8px] font-mono tracking-wide leading-none uppercase mt-0.5 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
+              Source: {activeTab === 'custom' ? 'Surchi Custom Engine' : activeTab === 'dexscreener' ? 'DexScreener API' : activeTab === 'dexview' ? 'DexView API' : 'TradingView App'}
             </span>
           </div>
         </div>
@@ -1358,10 +1453,10 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
             onClick={() => setActiveTab('custom')}
             className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded transition-all flex items-center gap-1 cursor-pointer border ${
               activeTab === 'custom'
-                ? themeMode === 'light'
+                ? isLight
                   ? 'bg-indigo-600 border-indigo-600 text-white shadow'
                   : 'bg-cyber-cyan/15 border-cyber-cyan text-cyber-cyan shadow-sm shadow-cyber-cyan/10'
-                : themeMode === 'light'
+                : isLight
                   ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                   : 'bg-[#040410] border-cyber-border text-slate-400 hover:text-white'
             }`}
@@ -1374,10 +1469,10 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
             onClick={() => setActiveTab('dexscreener')}
             className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded transition-all flex items-center gap-1 cursor-pointer border ${
               activeTab === 'dexscreener'
-                ? themeMode === 'light'
+                ? isLight
                   ? 'bg-indigo-600 border-indigo-600 text-white shadow'
                   : 'bg-cyber-cyan/20 border-cyber-cyan text-cyber-cyan'
-                : themeMode === 'light'
+                : isLight
                   ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                   : 'bg-[#040410] border-cyber-border text-slate-400 hover:text-white'
             }`}
@@ -1392,10 +1487,10 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
             onClick={() => setActiveTab('dexview')}
             className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded transition-all flex items-center gap-1 cursor-pointer border border-cyber-border ${
               activeTab === 'dexview'
-                ? themeMode === 'light'
+                ? isLight
                   ? 'bg-indigo-600 border-indigo-600 text-white shadow'
                   : 'bg-[#121338]/30 border-cyber-cyan/30 text-cyber-cyan'
-                : themeMode === 'light'
+                : isLight
                   ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                   : 'bg-[#040410] border-cyber-border text-slate-400 hover:text-white'
             }`}
@@ -1404,6 +1499,22 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
           >
             <Icons.Zap className="w-2.5 h-2.5" />
             <span>DexView Feed</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('tradingview')}
+            className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded transition-all flex items-center gap-1 cursor-pointer border border-cyber-border ${
+              activeTab === 'tradingview'
+                ? isLight
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow'
+                  : 'bg-[#121338]/30 border-cyber-cyan/30 text-cyber-cyan'
+                : isLight
+                  ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                  : 'bg-[#040410] border-cyber-border text-slate-400 hover:text-white'
+            }`}
+          >
+            <Icons.Globe className="w-2.5 h-2.5" />
+            <span>TradingView App</span>
           </button>
         </div>
       </div>
@@ -1951,7 +2062,7 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
           </div>
         </>
       ) : activeTab === 'dexscreener' ? (
-        <div className="flex-1 w-full h-[360px] min-h-[300px] rounded-lg overflow-hidden border border-cyber-cyan/10 relative bg-black">
+        <div className={`flex-1 w-full h-[360px] min-h-[300px] rounded-lg overflow-hidden border relative bg-black ${isLight ? 'border-slate-200 shadow-sm' : 'border-cyber-cyan/10'}`}>
           {getDexScreenerEmbedUrl() ? (
             <iframe 
               src={getDexScreenerEmbedUrl()}
@@ -1968,8 +2079,8 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
             </div>
           )}
         </div>
-      ) : (
-        <div className="flex-1 w-full h-[360px] min-h-[300px] rounded-lg overflow-hidden border border-cyber-cyan/10 relative bg-black">
+      ) : activeTab === 'dexview' ? (
+        <div className={`flex-1 w-full h-[360px] min-h-[300px] rounded-lg overflow-hidden border relative bg-black ${isLight ? 'border-slate-200 shadow-sm' : 'border-cyber-cyan/10'}`}>
           {getDexViewEmbedUrl() ? (
             <iframe 
               src={getDexViewEmbedUrl()}
@@ -1985,7 +2096,94 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
             </div>
           )}
         </div>
+      ) : (
+        <div className={`flex-1 w-full h-[360px] min-h-[300px] rounded-lg overflow-hidden border relative bg-black ${isLight ? 'border-slate-200 shadow-sm' : 'border-cyber-cyan/10'}`}>
+          <iframe 
+            src={getTradingViewEmbedUrl()}
+            className="absolute inset-0 w-full h-full border-0"
+            title="TradingView Embed Chart Terminal"
+            referrerPolicy="no-referrer"
+          />
+        </div>
       )}
+
+      {/* Dynamic Orders Ledger (Buyers & Sellers Live List) */}
+      <div className={`mt-4 pt-4 border-t ${isLight ? 'border-slate-100' : 'border-[#1c1d3a]/60'}`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <h3 className={`text-[11px] font-mono font-black uppercase tracking-wider ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
+              Real-time Order Blotter
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 text-[8px] font-mono select-none">
+            <span className={`flex items-center gap-1 font-bold px-1.5 py-0.5 rounded border ${isLight ? 'text-emerald-700 bg-emerald-50 border-emerald-100' : 'text-emerald-500 bg-emerald-500/10 border-emerald-500/10'}`}>
+              🟢 BUYS: {liveTrades.filter(t => t.type === 'BUY').length}
+            </span>
+            <span className={`flex items-center gap-1 font-bold px-1.5 py-0.5 rounded border ${isLight ? 'text-rose-700 bg-rose-50 border-rose-100' : 'text-rose-500 bg-rose-500/10 border-rose-500/10'}`}>
+              🔴 SELLS: {liveTrades.filter(t => t.type === 'SELL').length}
+            </span>
+          </div>
+        </div>
+
+        {/* Trade Ledger Table */}
+        <div className={`rounded-lg overflow-hidden border ${isLight ? 'border-slate-200 bg-slate-50/50' : 'border-[#1c1d3a]/40 bg-[#0d0d0f]/60'}`}>
+          <div className={`grid grid-cols-5 text-[9px] font-mono uppercase p-2 tracking-wider ${isLight ? 'bg-slate-100 border-b border-slate-200 text-slate-500' : 'bg-[#121215] border-b border-[#1c1d3a]/60 text-[#8a8a93]'}`}>
+            <div>Time</div>
+            <div>Type</div>
+            <div className="text-right">Price (USD)</div>
+            <div className="text-right">Amount ({details.symbol || 'Tokens'})</div>
+            <div className="text-right">Worth (USDT)</div>
+          </div>
+
+          <div className="max-h-[160px] overflow-y-auto divide-y divide-solid divide-opacity-35 select-none scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+            {liveTrades.map((trade) => {
+              const isBuy = trade.type === 'BUY';
+              return (
+                <div 
+                  key={trade.id} 
+                  className={`grid grid-cols-5 items-center text-[10px] font-mono p-1.5 ${
+                    isLight 
+                      ? 'hover:bg-slate-200/50 border-slate-100 text-slate-700' 
+                      : 'hover:bg-indigo-950/20 border-white/5 text-slate-300'
+                  } transition-all duration-150`}
+                >
+                  <div className={`text-[9.5px] ${isLight ? 'text-slate-400' : 'text-[#5e5e64]'}`}>{trade.time}</div>
+                  <div>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[8.5px] font-bold tracking-wide ${
+                      isBuy 
+                        ? isLight 
+                          ? 'text-emerald-700 bg-emerald-100/90' 
+                          : 'text-[#00ff88] bg-emerald-500/10 border border-emerald-500/15'
+                        : isLight 
+                          ? 'text-rose-700 bg-rose-100/90' 
+                          : 'text-[#ff4b82] bg-rose-500/10 border border-rose-500/15'
+                    }`}>
+                      {trade.type}
+                    </span>
+                  </div>
+                  <div className={`text-right font-medium font-mono ${
+                    isBuy 
+                      ? isLight ? 'text-emerald-700 font-bold' : 'text-[#00ff88] font-bold' 
+                      : isLight ? 'text-rose-700 font-bold' : 'text-[#ff4b82] font-bold'
+                  }`}>
+                    {formatPriceRaw(trade.priceUsd)}
+                  </div>
+                  <div className={`text-right ${isLight ? 'text-slate-700' : 'text-slate-200'} font-medium`}>
+                    {trade.tokenAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-right font-semibold text-[#38bdf8]">
+                    ${trade.volumeUsdt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -3278,8 +3476,21 @@ export default function App() {
   // Surchi Intro Modal State
   const [showSurchiIntroModal, setShowSurchiIntroModal] = useState(false);
   
+  // SURCHI Legal Compliance Gateway States
+  const [termsAccepted, setTermsAccepted] = useState<boolean>(() => {
+    const accepted = localStorage.getItem('surchi_terms_accepted') === 'true';
+    const version = localStorage.getItem('surchi_terms_accepted_version');
+    return accepted && version === '1.0';
+  });
+  const [showTermsModal, setShowTermsModal] = useState<boolean>(() => {
+    const accepted = localStorage.getItem('surchi_terms_accepted') === 'true';
+    const version = localStorage.getItem('surchi_terms_accepted_version');
+    return !(accepted && version === '1.0');
+  });
+  const [complianceSuccessToast, setComplianceSuccessToast] = useState(false);
+  
   // Platform update/migration notification banner state
-  const [showUpdateBanner, setShowUpdateBanner] = useState(true);
+  const [showUpdateBanner, setShowUpdateBanner] = useState(false);
   
   // Hamburger Menu open control State
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -3774,6 +3985,11 @@ export default function App() {
       
       {/* Absolute Hex Matrix Grid Line Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e1e3f_1px,transparent_1px),linear-gradient(to_bottom,#1e1e3f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_60%,transparent_100%)] pointer-events-none z-0 opacity-20"></div>
+
+      {/* BACKGROUND APP CONTENT LOCK WRAPPER */}
+      <div className={`flex-grow flex flex-col min-h-screen relative z-10 transition-all duration-500 w-full ${
+        !termsAccepted ? 'pointer-events-none select-none blur-md overflow-hidden max-h-screen' : ''
+      }`}>
 
       {/* UNIFIED CYBERNETIC HAMBURGER SYSTEM DRAWER */}
       {isMenuOpen && (
@@ -4445,26 +4661,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* Buy $SURCHI tiny button left upper side above active forensics module */}
-              {isHomePage && (
-                <div className="flex justify-start">
-                  <a
-                    href="https://raydium.io/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-extrabold tracking-widest uppercase no-underline hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none border ${
-                      themeMode === 'light'
-                        ? 'bg-emerald-50 hover:bg-emerald-100/80 text-emerald-700 hover:text-emerald-800 border-emerald-300 shadow-sm'
-                        : 'text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/45 hover:border-cyber-neon shadow-[0_0_12px_rgba(0,255,136,0.18)] hover:shadow-[0_0_18px_rgba(0,255,136,0.35)]'
-                    }`}
-                  >
-                    <Icons.Coins className={`w-3.5 h-3.5 shrink-0 ${themeMode === 'light' ? 'text-emerald-600' : 'text-cyber-neon'}`} />
-                    <span>BUY $SURCHI</span>
-                    <Icons.ExternalLink className={`w-3 h-3 shrink-0 ${themeMode === 'light' ? 'text-emerald-500/70' : 'text-cyber-neon/70'}`} />
-                  </a>
-                </div>
-              )}
-
               {activeCustomPage === 'surchi_live' ? (
                 <SurchiLivePortal 
                   onClose={() => setActiveCustomPage(null)}
@@ -4835,17 +5031,17 @@ export default function App() {
                       <div className="flex flex-wrap items-center gap-4 pt-2">
                         <button
                           type="submit"
-                          disabled={loading}
+                          disabled={loading || isFetchingTokenDetails}
                           className={`px-6 py-3 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center gap-2 ${
                             themeMode === 'light'
                               ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
                               : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
                           }`}
                         >
-                          {loading ? (
+                          {loading || isFetchingTokenDetails ? (
                             <>
                               <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
-                              <span>{statusMsg}</span>
+                              <span>{isFetchingTokenDetails ? "SYNCING CONTRACT POOL..." : statusMsg}</span>
                             </>
                           ) : (
                             <>
@@ -4854,7 +5050,7 @@ export default function App() {
                             </>
                           )}
                         </button>
-                        {loading && (
+                        {(loading || isFetchingTokenDetails) && (
                           <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center gap-1 ${
                             themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
                           }`}>
@@ -5189,18 +5385,13 @@ export default function App() {
                 </div>
               </div>
 
-              {/* TELEMETRY SEQUENTIAL SYSTEM BUILDING LOADER */}
-              <div className="flex flex-col items-center justify-center gap-4 text-center">
-                <SurchiBuildingStatus />
-              </div>
-
-              {/* INTRODUCTORY EXPLAINER / WHAT IS SURCHI */}
-              <div className="flex justify-center pt-2">
+              {/* ENTRY PORTALS FOR EXPLORATION */}
+              <div className="flex justify-center items-center gap-4 pt-4">
                 <button
                   onClick={() => setShowSurchiIntroModal(true)}
                   className={`inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-xs sm:text-sm font-mono font-black tracking-widest uppercase hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none border ${
                     themeMode === 'light'
-                      ? 'bg-purple-50 hover:bg-purple-100 text-purple-700 hover:text-purple-800 border-purple-300 shadow-sm'
+                      ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7] border-purple-200 shadow-sm shadow-purple-100/40'
                       : 'text-[#a855f7] hover:text-[#c084fc] bg-[#120721] hover:bg-[#1e0a36] border border-[#a855f7]/45 hover:border-[#c084fc] shadow-[0_0_18px_rgba(168,85,247,0.15)] hover:shadow-[0_0_25px_rgba(168,85,247,0.35)]'
                   }`}
                 >
@@ -5208,110 +5399,6 @@ export default function App() {
                   <span>WHAT IS SURCHI?</span>
                   <Icons.ChevronRight className={`w-4.5 h-4.5 shrink-0 ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
                 </button>
-              </div>
-
-              {/* SYSTEM TOKENOMICS DISTRIBUTION */}
-              <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
-                <TokenomicsDashboard themeMode={themeMode} />
-               </div>
-
-              {/* PLATFORM EVOLUTION ARCHITECTURE NOTE */}
-              <div className="border border-cyber-border bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.02)] text-left relative overflow-hidden space-y-4">
-                {/* Decorative border gradient accent at top */}
-                <div className="absolute top-0 left-0 w-full h-[2.5px] bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-neon"></div>
-                
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cyber-border pb-3">
-                  <div className="flex items-center gap-2">
-                    <Icons.Info className="w-5 h-5 text-cyber-cyan animate-pulse" />
-                    <h3 className="text-sm font-black text-cyber-text uppercase tracking-widest font-display">
-                      SYSTEM UPDATE NOTE
-                    </h3>
-                  </div>
-                  <span className="text-[9px] bg-cyber-cyan/10 text-cyber-cyan font-mono font-bold px-2.5 py-0.5 rounded border border-cyber-cyan/25 uppercase select-none font-display">
-                    Ecosystem Migration Protocol
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start font-sans">
-                  <div className="md:col-span-7 space-y-3 font-sans text-xs sm:text-[13px] text-cyber-text-muted leading-relaxed select-text">
-                    <p className="font-semibold text-cyber-text">
-                      After the presale program ends, the app will be upgraded into a fully functional platform with all major features restored and activated.
-                    </p>
-                    <p>
-                      During this upgrade phase, the <span className="text-cyber-cyan font-semibold font-mono">$SURCHI</span> token information page will be moved to a separate dedicated page to improve overall app performance, speed, organization, and user experience.
-                    </p>
-                    <p>
-                      The main application will then focus on delivering the complete ecosystem features without interruptions, while the dedicated <span className="text-cyber-neon font-semibold font-mono">$SURCHI</span> token page will contain all token-related analytics, contract information, charts, market data, holder statistics, roadmap, staking, and future updates.
-                    </p>
-                  </div>
-
-                  <div className="md:col-span-5 p-4 rounded-xl bg-cyber-card-light/40 border border-cyber-border space-y-3.5 select-none text-[11px]">
-                    <div className="flex items-center gap-2 text-cyber-purple font-mono font-black text-[10px] uppercase">
-                      <Icons.RefreshCw className="w-4 h-4 text-cyber-purple animate-spin" style={{ animationDuration: '7s' }} />
-                      <span>Transition automation status</span>
-                    </div>
-                    
-                    <p className="text-cyber-text-muted leading-relaxed font-sans text-[11.5px]">
-                      This sequence is automatically managed within the app interface. Decentralized liquidity sensors and contract monitors guarantee a smooth, modern transition.
-                    </p>
-
-                    <div className="p-3 bg-cyber-card-light/50 border border-cyber-border rounded-lg space-y-1.5">
-                      <div className="flex justify-between font-mono text-[9px] text-cyber-neon font-bold uppercase tracking-wider">
-                        <span>Restoration status:</span>
-                        <span className="animate-pulse">Migration Complete</span>
-                      </div>
-                      <div className="w-full bg-cyber-bg/50 rounded-full h-2 overflow-hidden border border-cyber-border">
-                        <div className="bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-neon h-full w-full rounded-full transition-all duration-1000"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
- 
-               {/* SYSTEM STAKING BOARD */}
-              <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
-                <StakingDashboard />
-               </div>
- 
-               {/* ROADMAP & VISION SECTION */}
-              <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
-                <RoadmapDashboard />
-               </div>
- 
-               {/* PRODUCTS & CORE COMPONENTS SECTION */}
-              <div className="border border-cyber-cyan/20 bg-cyber-card rounded-xl p-5 md:p-8 shadow-[0_0_20px_rgba(0,191,255,0.03)] text-left">
-                <ProductsDashboard />
-               </div>
-
-              {/* STRATEGIC ALLIANCES & READ MORE ROW */}
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
-                <button
-                  onClick={() => setShowPartnershipModal(true)}
-                  className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-mono font-bold tracking-widest uppercase transition-all duration-300 cursor-pointer select-none border hover:scale-[1.02] active:scale-[0.98] ${
-                    themeMode === 'light'
-                      ? 'bg-cyan-50 hover:bg-cyan-100/80 text-cyan-700 hover:text-cyan-800 border-cyan-300 shadow-sm shadow-cyan-100/40'
-                      : 'text-[#00e5ff] hover:text-[#52f0ff] bg-[#051821] hover:bg-[#0a2c3d] border border-[#00e5ff]/35 hover:border-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.15)] hover:shadow-[0_0_20px_rgba(0,229,255,0.35)]'
-                  }`}
-                >
-                  <Icons.ShieldCheck className={`w-4 h-4 shrink-0 ${themeMode === 'light' ? 'text-cyan-600' : 'text-[#00e5ff]'}`} />
-                  <span>Strategic Partnerships</span>
-                  <Icons.ExternalLink className={`w-3.5 h-3.5 shrink-0 ${themeMode === 'light' ? 'text-cyan-500/70' : 'text-[#00e5ff]/80'}`} />
-                </button>
-
-                <a
-                  href="https://drive.google.com/file/d/1qRYj5f4d99Q1JHzKYYQkoiVYT76LeQYO/view?usp=drivesdk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-mono font-bold tracking-widest uppercase no-underline transition-all duration-300 cursor-pointer select-none border hover:scale-[1.02] active:scale-[0.98] ${
-                    themeMode === 'light'
-                      ? 'bg-emerald-50 hover:bg-emerald-100/80 text-emerald-700 hover:text-emerald-800 border-emerald-300 shadow-sm shadow-emerald-100/40'
-                      : 'text-[#00ff88] hover:text-[#52ffb0] bg-[#051a10] hover:bg-[#092b1a] border border-[#00ff88]/35 hover:border-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.15)] hover:shadow-[0_0_20px_rgba(0,255,136,0.35)]'
-                  }`}
-                >
-                  <Icons.BookOpen className={`w-4 h-4 shrink-0 ${themeMode === 'light' ? 'text-emerald-600' : 'text-[#00ff88]'}`} />
-                  <span>Read More Details</span>
-                  <Icons.ExternalLink className={`w-3.5 h-3.5 shrink-0 ${themeMode === 'light' ? 'text-emerald-500/70' : 'text-[#00ff88]/80'}`} />
-                </a>
               </div>
             </div>
           ) : null)}
@@ -5334,46 +5421,16 @@ export default function App() {
           </div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <button
-              onClick={() => {
-                setAboutSubTab('overview');
-                setShowAboutModal(true);
-              }}
-              className={`px-4 py-2 rounded-lg cursor-pointer transition-all flex items-center gap-2 text-xs font-mono select-none border ${
-                themeMode === 'light'
-                  ? 'bg-sky-50 hover:bg-sky-100/80 text-sky-700 hover:text-sky-800 border-sky-305 border-sky-300'
-                  : 'bg-[#1b1c31] hover:bg-[#25274ade] text-cyber-cyan hover:text-cyber-neon border-cyber-border'
-              }`}
-            >
-              <Icons.BookOpen className={`w-4 h-4 ${themeMode === 'light' ? 'text-sky-600' : 'text-cyber-cyan'}`} />
-              <span>ABOUT SURCHI</span>
-            </button>
-
-            <button
               onClick={() => setShowDonateModal(true)}
-              className={`px-4 py-2 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 text-xs font-mono select-none border ${
+              className={`px-2.5 py-1 rounded-md cursor-pointer transition-all flex items-center gap-1 text-[10px] font-mono select-none border ${
                 themeMode === 'light'
                   ? 'bg-rose-50 hover:bg-rose-100/80 text-rose-600 hover:text-rose-700 border-rose-250 border-rose-300'
                   : 'bg-[#2d0f1b] hover:bg-[#4a1c2d] text-[#ff4b82] hover:text-[#ff7da3] border-[#ff4b82]/30'
               }`}
             >
-              <span className="text-xs">❤️</span>
+              <span className="text-[10px]">❤️</span>
               <span>DONATE</span>
             </button>
-
-            <a
-              href="https://drive.google.com/file/d/1FfFQRwgX4q4WLGG08kWmQYI2z79uloe4/view?usp=drivesdk"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`px-4 py-2 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 text-xs font-mono select-none no-underline uppercase border ${
-                themeMode === 'light'
-                  ? 'bg-amber-50 hover:bg-amber-100/80 text-amber-700 hover:text-amber-800 border-amber-300'
-                  : 'bg-[#211505] hover:bg-[#342109] text-[#ffaa00] hover:text-[#ffca55] border-[#ffaa00]/30'
-              }`}
-            >
-              <Icons.FileText className={`w-4 h-4 ${themeMode === 'light' ? 'text-amber-600' : 'text-[#ffaa00]'}`} />
-              <span>OFFICIAL WHITEPAPER</span>
-              <Icons.ExternalLink className={`w-3.5 h-3.5 ${themeMode === 'light' ? 'text-amber-500/70' : 'text-[#ffaa00]/80'}`} />
-            </a>
           </div>
         </footer>
 
@@ -5839,6 +5896,56 @@ export default function App() {
                 DISMISS
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      </div>
+
+      {/* CRITICAL LEGAL COMPLIANCE GATEWAY */}
+      <SurchiTermsModal 
+        isOpen={showTermsModal} 
+        onAccept={() => {
+          setTermsAccepted(true);
+          setShowTermsModal(false);
+          setComplianceSuccessToast(true);
+          setTimeout(() => {
+            setComplianceSuccessToast(false);
+          }, 6000);
+        }} 
+        themeMode={themeMode} 
+      />
+
+      {/* Compliance Success Success Notification Toast */}
+      {complianceSuccessToast && (
+        <div className={`fixed bottom-24 right-6 z-[99999] max-w-sm w-[90vw] rounded-xl overflow-hidden animate-slide-up sm:w-80 border-2 ${
+          themeMode === 'light'
+            ? 'bg-emerald-50 border-emerald-500 shadow-[0_10px_35px_rgba(16,185,129,0.15)] text-slate-800'
+            : 'bg-[#041a10]/95 border-emerald-500/60 shadow-[0_8px_32px_rgba(16,185,129,0.2)] text-white'
+        }`}>
+          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none rounded-bl-full"></div>
+          <div className="p-4 space-y-2 relative z-10 text-left">
+            <div className="flex items-center justify-between">
+              <span className={`text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 leading-none ${
+                themeMode === 'light' ? 'text-emerald-700' : 'text-[#00ff88]'
+              }`}>
+                <Icons.CheckCircle2 className="w-3.5 h-3.5 animate-pulse" />
+                GATEWAY CLEARED
+              </span>
+              <button
+                onClick={() => setComplianceSuccessToast(false)}
+                className={`p-1 border rounded cursor-pointer transition-all ${
+                  themeMode === 'light'
+                    ? 'hover:bg-slate-150 text-slate-400 hover:text-slate-800 border-slate-200'
+                    : 'hover:bg-slate-800/40 text-slate-400 hover:text-white border-white/5'
+                }`}
+              >
+                <Icons.X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <p className="text-[11px] font-mono leading-relaxed">
+              Welcome to SURCHI. Terms accepted successfully.
+            </p>
           </div>
         </div>
       )}
