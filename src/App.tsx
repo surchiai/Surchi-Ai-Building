@@ -25,6 +25,7 @@ import StakingDashboard from './components/StakingDashboard';
 import PartnershipModal from './components/PartnershipModal';
 import SurchiIntroModal from './components/SurchiIntroModal';
 import SurchiTermsModal from './components/SurchiTermsModal';
+import SurchiSplashScreen from './components/SurchiSplashScreen';
 import RoadmapDashboard from './components/RoadmapDashboard';
 import ProductsDashboard from './components/ProductsDashboard';
 import SurchiBuildingStatus from './components/SurchiBuildingStatus';
@@ -3516,6 +3517,9 @@ export default function App() {
   
   // Surchi Intro Modal State
   const [showSurchiIntroModal, setShowSurchiIntroModal] = useState(false);
+
+  // Splash Screen State
+  const [showSplash, setShowSplash] = useState(true);
   
   // SURCHI Legal Compliance Gateway States
   const [termsAccepted, setTermsAccepted] = useState<boolean>(() => {
@@ -4099,6 +4103,10 @@ export default function App() {
   const isTokenAnalyzed = activeModuleId === 'token_analyzer' && (liveTokenInfo || (currentResult && currentResult.payload?.liveDetails)) && !isFetchingTokenDetails;
   const analyzedDetails = liveTokenInfo || currentResult?.payload?.liveDetails;
   const isHomePage = activeModuleId === 'token_analyzer' && !activeCustomPage;
+
+  if (showSplash) {
+    return <SurchiSplashScreen onComplete={() => setShowSplash(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#070710] text-[#e2e8f0] font-sans flex relative overflow-x-hidden">
