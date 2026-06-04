@@ -190,19 +190,21 @@ export default function SurchiSplashScreen({ onComplete }: SurchiSplashScreenPro
       <div className="scanlines-overlay" />
       <div className="scrolling-scanline" />
 
-      {/* Top Section: Technical Telemetry Tag */}
-      <div className="w-full flex justify-center md:justify-start items-center relative z-25">
-        <div className="h-6 flex items-center">
+      {/* Top Section: Symmetrical layout spacer matching Bottom height */}
+      <div className="w-full h-6 relative z-25" />
+
+      {/* Center Section: Main Branded Typography & Divider & Loader Status */}
+      <div className="flex-1 flex flex-col items-center justify-center relative z-25 py-12 md:py-16">
+        
+        {/* Technical Telemetry Tag brought close, right above the main title */}
+        <div className="h-6 flex items-center mb-3">
           <span 
-            className="animate-typewriter text-[#00E5FF] font-share-tech font-bold text-[10px] md:text-xs tracking-[0.25em] uppercase"
+            className="animate-typewriter text-[#00E5FF] font-share-tech font-bold text-[10px] md:text-xs tracking-[0.25em] uppercase text-center"
           >
             ► INITIALIZING SURCHI CORE
           </span>
         </div>
-      </div>
 
-      {/* Center Section: Main Branded Typography & Divider & Loader Status */}
-      <div className="flex-1 flex flex-col items-center justify-center relative z-25 py-12 md:py-16">
         <h1 
           className="animate-hero font-orbitron font-black text-6xl sm:text-7xl md:text-8xl lg:text-9xl tracking-[0.14em] pl-[0.14em] text-transparent bg-clip-text bg-gradient-to-r from-[#00E5FF] via-[#2979FF] to-[#7C3AED] select-none text-center transform transition-transform"
         >

@@ -38,6 +38,9 @@ import CampaignAnalytics from './components/CampaignAnalytics';
 import LiquidityLocker from './components/LiquidityLocker';
 import IntelligenceArchives from './components/IntelligenceArchives';
 import AlertsManager from './components/AlertsManager';
+import ApkDownloadPortal from './components/ApkDownloadPortal';
+import ApkAdminDashboard from './components/ApkAdminDashboard';
+import SurchiApkUpdateModal from './components/SurchiApkUpdateModal';
 import { formatAbbreviatedPrice } from './utils/priceFormatter';
 
 
@@ -3520,6 +3523,11 @@ export default function App() {
 
   // Splash Screen State
   const [showSplash, setShowSplash] = useState(true);
+
+  // SURCHI Client Semi-Persistent Version Engine
+  const [currentVersion, setCurrentVersion] = useState(() => {
+    return localStorage.getItem('surchi_client_version') || '1.1.0';
+  });
   
   // SURCHI Legal Compliance Gateway States
   const [termsAccepted, setTermsAccepted] = useState<boolean>(() => {
@@ -4561,6 +4569,71 @@ export default function App() {
                             }`}>LIVE FEED</span>
                           )}
                         </button>
+
+                        {/* --- APK DOWNLOAD PORTAL BUTTONS --- */}
+                        <button
+                          onClick={() => {
+                            setActiveModuleId('');
+                            setActiveCustomPage('apk_download');
+                            setIsMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-mono font-bold uppercase transition-all tracking-wider text-left border ${
+                            activeCustomPage === 'apk_download'
+                              ? themeMode === 'light'
+                                ? 'bg-[#eaeeff] border-indigo-200 text-indigo-800'
+                                : 'bg-cyber-card-light border-cyber-cyan shadow-[0_0_8px_rgba(0,229,255,0.25)] text-cyber-cyan'
+                              : themeMode === 'light'
+                                ? 'bg-white border-transparent text-slate-700 hover:bg-slate-50'
+                                : 'bg-cyber-card/60 border-transparent text-slate-350 hover:bg-cyber-card-light hover:text-[#00E5FF]'
+                          }`}
+                        >
+                          <div className={`p-1 bg-gradient-to-r ${
+                            activeCustomPage === 'apk_download'
+                              ? 'from-[#00E5FF] to-[#2979FF] text-white'
+                              : 'from-slate-700 to-slate-800 text-slate-450'
+                          } rounded-md`}>
+                            <Icons.Smartphone className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="truncate flex-1">Get Surchi App</span>
+                          {activeCustomPage === 'apk_download' ? (
+                            <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
+                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-cyan shadow-[0_0_6px_rgba(0,229,255,1)]'
+                            }`} />
+                          ) : (
+                            <span className="ml-auto text-[8px] px-1.5 py-0.5 border font-black rounded uppercase bg-[#00ff88]/15 border-[#00ff88]/35 text-[#00ff88]">APK</span>
+                          )}
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setActiveModuleId('');
+                            setActiveCustomPage('apk_admin');
+                            setIsMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-mono font-bold uppercase transition-all tracking-wider text-left border ${
+                            activeCustomPage === 'apk_admin'
+                              ? themeMode === 'light'
+                                ? 'bg-[#eaeeff] border-indigo-200 text-indigo-800'
+                                : 'bg-cyber-card-light border-[#7C3AED] shadow-[0_0_8px_rgba(124,58,237,0.25)] text-purple-400'
+                              : themeMode === 'light'
+                                ? 'bg-white border-transparent text-slate-700 hover:bg-slate-50'
+                                : 'bg-cyber-card/60 border-transparent text-slate-350 hover:bg-cyber-card-light hover:text-[#7C3AED]'
+                          }`}
+                        >
+                          <div className={`p-1 bg-gradient-to-r ${
+                            activeCustomPage === 'apk_admin'
+                              ? 'from-[#7C3AED] to-[#EC4899] text-white'
+                              : 'from-slate-700 to-slate-800 text-slate-450'
+                          } rounded-md`}>
+                            <Icons.Terminal className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="truncate flex-1">APK Control Room</span>
+                          {activeCustomPage === 'apk_admin' && (
+                            <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
+                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-purple-500 shadow-[0_0_6px_rgba(124,58,237,1)]'
+                            }`} />
+                          )}
+                        </button>
                       </>
                     );
                   })()}
@@ -5050,6 +5123,17 @@ export default function App() {
                     <StakingDashboard themeMode={themeMode} />
                   </div>
                 </div>
+              ) : activeCustomPage === 'apk_download' ? (
+                <ApkDownloadPortal
+                  themeMode={themeMode}
+                  onNavigateBack={() => setActiveCustomPage(null)}
+                  onOpenAdmin={() => setActiveCustomPage('apk_admin')}
+                />
+              ) : activeCustomPage === 'apk_admin' ? (
+                <ApkAdminDashboard
+                  themeMode={themeMode}
+                  onNavigateBack={() => setActiveCustomPage(null)}
+                />
               ) : activeCustomPage ? (
                 <div className="space-y-8 animate-fade-in text-left">
                   {/* Custom Header Title Accent */}
@@ -6082,6 +6166,16 @@ export default function App() {
 
       {/* WHAT IS SURCHI DOCUMENTATION PANEL */}
       <SurchiIntroModal isOpen={showSurchiIntroModal} onClose={() => setShowSurchiIntroModal(false)} themeMode={themeMode} />
+
+      {/* AUTOMATIC UPDATE CHECK SERVICE (OTA) */}
+      <SurchiApkUpdateModal
+        currentClientVersion={currentVersion}
+        onUpdateSuccess={(newVersion) => {
+          setCurrentVersion(newVersion);
+          localStorage.setItem('surchi_client_version', newVersion);
+        }}
+        themeMode={themeMode}
+      />
 
       {/* TOKEN ANALYSIS DIAGNOSTIC ALERT (Token address checked but not found note) */}
       {tokenNotFoundAddress && (
