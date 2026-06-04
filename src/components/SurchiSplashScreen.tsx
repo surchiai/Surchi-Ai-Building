@@ -201,8 +201,8 @@ export default function SurchiSplashScreen({ onComplete }: SurchiSplashScreenPro
         </div>
       </div>
 
-      {/* Center Section: Main Branded Typography & Divider */}
-      <div className="flex flex-col items-center justify-center relative z-25 py-20">
+      {/* Center Section: Main Branded Typography & Divider & Loader Status */}
+      <div className="flex-1 flex flex-col items-center justify-center relative z-25 py-12 md:py-16">
         <h1 
           className="animate-hero font-orbitron font-black text-6xl sm:text-7xl md:text-8xl lg:text-9xl tracking-[0.14em] pl-[0.14em] text-transparent bg-clip-text bg-gradient-to-r from-[#00E5FF] via-[#2979FF] to-[#7C3AED] select-none text-center transform transition-transform"
         >
@@ -210,21 +210,22 @@ export default function SurchiSplashScreen({ onComplete }: SurchiSplashScreenPro
         </h1>
         
         {/* Neon Gradient Divider Center Outward Drawing */}
-        <div className="w-[300px] sm:w-[450px] md:w-[600px] max-w-[85vw] h-[1px] mt-8 relative">
+        <div className="w-[300px] sm:w-[450px] md:w-[600px] max-w-[85vw] h-[1px] mt-8 mb-6 relative">
           <div 
             className="animate-divider absolute inset-0 bg-gradient-to-r from-[#00E5FF] to-[#7C3AED]"
           />
         </div>
-      </div>
 
-      {/* Bottom Section: Muted Futuristic Loader Status */}
-      <div className="w-full text-center relative z-25 mt-auto">
+        {/* Loading Status nestled close to the title and divider */}
         <p 
           className="animate-bottom-text font-share-tech text-[#A0AEC0] opacity-80 text-[10px] md:text-xs tracking-[0.3em] uppercase transition-all duration-300"
         >
           NEURAL SYSTEMS LOADING...
         </p>
       </div>
+
+      {/* Bottom Section: Symmetrical layout spacer matching Top telemetry height */}
+      <div className="w-full h-6 relative z-25" />
 
     </div>
   );
