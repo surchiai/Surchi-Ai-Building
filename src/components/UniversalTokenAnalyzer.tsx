@@ -14,6 +14,7 @@ import {
   ReferenceDot,
   TooltipProps
 } from 'recharts';
+import { formatAbbreviatedPrice } from '../utils/priceFormatter';
 
 interface UniversalTokenAnalyzerProps {
   details: any;
@@ -741,7 +742,7 @@ export default function UniversalTokenAnalyzer({
                         tick={{ fill: '#64748b', fontSize: 9, fontFamily: 'monospace' }}
                         tickLine={false}
                         axisLine={false}
-                        tickFormatter={val => `$${val.toFixed(4)}`}
+                        tickFormatter={val => `$${formatAbbreviatedPrice(val)}`}
                       />
                       <Tooltip
                         content={(props: any) => {
@@ -753,10 +754,10 @@ export default function UniversalTokenAnalyzer({
                               <div className="bg-[#050614] p-3 border border-cyber-cyan/40 rounded shadow-md text-[9.5px] font-mono text-left space-y-1">
                                 <p className="text-slate-400 font-extrabold pb-1 border-b border-white/5 uppercase">{matchPoint.date}</p>
                                 <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
-                                  <span>O: <strong className="text-white">${matchPoint.open.toFixed(4)}</strong></span>
-                                  <span>H: <strong className="text-emerald-400">${matchPoint.high.toFixed(4)}</strong></span>
-                                  <span>L: <strong className="text-rose-400">${matchPoint.low.toFixed(4)}</strong></span>
-                                  <span>C: <strong className={up ? 'text-emerald-450' : 'text-rose-455'}>${matchPoint.close.toFixed(4)}</strong></span>
+                                  <span>O: <strong className="text-white">${formatAbbreviatedPrice(matchPoint.open)}</strong></span>
+                                  <span>H: <strong className="text-emerald-400">${formatAbbreviatedPrice(matchPoint.high)}</strong></span>
+                                  <span>L: <strong className="text-rose-400">${formatAbbreviatedPrice(matchPoint.low)}</strong></span>
+                                  <span>C: <strong className={up ? 'text-emerald-450' : 'text-rose-455'}>${formatAbbreviatedPrice(matchPoint.close)}</strong></span>
                                 </div>
                                 <div className="pt-1 text-[8.5px] text-slate-500 border-t border-white/5 flex justify-between">
                                   <span>VOL:</span>
@@ -815,7 +816,7 @@ export default function UniversalTokenAnalyzer({
                         tick={{ fill: '#64748b', fontSize: 9, fontFamily: 'monospace' }}
                         tickLine={false}
                         axisLine={false}
-                        tickFormatter={val => `$${val.toFixed(4)}`}
+                        tickFormatter={val => `$${formatAbbreviatedPrice(val)}`}
                       />
                       <Tooltip
                         content={(props: any) => {
@@ -824,7 +825,7 @@ export default function UniversalTokenAnalyzer({
                             return (
                               <div className="bg-[#050614] p-2 rounded border border-cyber-cyan/35 text-[9px] font-mono text-left">
                                 <span className="text-slate-400 uppercase tracking-widest">{payload[0].payload.date}</span>
-                                <div className="text-white font-extrabold mt-1">Price: ${payload[0].value.toFixed(4)}</div>
+                                <div className="text-white font-extrabold mt-1">Price: ${formatAbbreviatedPrice(payload[0].value)}</div>
                                 <div className="text-[8.5px] text-cyber-purple font-bold">Vol: ${payload[0].payload.volume.toLocaleString()}</div>
                               </div>
                             );
@@ -847,7 +848,7 @@ export default function UniversalTokenAnalyzer({
                   <div className={`text-sm font-sans font-black flex items-center gap-1.5 transition-all ${
                     priceFlash === 'up' ? 'text-emerald-450 scale-[1.01]' : priceFlash === 'down' ? 'text-rose-455 scale-[0.99]' : 'text-cyber-cyan'
                   }`}>
-                    ${livePrice < 0.001 ? livePrice.toFixed(8) : livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+                    ${formatAbbreviatedPrice(livePrice)}
                     <span className={`text-[8px] font-bold ${parseFloat(details.priceChange24h) >= 0 ? 'text-[#00ff88]' : 'text-rose-450'}`}>
                       {parseFloat(details.priceChange24h) >= 0 ? '+' : ''}{parseFloat(details.priceChange24h).toFixed(2)}%
                     </span>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as Icons from 'lucide-react';
+import { formatAbbreviatedPrice } from '../utils/priceFormatter';
 
 interface TokenMetrics {
   priceUsd: number;
@@ -154,9 +155,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }
 
   const formatPrice = (price: number) => {
     if (price === 0) return '$0.000';
-    if (price < 0.0001) return `$${price.toFixed(8)}`;
-    if (price < 0.01) return `$${price.toFixed(6)}`;
-    return `$${price.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}`;
+    return `$${formatAbbreviatedPrice(price)}`;
   };
 
   const formatLargeNum = (num: number) => {

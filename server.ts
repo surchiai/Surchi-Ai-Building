@@ -357,6 +357,27 @@ interface NewsCacheRecord {
 const newsCache = new Map<string, NewsCacheRecord>();
 const NEWS_CACHE_TTL = 90 * 1000; // 90 seconds in-memory lifetime
 
+// REST-API proxy endpoint for DexScreener to bypass client-side CORS and sandboxed fetch limits
+app.get("/api/proxy/dexscreener", async (req, res) => {
+  const address = req.query.address as string;
+  if (!address || typeof address !== 'string') {
+    return res.status(400).json({ error: "Blockchain token address is required." });
+  }
+  try {
+    const cleanAddress = address.trim();
+    const dexscreenerUrl = `https://api.dexscreener.com/latest/dex/tokens/${cleanAddress}`;
+    const apiRes = await fetch(dexscreenerUrl);
+    if (!apiRes.ok) {
+      throw new Error(`DexScreener returned status code: ${apiRes.status}`);
+    }
+    const data = await apiRes.json();
+    return res.json(data);
+  } catch (err: any) {
+    console.error("DexScreener proxy fetch failure in backend:", err.message || err);
+    return res.status(502).json({ error: "Failed to fetch mainnet data from proxy connection." });
+  }
+});
+
 // REST-API endpoint proxy for securing CryptoPanic API access
 app.get("/api/crypto-news", async (req, res) => {
   const category = (req.query.category as string || "breaking").toLowerCase();

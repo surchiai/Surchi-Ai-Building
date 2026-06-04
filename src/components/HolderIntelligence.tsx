@@ -45,16 +45,28 @@ export default function HolderIntelligence({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isLight = themeMode === 'light';
-  const cardBg = isLight ? 'bg-white border-slate-200/90 shadow-lg shadow-slate-100/50' : 'border-cyber-cyan/15 bg-[#03030c] shadow-lg shadow-cyber-cyan/5';
-  const headBg = isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070719] border-cyber-cyan/10';
-  const boxBg = isLight ? 'bg-slate-50 border-slate-100' : 'bg-[#060616] border-cyber-border/30';
-  const innerCardBg = isLight ? 'bg-[#fbfcfd] border-slate-200/70' : 'bg-[#050514] border-cyber-border/30';
+
+  const cardBg = isLight 
+    ? 'bg-white border-slate-200 shadow-sm' 
+    : `bg-[#03030c] border ${themeAccent === 'white' ? 'border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.02)]' : 'border-cyber-cyan/15 shadow-[0_0_15px_rgba(0,229,255,0.05)]'}`;
+    
+  const headBg = isLight 
+    ? 'bg-slate-50/80 border-slate-200' 
+    : `bg-[#070719] border-b ${themeAccent === 'white' ? 'border-white/10' : 'border-cyber-cyan/10'}`;
+    
+  const boxBg = isLight 
+    ? 'bg-slate-50 border-slate-200 shadow-xs' 
+    : `bg-[#050516] border ${themeAccent === 'white' ? 'border-white/15 hover:border-white/30' : 'border-cyber-border/30 hover:border-cyber-cyan/30'} transition-all duration-300`;
+    
+  const innerCardBg = isLight 
+    ? 'bg-[#f8fafc]/90 border-slate-200' 
+    : `bg-[#040412] border ${themeAccent === 'white' ? 'border-white/10' : 'border-[#1b204e]/50'} transition-all duration-300`;
   
   const textTitle = isLight ? 'text-slate-800' : 'text-slate-100';
   const textSub = isLight ? 'text-slate-500' : 'text-slate-400';
   const textBody = isLight ? 'text-slate-650' : 'text-slate-200';
   const textWhiteDark = isLight ? 'text-slate-850' : 'text-white';
-  const borderLine = isLight ? 'border-slate-200/70' : 'border-cyber-border/20';
+  const borderLine = isLight ? 'border-slate-200/75' : 'border-cyber-border/20';
 
   const greenText = isLight ? 'text-emerald-600' : 'text-[#00ff88]';
   const redText = isLight ? 'text-rose-600' : 'text-rose-455';
@@ -574,7 +586,7 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                   {((totalSupply * (metrics.avgHolding / 100))).toLocaleString(undefined, { maximumFractionDigits: 0 })} {symbol}
                 </span>
               </div>
-              <span className={`text-[8px] font-mono uppercase tracking-wider border px-1.5 py-0.5 rounded text-center block mt-1 ${isLight ? 'bg-slate-100 border-slate-205 text-slate-500' : 'bg-slate-500/10 border border-slate-500/15 text-slate-400'}`}>
+              <span className={`text-[8px] font-mono uppercase tracking-wider border px-1.5 py-0.5 rounded text-center block mt-1 ${isLight ? 'bg-slate-100 border-slate-200 text-slate-500' : 'bg-slate-500/10 border border-slate-500/15 text-slate-400'}`}>
                 Average cap per top 100 node
               </span>
             </div>
@@ -614,7 +626,7 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                     Allocation Weight Distribution
                   </span>
                 </div>
-                <div className={`flex items-center rounded p-0.5 text-[8px] font-bold font-mono border ${isLight ? 'bg-slate-100 border-slate-305' : 'bg-black/40 border-[#1b204e]'}`}>
+                <div className={`flex items-center rounded p-0.5 text-[8px] font-bold font-mono border ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-black/40 border-[#1b204e]'}`}>
                   {(['pie', 'bar', 'treemap'] as const).map(type => (
                     <button
                       key={type}
@@ -676,15 +688,15 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                 ) : (
                   /* Custom Gorgeous Treemap Visualization */
                   <div className="w-full h-full grid grid-cols-12 gap-1.5 p-1">
-                    <div className={`col-span-5 border rounded p-2 flex flex-col justify-between select-none ${isLight ? 'bg-cyan-50 border-cyan-200' : 'bg-gradient-to-br from-cyan-600/25 to-cyan-500/5 border-cyan-400/30'}`}>
-                      <span className={`text-[8px] font-bold tracking-widest block font-mono ${isLight ? 'text-cyan-705' : 'text-cyan-400'}`}>TOP 10 WALLETS</span>
+                    <div className={`col-span-5 border rounded p-2 flex flex-col justify-between select-none ${isLight ? 'bg-cyan-50/70 border-cyan-200 shadow-sm' : 'bg-gradient-to-br from-cyan-600/25 to-cyan-500/5 border-cyan-400/30'}`}>
+                      <span className={`text-[8px] font-bold tracking-widest block font-mono ${isLight ? 'text-cyan-700' : 'text-cyan-400'}`}>TOP 10 WALLETS</span>
                       <span className={`text-xl font-black block mt-2 ${textWhiteDark}`}>
                         {pieChartData.find(d => d?.name?.includes("Top 10"))?.value?.toFixed(1) || '0.0'}%
                       </span>
                       <span className={`text-[7.5px] block ${textSub}`}>Major Concentration</span>
                     </div>
-                    <div className={`col-span-4 border rounded p-2 flex flex-col justify-between select-none ${isLight ? 'bg-blue-50 border-blue-200' : 'bg-gradient-to-br from-blue-600/25 to-blue-505/5 border-blue-400/30'}`}>
-                      <span className={`text-[8px] font-bold tracking-widest block font-mono ${isLight ? 'text-blue-705' : 'text-blue-400'}`}>WALLETS 11-50</span>
+                    <div className={`col-span-4 border rounded p-2 flex flex-col justify-between select-none ${isLight ? 'bg-blue-50/70 border-blue-200 shadow-sm' : 'bg-gradient-to-br from-blue-600/25 to-blue-500/5 border-blue-400/30'}`}>
+                      <span className={`text-[8px] font-bold tracking-widest block font-mono ${isLight ? 'text-blue-700' : 'text-blue-400'}`}>WALLETS 11-50</span>
                       <span className={`text-lg font-black block mt-2 ${textWhiteDark}`}>
                         {(
                           (pieChartData.find(d => d?.name?.includes("11-25"))?.value || 0) + 
@@ -694,13 +706,13 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                       <span className={`text-[7.5px] block ${textSub}`}>Active Backers</span>
                     </div>
                     <div className="col-span-3 h-full flex flex-col gap-1">
-                      <div className={`flex-1 border rounded p-1.5 flex flex-col justify-between ${isLight ? 'bg-emerald-50 border-emerald-250 text-emerald-705' : 'bg-[#10b981]/10 border border-[#10b981]/20'}`}>
+                      <div className={`flex-1 border rounded p-1.5 flex flex-col justify-between ${isLight ? 'bg-emerald-50/70 border-emerald-200 text-emerald-700 shadow-sm' : 'bg-[#10b981]/10 border border-[#10b981]/20'}`}>
                         <span className="text-[7px] font-bold font-mono">RETAIL FLOAT</span>
                         <span className={`text-xs font-black block ${textWhiteDark}`}>
                           {metrics.untrackedPct.toFixed(1)}%
                         </span>
                       </div>
-                      <div className={`flex-1 border rounded p-1.5 flex flex-col justify-between ${isLight ? 'bg-purple-50 border-purple-250 text-purple-705' : 'bg-[#8b5cf6]/10 border border-[#8b5cf6]/20'}`}>
+                      <div className={`flex-1 border rounded p-1.5 flex flex-col justify-between ${isLight ? 'bg-purple-50/70 border-purple-200 text-purple-700 shadow-sm' : 'bg-[#8b5cf6]/10 border border-[#8b5cf6]/20'}`}>
                         <span className="text-[7px] font-bold font-mono font-mono">WALLETS 51-100</span>
                         <span className={`text-xs font-black block ${textWhiteDark}`}>
                           {pieChartData.find(d => d?.name?.includes("51-100"))?.value?.toFixed(1) || '0.0'}%
@@ -736,7 +748,7 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
 
               <div className="space-y-1.5 customize-scrollbar overflow-y-auto max-h-[195px] pr-1 font-mono">
                 {tierDistribution.map((tier, idx) => (
-                  <div key={idx} className={`flex flex-col gap-0.5 border-b pb-1.5 last:border-0 last:pb-0 ${isLight ? 'border-slate-150/80' : 'border-[#14152e]/40'}`}>
+                  <div key={idx} className={`flex flex-col gap-0.5 border-b pb-1.5 last:border-0 last:pb-0 ${isLight ? 'border-slate-200/50' : 'border-[#14152e]/40'}`}>
                     <div className="flex items-center justify-between text-[10px]">
                       <div className="flex items-center gap-1.5 font-bold">
                         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tier.color }} />
@@ -744,7 +756,7 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                         <span className={`${textSub} text-[8px] font-medium`}>({tier.count.toLocaleString()} addresses)</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-white font-extrabold mr-1.5">{tier.pct.toFixed(2)}%</span>
+                        <span className={`${textWhiteDark} font-extrabold mr-1.5`}>{tier.pct.toFixed(2)}%</span>
                         <span className="text-[8.5px] text-slate-500">
                           ({priceUsd > 0 ? `$${(tier.balance * priceUsd).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : 'N/A'})
                         </span>
