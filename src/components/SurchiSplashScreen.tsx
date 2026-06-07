@@ -6,6 +6,16 @@ interface SurchiSplashScreenProps {
 
 export default function SurchiSplashScreen({ onComplete }: SurchiSplashScreenProps) {
   const [isDismissing, setIsDismissing] = useState(false);
+  const [dotCount, setDotCount] = useState(3);
+
+  useEffect(() => {
+    // Interactively cycle loading dots count
+    const dotInterval = setInterval(() => {
+      setDotCount(prev => (prev % 3) + 1);
+    }, 400);
+
+    return () => clearInterval(dotInterval);
+  }, []);
 
   useEffect(() => {
     // Check if the user prefers reduced motion
@@ -24,16 +34,16 @@ export default function SurchiSplashScreen({ onComplete }: SurchiSplashScreenPro
         onComplete();
       }, 1000);
     } else {
-      // Normal timed loading sequence
-      // At 3200ms, trigger fade out class
+      // Normal timed loading sequence - delayed slightly for maximum cinematic effect
+      // At 5000ms, trigger fade out class
       timer1 = setTimeout(() => {
         setIsDismissing(true);
-      }, 3200);
+      }, 5000);
 
-      // At 3600ms, notify completion (transition to main app)
+      // At 5400ms, notify completion (transition to main app)
       timer2 = setTimeout(() => {
         onComplete();
-      }, 3600);
+      }, 5400);
     }
 
     return () => {
@@ -222,7 +232,7 @@ export default function SurchiSplashScreen({ onComplete }: SurchiSplashScreenPro
         <p 
           className="animate-bottom-text font-share-tech text-[#A0AEC0] opacity-80 text-[10px] md:text-xs tracking-[0.3em] uppercase transition-all duration-300"
         >
-          NEURAL SYSTEMS LOADING...
+          NEURAL SYSTEMS LOADING{".".repeat(dotCount)}{" ".repeat(3 - dotCount)}
         </p>
       </div>
 
