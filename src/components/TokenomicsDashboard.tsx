@@ -21,8 +21,8 @@ export default function TokenomicsDashboard({ themeMode = 'dark' }: TokenomicsDa
       id: 'presale',
       label: 'Presale',
       shortLabel: 'Presale',
-      percentage: 64,
-      tokens: 12734659,
+      percentage: 60,
+      tokens: 11938743,
       color: '#00ff88', // Cyber Neon Green
       glow: 'shadow-[0_0_15px_rgba(0,255,136,0.3)]',
       gradient: 'from-[#00ff88] to-[#10b981]',
@@ -47,8 +47,8 @@ export default function TokenomicsDashboard({ themeMode = 'dark' }: TokenomicsDa
       id: 'dev_dex_marketing',
       label: 'Development/Dex listing/marketing& partnership',
       shortLabel: 'Dev/List/Mktg',
-      percentage: 6,
-      tokens: 1193874,
+      percentage: 10,
+      tokens: 1989790,
       color: '#ff4b82', // Hot Pink / Coral Red
       glow: 'shadow-[0_0_15px_rgba(255,75,130,0.3)]',
       gradient: 'from-[#ff4b82] to-[#ec4899]',
@@ -106,8 +106,8 @@ export default function TokenomicsDashboard({ themeMode = 'dark' }: TokenomicsDa
         <div className="p-4 bg-cyber-card-light/55 border border-cyber-border/80 rounded-xl space-y-1">
           <div className="text-[10px] text-slate-500 uppercase tracking-widest">CIRCULATING ALLOCATION</div>
           <div className="text-base font-bold text-cyber-neon tracking-wider">
-            {(TOTAL_SUPPLY * 0.94).toLocaleString()}{' '}
-            <span className="text-slate-400 font-mono text-[10px] normal-case">(94% Presale & LP)</span>
+            {(TOTAL_SUPPLY * 0.90).toLocaleString()}{' '}
+            <span className="text-slate-400 font-mono text-[10px] normal-case">(90% Presale & LP)</span>
           </div>
         </div>
         <div className="p-4 bg-cyber-card-light/55 border border-cyber-border/80 rounded-xl space-y-1 flex flex-col justify-center">

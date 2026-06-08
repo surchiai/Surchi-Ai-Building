@@ -51,7 +51,7 @@ export default function RoadmapDashboard() {
       dotColor: 'bg-cyber-cyan',
       items: [
         '$SURCHI Token Generation Event (TGE) on Solana Mainnet',
-        'Public token distribution to presale participants (64% of supply released)',
+        'Public token distribution to presale participants (60% of supply released)',
         'Liquidity deployment on Jupiter and Raydium',
         'Squads multi-sig deployment for treasury protection',
         'DAO treasury initialization & first governance votes',
