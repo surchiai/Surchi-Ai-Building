@@ -11,6 +11,7 @@ interface SurchiIntroModalProps {
   isOpen: boolean;
   onClose: () => void;
   themeMode?: 'dark' | 'light';
+  onProceedToAnalyzer?: () => void;
 }
 
 interface PartnerLogoProps {
@@ -76,7 +77,7 @@ function PartnerLogo({
   );
 }
 
-export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark' }: SurchiIntroModalProps) {
+export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', onProceedToAnalyzer }: SurchiIntroModalProps) {
   if (!isOpen) return null;
 
   const isLight = themeMode === 'light';
@@ -551,10 +552,7 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark' }
                 </div>
               </div>
 
-              {/* Surchi Building Status (Telemetry sequential core) */}
-              <div className="border border-cyber-border bg-[#040409]/65 rounded-xl p-5 text-center">
-                <SurchiBuildingStatus />
-              </div>
+              {/* Surchi Building Status (Telemetry sequential core) moved to main Analyze page */}
 
               {/* Ecosystem Migration Protocol Card */}
               <div className="border border-cyber-border bg-cyber-card/30 rounded-xl p-5 space-y-4">

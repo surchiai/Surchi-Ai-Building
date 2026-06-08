@@ -4,7 +4,7 @@ export const MODULES: ModuleConfig[] = [
   {
     id: 'token_analyzer',
     name: 'Token Analyzer',
-    description: 'Analyze any token, ticker, or contract address for live metrics, sentiment scores, and comprehensive price projections.',
+    description: '',
     icon: 'Activity',
     inputs: [
       {

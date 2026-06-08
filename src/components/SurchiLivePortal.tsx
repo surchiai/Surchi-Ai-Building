@@ -274,11 +274,27 @@ export default function SurchiLivePortal({
         </div>
 
         {/* Core Quick status badges */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <div className={`px-2.5 py-0.5 rounded-full border ${statusBadgeClasses} text-[8.5px] font-mono uppercase tracking-wider font-extrabold flex items-center gap-1.5`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className={`px-2.5 py-1.5 rounded-lg border ${statusBadgeClasses} text-[8.5px] font-mono uppercase tracking-wider font-extrabold flex items-center gap-1.5`}>
             <span className={`w-1.5 h-1.5 rounded-full ${isLight ? 'bg-slate-400' : 'bg-slate-500'} animate-pulse`}></span>
             <span>NOT LIVE YET</span>
           </div>
+
+          {/* Moved BUY $SURCHI Button inside Clickable Price Panel */}
+          <a
+            href="https://raydium.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[8.5px] font-mono font-extrabold tracking-widest uppercase no-underline hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none border ${
+              isLight
+                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-300 shadow-xs'
+                : 'text-cyber-neon hover:text-[#52ffb0] bg-[#051c11] hover:bg-[#09301d] border border-cyber-neon/35 hover:border-cyber-neon shadow-[0_0_6px_rgba(0,255,136,0.1)] hover:shadow-[0_0_10px_rgba(0,255,136,0.2)]'
+            }`}
+          >
+            <Icons.Coins className="w-2.5 h-2.5 animate-pulse text-[#00ff88]" />
+            <span>BUY $SURCHI</span>
+            <Icons.ExternalLink className="w-2.5 h-2.5 opacity-70" />
+          </a>
         </div>
       </div>
 

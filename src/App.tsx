@@ -28,6 +28,7 @@ import SurchiTermsModal from './components/SurchiTermsModal';
 import SurchiSplashScreen from './components/SurchiSplashScreen';
 import RoadmapDashboard from './components/RoadmapDashboard';
 import ProductsDashboard from './components/ProductsDashboard';
+import { SolanaTrendingTokens } from './components/SolanaTrendingTokens';
 import SurchiBuildingStatus from './components/SurchiBuildingStatus';
 import InteractiveSuite from './components/InteractiveSuite';
 import HolderIntelligence from './components/HolderIntelligence';
@@ -38,9 +39,6 @@ import CampaignAnalytics from './components/CampaignAnalytics';
 import LiquidityLocker from './components/LiquidityLocker';
 import IntelligenceArchives from './components/IntelligenceArchives';
 import AlertsManager from './components/AlertsManager';
-import ApkDownloadPortal from './components/ApkDownloadPortal';
-import ApkAdminDashboard from './components/ApkAdminDashboard';
-import SurchiApkUpdateModal from './components/SurchiApkUpdateModal';
 import { formatAbbreviatedPrice } from './utils/priceFormatter';
 
 
@@ -2822,103 +2820,103 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
       </div>
 
       {/* Grid of Dynamic Metrics (Enhanced to 10 channels to include Buyers and Sellers metrics) */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5 pt-2 font-mono text-[10px]">
+      <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-1.5 pt-1.5 font-mono text-[9px]">
         
         {/* Col 1: Price */}
-        <div className={`p-2.5 ${isLight ? 'bg-slate-50' : 'bg-[#08081a]'} border rounded-lg space-y-1 transition-all duration-300 ${priceFlash === 'up' ? 'border-[#00ff88]/50 bg-[#00ff88]/5' : priceFlash === 'down' ? 'border-rose-500/50 bg-rose-500/5' : (isLight ? 'border-slate-205' : 'border-cyber-border/40')}`}>
-          <span className="text-slate-500 uppercase tracking-wider block text-[8px] truncate">Current Price</span>
-          <strong className={`text-xs sm:text-sm block leading-none font-sans font-black transition-colors ${priceFlash === 'up' ? (isLight ? 'text-emerald-700' : 'text-[#00ff88]') : priceFlash === 'down' ? 'text-rose-455' : (isLight ? 'text-indigo-650 font-bold' : 'text-cyber-cyan')}`}>
+        <div className={`p-1.5 ${isLight ? 'bg-slate-50' : 'bg-[#08081a]'} border rounded shadow-xs space-y-0.5 transition-all duration-300 ${priceFlash === 'up' ? 'border-[#00ff88]/50 bg-[#00ff88]/5' : priceFlash === 'down' ? 'border-rose-500/50 bg-rose-500/5' : (isLight ? 'border-slate-205' : 'border-cyber-border/40')}`}>
+          <span className="text-slate-505 uppercase tracking-wider block text-[7.5px] truncate">Current Price</span>
+          <strong className={`text-[11px] sm:text-xs block leading-none font-sans font-black transition-colors ${priceFlash === 'up' ? (isLight ? 'text-emerald-700' : 'text-[#00ff88]') : priceFlash === 'down' ? 'text-rose-455' : (isLight ? 'text-indigo-650 font-bold' : 'text-cyber-cyan')}`}>
             ${livePrice ? formatAbbreviatedPrice(livePrice) : 'N/A'}
           </strong>
-          <span className={`text-[9px] font-bold block ${liveChangePercent >= 0 ? (isLight ? 'text-emerald-700 font-extrabold' : 'text-[#00ff88]') : 'text-rose-450'}`}>
+          <span className={`text-[8.5px] font-bold block leading-none ${liveChangePercent >= 0 ? (isLight ? 'text-emerald-700 font-extrabold' : 'text-[#00ff88]') : 'text-rose-450'}`}>
             {liveChangePercent >= 0 ? '▲ +' : '▼ '}{liveChangePercent.toFixed(2)}%
           </span>
         </div>
 
         {/* Col 2: Pool Liquidity Depth */}
-        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+        <div className={`p-1.5 ${gridItemBg} rounded shadow-xs space-y-0.5`}>
           <span className={itemLabelColor}>Liquidity Depth</span>
-          <strong className={`text-xs sm:text-sm block leading-none font-sans font-black ${valNormalColor}`}>
+          <strong className={`text-[11px] sm:text-xs block leading-none font-sans font-black ${valNormalColor}`}>
             ${details.liquidityUsd ? details.liquidityUsd.toLocaleString(undefined, { maximumFractionDigits: 0 }) : 'N/A'}
           </strong>
-          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Dex pool total</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[7.5px] block uppercase truncate`}>Dex pool total</span>
         </div>
 
         {/* Col 3: Total Token Supply */}
-        <div className={`p-2.5 ${gridItemBorder30} rounded-lg space-y-1`}>
+        <div className={`p-1.5 ${gridItemBorder30} rounded shadow-xs space-y-0.5`}>
           <span className={itemLabelColor}>Total Supply</span>
-          <strong className={`${isLight ? 'text-amber-600' : 'text-amber-400'} text-xs sm:text-sm block leading-none font-sans font-black`}>
+          <strong className={`${isLight ? 'text-amber-600' : 'text-amber-400'} text-[11px] sm:text-xs block leading-none font-sans font-black`}>
             {formattedTotalSupply}
           </strong>
-          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Circulating Cap</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[7.5px] block uppercase truncate`}>Circulating Cap</span>
         </div>
 
         {/* Col 4: Amount remaining in Liquidity Pool */}
-        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+        <div className={`p-1.5 ${gridItemBg} rounded shadow-xs space-y-0.5`}>
           <span className={itemLabelColor}>LP Pool Balance</span>
-          <strong className={`${isLight ? 'text-emerald-700 font-bold' : 'text-[#00ff88]'} text-xs sm:text-sm block leading-none font-sans font-black`}>
+          <strong className={`${isLight ? 'text-emerald-700 font-bold' : 'text-[#00ff88]'} text-[11px] sm:text-xs block leading-none font-sans font-black`}>
             {formattedLpTokens}
           </strong>
-          <span className={`${isLight ? 'text-indigo-600' : 'text-cyber-cyan'} text-[8px] font-semibold block truncate`}>
-            {lpPercent.toFixed(2)}% of supply
+          <span className={`${isLight ? 'text-indigo-600' : 'text-cyber-cyan'} text-[7.5px] font-semibold block truncate`}>
+            {lpPercent.toFixed(1)}% of supply
           </span>
         </div>
 
         {/* Col 5: Buyers (24H) */}
-        <div className={`p-2.5 ${isLight ? 'bg-slate-50' : 'bg-[#08081a]'} border ${isLight ? 'border-slate-200' : 'border-[#00ff88]/25'} rounded-lg space-y-1`}>
-          <span className={`${isLight ? 'text-emerald-700' : 'text-[#00ff88]'} uppercase tracking-wider block text-[8px] font-bold truncate`}>Buyers (24H)</span>
-          <strong className={`${isLight ? 'text-emerald-700 font-black' : 'text-[#00ff88]'} text-xs sm:text-sm block leading-none font-sans font-black`}>
+        <div className={`p-1.5 ${isLight ? 'bg-slate-50' : 'bg-[#08081a]'} border ${isLight ? 'border-slate-200' : 'border-[#00ff88]/25'} rounded shadow-xs space-y-0.5`}>
+          <span className={`${isLight ? 'text-emerald-700' : 'text-[#00ff88]'} uppercase tracking-wider block text-[7.5px] font-bold truncate`}>Buyers (24H)</span>
+          <strong className={`${isLight ? 'text-emerald-700 font-black' : 'text-[#00ff88]'} text-[11px] sm:text-xs block leading-none font-sans font-black`}>
             {buys.toLocaleString()}
           </strong>
-          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8.5px] block uppercase truncate font-semibold`}>{buyPercent.toFixed(0)}% buy speed</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate font-semibold`}>{buyPercent.toFixed(0)}% buy speed</span>
         </div>
 
         {/* Col 6: Sellers (24H) */}
-        <div className={`p-2.5 ${isLight ? 'bg-slate-50' : 'bg-[#08081a]'} border ${isLight ? 'border-slate-205' : 'border-rose-500/25'} rounded-lg space-y-1`}>
-          <span className="text-rose-455 uppercase tracking-wider block text-[8px] font-bold truncate">Sellers (24H)</span>
-          <strong className="text-rose-455 text-xs sm:text-sm block leading-none font-sans font-black">
+        <div className={`p-1.5 ${isLight ? 'bg-slate-50' : 'bg-[#08081a]'} border ${isLight ? 'border-slate-205' : 'border-rose-500/25'} rounded shadow-xs space-y-0.5`}>
+          <span className="text-rose-455 uppercase tracking-wider block text-[7.5px] font-bold truncate">Sellers (24H)</span>
+          <strong className="text-rose-455 text-[11px] sm:text-xs block leading-none font-sans font-black">
             {sells.toLocaleString()}
           </strong>
-          <span className={`${isLight ? 'text-slate-400' : 'text-slate-550'} text-[8.5px] block uppercase truncate font-semibold`}>{(100 - buyPercent).toFixed(0)}% sell speed</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-550'} text-[8px] block uppercase truncate font-semibold`}>{(100 - buyPercent).toFixed(0)}% sell speed</span>
         </div>
 
         {/* Col 7: Liquidity Status representation with Lock Icon */}
-        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1 relative group`}>
-          <div className="flex items-center justify-between">
+        <div className={`p-1.5 ${gridItemBg} rounded shadow-xs space-y-0.5 relative group`}>
+          <div className="flex items-center justify-between gap-1">
             <span className={itemLabelColor}>LP Lock Status</span>
-            <Icons.Lock className={`w-3 h-3 ${isLight ? 'text-emerald-600' : 'text-[#00ff88] animate-pulse'}`} />
+            <Icons.Lock className={`w-2.5 h-2.5 ${isLight ? 'text-emerald-600' : 'text-[#00ff88] animate-pulse'}`} />
           </div>
-          <strong className={`${isLight ? 'text-emerald-700' : 'text-[#00ff88]'} text-[9.5px] block leading-tight font-sans font-black pt-0.5 uppercase tracking-tight truncate`}>
+          <strong className={`${isLight ? 'text-emerald-700' : 'text-[#00ff88]'} text-[8.5px] block leading-tight font-sans font-black pt-0.5 uppercase tracking-tight truncate`}>
             🔒 {lockText}
           </strong>
-          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Status check</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[7.5px] block uppercase truncate`}>Status check</span>
         </div>
 
         {/* Col 8: Lock Duration / Recovery Period */}
-        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+        <div className={`p-1.5 ${gridItemBg} rounded shadow-xs space-y-0.5`}>
           <span className={itemLabelColor}>Lock Duration</span>
-          <strong className={`${isLight ? 'text-amber-600 font-bold' : 'text-amber-400'} text-xs sm:text-sm block leading-none font-sans font-black truncate`}>
+          <strong className={`${isLight ? 'text-amber-600 font-bold' : 'text-amber-400'} text-[11px] sm:text-xs block leading-none font-sans font-black truncate`}>
             {lockDuration}
           </strong>
-          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Release frame</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[7.5px] block uppercase truncate`}>Release frame</span>
         </div>
 
         {/* Col 9: Volume */}
-        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+        <div className={`p-1.5 ${gridItemBg} rounded shadow-xs space-y-0.5`}>
           <span className={itemLabelColor}>24H Volume</span>
-          <strong className={`text-xs sm:text-sm block leading-none font-sans font-black ${valNormalColor}`}>
+          <strong className={`text-[11px] sm:text-xs block leading-none font-sans font-black ${valNormalColor}`}>
             ${details.volume24h ? details.volume24h.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
           </strong>
-          <span className={`${isLight ? 'text-slate-405' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Market trades</span>
+          <span className={`${isLight ? 'text-slate-405' : 'text-slate-505'} text-[7.5px] block uppercase truncate`}>Market trades</span>
         </div>
 
         {/* Col 10: Holders */}
-        <div className={`p-2.5 ${gridItemBg} rounded-lg space-y-1`}>
+        <div className={`p-1.5 ${gridItemBg} rounded shadow-xs space-y-0.5`}>
           <span className={itemLabelColor}>Active Holders</span>
-          <strong className={`${isLight ? 'text-indigo-650 font-bold' : 'text-cyber-neon'} text-xs sm:text-sm block leading-none font-sans font-black`}>
+          <strong className={`${isLight ? 'text-indigo-650 font-bold' : 'text-cyber-neon'} text-[11px] sm:text-xs block leading-none font-sans font-black`}>
             {holders}
           </strong>
-          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[8px] block uppercase truncate`}>Distinct wallets</span>
+          <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[7.5px] block uppercase truncate`}>Distinct wallets</span>
         </div>
 
       </div>
@@ -3521,13 +3519,11 @@ export default function App() {
   // Surchi Intro Modal State
   const [showSurchiIntroModal, setShowSurchiIntroModal] = useState(false);
 
+  // Analyze Section Interactive Walkthrough Guide
+  const [showAnalyzeGuide, setShowAnalyzeGuide] = useState(false);
+
   // Splash Screen State
   const [showSplash, setShowSplash] = useState(true);
-
-  // SURCHI Client Semi-Persistent Version Engine
-  const [currentVersion, setCurrentVersion] = useState(() => {
-    return localStorage.getItem('surchi_client_version') || '1.1.0';
-  });
   
   // SURCHI Legal Compliance Gateway States
   const [termsAccepted, setTermsAccepted] = useState<boolean>(() => {
@@ -3547,6 +3543,7 @@ export default function App() {
   
   // Hamburger Menu open control State
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isWalkthroughExpanded, setIsWalkthroughExpanded] = useState(false);
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
   
   // Terminal intelligence loading & outputs
@@ -4112,6 +4109,13 @@ export default function App() {
   const analyzedDetails = liveTokenInfo || currentResult?.payload?.liveDetails;
   const isHomePage = activeModuleId === 'token_analyzer' && !activeCustomPage;
 
+  const handleSelectTrendingToken = (address: string) => {
+    setActiveModuleId('token_analyzer');
+    setActiveCustomPage(null);
+    setCurrentResult(null);
+    setFormInputs({ token: address });
+  };
+
   if (showSplash) {
     return <SurchiSplashScreen onComplete={() => setShowSplash(false)} />;
   }
@@ -4569,71 +4573,6 @@ export default function App() {
                             }`}>LIVE FEED</span>
                           )}
                         </button>
-
-                        {/* --- APK DOWNLOAD PORTAL BUTTONS --- */}
-                        <button
-                          onClick={() => {
-                            setActiveModuleId('');
-                            setActiveCustomPage('apk_download');
-                            setIsMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-mono font-bold uppercase transition-all tracking-wider text-left border ${
-                            activeCustomPage === 'apk_download'
-                              ? themeMode === 'light'
-                                ? 'bg-[#eaeeff] border-indigo-200 text-indigo-800'
-                                : 'bg-cyber-card-light border-cyber-cyan shadow-[0_0_8px_rgba(0,229,255,0.25)] text-cyber-cyan'
-                              : themeMode === 'light'
-                                ? 'bg-white border-transparent text-slate-700 hover:bg-slate-50'
-                                : 'bg-cyber-card/60 border-transparent text-slate-350 hover:bg-cyber-card-light hover:text-[#00E5FF]'
-                          }`}
-                        >
-                          <div className={`p-1 bg-gradient-to-r ${
-                            activeCustomPage === 'apk_download'
-                              ? 'from-[#00E5FF] to-[#2979FF] text-white'
-                              : 'from-slate-700 to-slate-800 text-slate-450'
-                          } rounded-md`}>
-                            <Icons.Smartphone className="w-3.5 h-3.5" />
-                          </div>
-                          <span className="truncate flex-1">Get Surchi App</span>
-                          {activeCustomPage === 'apk_download' ? (
-                            <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
-                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-cyan shadow-[0_0_6px_rgba(0,229,255,1)]'
-                            }`} />
-                          ) : (
-                            <span className="ml-auto text-[8px] px-1.5 py-0.5 border font-black rounded uppercase bg-[#00ff88]/15 border-[#00ff88]/35 text-[#00ff88]">APK</span>
-                          )}
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setActiveModuleId('');
-                            setActiveCustomPage('apk_admin');
-                            setIsMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-mono font-bold uppercase transition-all tracking-wider text-left border ${
-                            activeCustomPage === 'apk_admin'
-                              ? themeMode === 'light'
-                                ? 'bg-[#eaeeff] border-indigo-200 text-indigo-800'
-                                : 'bg-cyber-card-light border-[#7C3AED] shadow-[0_0_8px_rgba(124,58,237,0.25)] text-purple-400'
-                              : themeMode === 'light'
-                                ? 'bg-white border-transparent text-slate-700 hover:bg-slate-50'
-                                : 'bg-cyber-card/60 border-transparent text-slate-350 hover:bg-cyber-card-light hover:text-[#7C3AED]'
-                          }`}
-                        >
-                          <div className={`p-1 bg-gradient-to-r ${
-                            activeCustomPage === 'apk_admin'
-                              ? 'from-[#7C3AED] to-[#EC4899] text-white'
-                              : 'from-slate-700 to-slate-800 text-slate-450'
-                          } rounded-md`}>
-                            <Icons.Terminal className="w-3.5 h-3.5" />
-                          </div>
-                          <span className="truncate flex-1">APK Control Room</span>
-                          {activeCustomPage === 'apk_admin' && (
-                            <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
-                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-purple-500 shadow-[0_0_6px_rgba(124,58,237,1)]'
-                            }`} />
-                          )}
-                        </button>
                       </>
                     );
                   })()}
@@ -4677,21 +4616,6 @@ export default function App() {
                     <Icons.Heart className={`w-4 h-4 ${themeMode === 'light' ? 'text-[#e11d48]' : 'text-[#ff4b82]'}`} />
                     <span className="font-bold">DONATE</span>
                   </button>
-                </div>
-                <div className="w-full pt-1">
-                  <a
-                    href="https://raydium.io/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`w-full py-2.5 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 text-[10.5px] font-mono font-bold select-none text-center border ${
-                      themeMode === 'light'
-                        ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 border-emerald-300'
-                        : 'bg-[#0d2a23]/90 hover:bg-[#123e33] text-[#00ff88] hover:text-[#39ffac] border border-[#00ff88]/30'
-                    }`}
-                  >
-                    <Icons.Coins className="w-3.5 h-3.5 animate-pulse" />
-                    <span>BUY $SURCHI</span>
-                  </a>
                 </div>
               </div>
 
@@ -4992,26 +4916,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* Project Token Metrics Dashboard for $SURCHI */}
-              {isHomePage && (
-                <div className="w-full animate-fade-in">
-                  <SurchiTokenMetrics 
-                    themeMode={themeMode}
-                    onPriceClick={() => {
-                      setActiveCustomPage('surchi_live');
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    onMetricsFetched={(metrics) => {
-                      setSurchiMetrics({
-                        priceUsd: metrics.priceUsd,
-                        marketCap: metrics.marketCap,
-                        volume24h: metrics.volume24h,
-                        isListed: metrics.isListed,
-                      });
-                    }}
-                  />
-                </div>
-              )}
+
 
               {activeCustomPage === 'surchi_live' ? (
                 <SurchiLivePortal 
@@ -5123,17 +5028,6 @@ export default function App() {
                     <StakingDashboard themeMode={themeMode} />
                   </div>
                 </div>
-              ) : activeCustomPage === 'apk_download' ? (
-                <ApkDownloadPortal
-                  themeMode={themeMode}
-                  onNavigateBack={() => setActiveCustomPage(null)}
-                  onOpenAdmin={() => setActiveCustomPage('apk_admin')}
-                />
-              ) : activeCustomPage === 'apk_admin' ? (
-                <ApkAdminDashboard
-                  themeMode={themeMode}
-                  onNavigateBack={() => setActiveCustomPage(null)}
-                />
               ) : activeCustomPage ? (
                 <div className="space-y-8 animate-fade-in text-left">
                   {/* Custom Header Title Accent */}
@@ -5318,21 +5212,31 @@ export default function App() {
                   </div>
                 </div>
               ) : (
-                <>
+                <div className="space-y-4 animate-fade-in select-text">
+                  {isHomePage && (
+                    <SurchiTokenMetrics 
+                      themeMode={themeMode}
+                      onPriceClick={() => {
+                        setActiveCustomPage('surchi_live');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      onMetricsFetched={(metrics) => {
+                        setSurchiMetrics({
+                          priceUsd: metrics.priceUsd,
+                          marketCap: metrics.marketCap,
+                          volume24h: metrics.volume24h,
+                          isListed: metrics.isListed,
+                        });
+                      }}
+                    />
+                  )}
+
                   {/* Header Title Accent */}
                   <div className="space-y-2">
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-widest ${
-                      themeMode === 'light'
-                        ? 'bg-slate-100 border border-slate-200 text-indigo-600'
-                        : 'bg-cyber-card border border-cyber-border text-cyber-cyan shadow-[0_0_8px_rgba(0,229,255,0.05)]'
-                    }`}>
-                      <Icons.Sparkles className={`w-3.5 h-3.5 ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-cyan'}`} /> active forensics module
-                    </div>
                     <h2 className={`text-2xl md:text-3xl font-bold tracking-tight font-display flex items-center gap-3 flex-wrap ${
                       themeMode === 'light' ? 'text-slate-900' : 'text-white'
                     }`}>
-                      <SurchiIcon name={activeModule.icon} className={`w-7 h-7 ${themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'}`} />
-                      {activeModule.name}
+                      {activeModule.name !== 'Token Analyzer' && activeModule.name}
                       {activeModule.id === 'smart_money_tracker' && detectedNetwork && (
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border tracking-wider animate-pulse ${
                           detectedNetwork === 'solana'
@@ -5464,11 +5368,11 @@ export default function App() {
                       </div>
 
                       {/* Submit triggers */}
-                      <div className="flex flex-wrap items-center gap-4 pt-2">
+                      <div className="flex flex-col items-center justify-center gap-4 pt-2 w-full text-center">
                         <button
                           type="submit"
                           disabled={loading || isFetchingTokenDetails}
-                          className={`px-6 py-3 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center gap-2 ${
+                          className={`px-8 py-3.5 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 ${
                             themeMode === 'light'
                               ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
                               : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
@@ -5487,7 +5391,7 @@ export default function App() {
                           )}
                         </button>
                         {(loading || isFetchingTokenDetails) && (
-                          <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center gap-1 ${
+                          <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 ${
                             themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
                           }`}>
                             <span className={`w-1.5 h-1.5 rounded-full inline-block animate-ping ${
@@ -5526,7 +5430,7 @@ export default function App() {
                       )}
                     </div>
                   )}
-                </>
+                </div>
               )}
 
           {/* ACTIVE AUDIT / REPORT VIEW CARD PANEL */}
@@ -5802,27 +5706,9 @@ export default function App() {
               </div>
             </section>
           ) : isHomePage ? (
-            <div className="space-y-8 w-full">
-              {/* EMPTY SHEETS INITIAL DEMAND ACCENTS */}
-              <div className={`p-6 sm:p-12 text-center rounded-xl space-y-4 max-w-xl mx-auto flex flex-col items-center border ${
-                themeMode === 'light'
-                  ? 'bg-white border-slate-200 shadow-sm shadow-slate-100/60'
-                  : 'bg-[#090915] border-cyber-border/80 shadow-inner'
-              }`}>
-                <div className="space-y-2">
-                  <h3 className={`text-sm uppercase tracking-wide font-mono ${
-                    themeMode === 'light' ? 'text-slate-900 font-extrabold' : 'text-[#ffffff] font-bold'
-                  }`}>Cybernetic Oracle Diagnostics</h3>
-                  <p className={`text-xs font-sans leading-relaxed max-w-sm ${
-                    themeMode === 'light' ? 'text-slate-605 text-slate-600 font-medium' : 'text-slate-400'
-                  }`}>
-                    Specify input parameters in the controller module above, then select **"{activeModule.buttonText}"** to retrieve forensic analysis sheets.
-                  </p>
-                </div>
-              </div>
-
+            <div id="walkthrough-section" className="space-y-6 w-full max-w-4xl mx-auto">
               {/* ENTRY PORTALS FOR EXPLORATION */}
-              <div className="flex justify-center items-center gap-4 pt-4">
+              <div className="flex justify-center items-center gap-4 pt-2">
                 <button
                   onClick={() => setShowSurchiIntroModal(true)}
                   className={`inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-xs sm:text-sm font-mono font-black tracking-widest uppercase hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none border ${
@@ -5836,6 +5722,9 @@ export default function App() {
                   <Icons.ChevronRight className={`w-4.5 h-4.5 shrink-0 ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
                 </button>
               </div>
+
+              {/* LIVE SOLANA TRENDING ANALYSIS SECTION */}
+              <SolanaTrendingTokens themeMode={themeMode} onSelectToken={handleSelectTrendingToken} />
             </div>
           ) : null)}
         </>
@@ -6165,16 +6054,16 @@ export default function App() {
       <PartnershipModal isOpen={showPartnershipModal} onClose={() => setShowPartnershipModal(false)} themeMode={themeMode} />
 
       {/* WHAT IS SURCHI DOCUMENTATION PANEL */}
-      <SurchiIntroModal isOpen={showSurchiIntroModal} onClose={() => setShowSurchiIntroModal(false)} themeMode={themeMode} />
-
-      {/* AUTOMATIC UPDATE CHECK SERVICE (OTA) */}
-      <SurchiApkUpdateModal
-        currentClientVersion={currentVersion}
-        onUpdateSuccess={(newVersion) => {
-          setCurrentVersion(newVersion);
-          localStorage.setItem('surchi_client_version', newVersion);
+      <SurchiIntroModal 
+        isOpen={showSurchiIntroModal} 
+        onClose={() => setShowSurchiIntroModal(false)} 
+        themeMode={themeMode} 
+        onProceedToAnalyzer={() => {
+          setShowSurchiIntroModal(false);
+          setActiveModuleId('token_analyzer');
+          setActiveCustomPage(null);
+          setShowAnalyzeGuide(true);
         }}
-        themeMode={themeMode}
       />
 
       {/* TOKEN ANALYSIS DIAGNOSTIC ALERT (Token address checked but not found note) */}
