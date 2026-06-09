@@ -31,7 +31,7 @@
 
 /* Adaptive Light Mode Configuration */
 html.light {
-  --color-cyber-bg: #f8fafc;
+  --color-cyber-bg: #ffffff;
   --color-cyber-card: rgba(255, 255, 255, 0.82);
   --color-cyber-card-light: rgba(241, 245, 249, 0.85);
   --color-cyber-border: rgba(148, 163, 184, 0.25);
@@ -41,7 +41,7 @@ html.light {
   --color-cyber-text: #0f172a;     /* Deep Slate 900 */
   --color-cyber-text-muted: #475569; /* Slate 600 */
   
-  --color-cyber-pure-bg: #f8fafc;
+  --color-cyber-pure-bg: #ffffff;
   --color-cyber-pure-card: #ffffff;
   --color-cyber-pure-header: rgba(255, 255, 255, 0.88);
   --color-cyber-pure-modal: #ffffff;
@@ -388,9 +388,9 @@ html.light svg line {
 
 /* Linear Gradient Background Matrix Grid in Light Mode */
 html.light .bg-\[linear-gradient\(to_right\,\#1e1e3f_1px\,transparent_1px\)\,linear-gradient\(to_bottom\,\#1e1e3f_1px\,transparent_1px\)\] {
-  background-image: linear-gradient(to right, rgba(148, 163, 184, 0.25) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(148, 163, 184, 0.25) 1px, transparent 1px) !important;
-  opacity: 0.45 !important;
+  background-image: none !important;
+  display: none !important;
+  opacity: 0 !important;
 }
 
 /* Floating themes switcher custom styles for absolute beauty */

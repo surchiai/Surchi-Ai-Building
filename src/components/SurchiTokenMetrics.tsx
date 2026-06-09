@@ -87,8 +87,8 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }
         } else {
           // No active valid pairs matching SURCHI found - fallback to beautiful baseline metrics
           const baselineMetrics: TokenMetrics = {
-            priceUsd: 0.0452,
-            marketCap: 4520000,
+            priceUsd: 0.0045,
+            marketCap: 450000,
             volume24h: 1250200,
             priceChange24h: 18.2,
             isListed: true,
@@ -104,8 +104,8 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }
       } else {
         // Fallback to beautiful baseline metrics
         const baselineMetrics: TokenMetrics = {
-          priceUsd: 0.0452,
-          marketCap: 4520000,
+          priceUsd: 0.0045,
+          marketCap: 450000,
           volume24h: 1250200,
           priceChange24h: 18.2,
           isListed: true,
@@ -122,8 +122,8 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }
       console.error('Failed to retrieve $SURCHI metrics, applying baseline metrics:', error);
       // Fail safely to resilient baseline state so the site is never blank
       const baselineMetrics: TokenMetrics = {
-        priceUsd: 0.0452,
-        marketCap: 4520000,
+        priceUsd: 0.0045,
+        marketCap: 450000,
         volume24h: 1250200,
         priceChange24h: 18.2,
         isListed: true,
@@ -187,7 +187,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }
               {loading ? (
                 <div className="h-4 w-14 bg-cyber-card-light/60 rounded animate-pulse"></div>
               ) : (
-                <span className="text-base font-mono font-black tracking-tight text-cyber-cyan group-hover:text-white transition-colors">
+                <span className="text-[9px] font-mono font-bold text-cyber-cyan group-hover:text-white transition-colors">
                   {formatPrice(metrics.priceUsd)}
                 </span>
               )}

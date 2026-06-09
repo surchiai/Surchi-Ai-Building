@@ -403,7 +403,7 @@ function getFallbackTrending(chain: string): any[] {
   
   // Base list of premium recognizable tokens to guarantee top quality
   const BASE_TOKENS = [
-    { name: "Surchi AI", symbol: "SURCHI", logo: "https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg", chainId: "solana", prc: 0.0452, mc: 4520000, liq: 654000, vol: 1250200, hld: 4820, dex: "Raydium" },
+    { name: "Surchi AI", symbol: "SURCHI", logo: "https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg", chainId: "solana", prc: 0.0045, mc: 450000, liq: 654000, vol: 1250200, hld: 4820, dex: "Raydium" },
     { name: "Solana", symbol: "SOL", logo: "https://assets.coingecko.com/coins/images/4128/large/solana.png", chainId: "solana", prc: 145.24, mc: 65000000000, liq: 12500000, vol: 89300000, hld: 1540200, dex: "Raydium" },
     { name: "dogwifhat", symbol: "WIF", logo: "https://assets.coingecko.com/coins/images/33566/large/dogwifhat.png", chainId: "solana", prc: 2.15, mc: 2150000000, liq: 8500200, vol: 45600000, hld: 128400, dex: "Raydium" },
     { name: "Bonk", symbol: "BONK", logo: "https://assets.coingecko.com/coins/images/28600/large/bonk.png", chainId: "solana", prc: 0.00002154, mc: 1540000000, liq: 6245000, vol: 32400000, hld: 754000, dex: "Jupiter" },
@@ -677,9 +677,35 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
       allPairs.forEach((pair: any) => {
         if (!pair.baseToken || !pair.baseToken.address) return;
         
-        const addr = pair.baseToken.address.trim();
-        const pairChain = (pair.chainId || "").toLowerCase();
+        // Smart targeting of token of interest. We avoid accidentally selecting the common wrapper pair (like SOL, WETH etc.)
+        // and instead extract our actual target token custom/meme asset.
+        let targetToken = pair.baseToken;
+        const baseAddr = (pair.baseToken.address || "").trim().toLowerCase();
+        const quoteAddr = (pair.quoteToken?.address || "").trim().toLowerCase();
         
+        const isCommonWrap = (c: string) => {
+          return (
+            c === "so11111111111111111111111111111111111111112" || // native SOL
+            c === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
+            c === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
+            c === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC
+            c === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT
+            c === "11111111111111111111111111111111" || // generic native placeholder
+            c === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" || // raydium wrapped SOL
+            c.includes("addressfake")
+          );
+        };
+
+        if (activeAddresses.has(quoteAddr) && !activeAddresses.has(baseAddr)) {
+          targetToken = pair.quoteToken;
+        } else if (isCommonWrap(baseAddr) && !isCommonWrap(quoteAddr)) {
+          targetToken = pair.quoteToken || pair.baseToken;
+        }
+
+        const addr = (targetToken.mint || targetToken.address || "").trim();
+        if (!addr) return;
+
+        const pairChain = (pair.chainId || "").toLowerCase();
         // Final filter in case the tokens endpoint includes other chains
         if (chain !== "all" && pairChain !== chain) return;
 
@@ -695,12 +721,12 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
         const sells24h = parseInt(pair.txns?.h24?.sells) || 0;
         const txns24h = buys24h + sells24h;
 
-        // Extract metadata
-        const name = pair.baseToken.name || "Unknown Token";
-        const symbol = (pair.baseToken.symbol || "TOKEN").toUpperCase();
+        // Safely extract attributes, supporting standard mint, symbol, name, and logoURI aliases
+        const name = targetToken.name || "Unknown Token";
+        const symbol = (targetToken.symbol || "TOKEN").toUpperCase();
         
-        // Resolve best logo
-        const logo = pair.info?.imageUrl || boostMap.get(addr)?.iconUrl || "";
+        // Resolve best logo, checking local icon, fallback logoURI, info image url and boostMap
+        const logo = pair.info?.imageUrl || targetToken.logoURI || targetToken.logo || boostMap.get(addr)?.iconUrl || "";
 
         // Format DEX name
         const rawDex = pair.dexId || "";

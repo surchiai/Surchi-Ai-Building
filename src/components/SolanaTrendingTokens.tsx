@@ -172,7 +172,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
     
     // Base list of premium recognizable tokens to guarantee top quality
     const BASE_TOKENS = [
-      { name: "Surchi AI", symbol: "SURCHI", logo: "https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg", chainId: "solana", prc: 0.0452, mc: 4520000, liq: 654000, vol: 1250200, hld: 4820, dex: "Raydium" },
+      { name: "Surchi AI", symbol: "SURCHI", logo: "https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg", chainId: "solana", prc: 0.0045, mc: 450000, liq: 654000, vol: 1250200, hld: 4820, dex: "Raydium" },
       { name: "Solana", symbol: "SOL", logo: "https://assets.coingecko.com/coins/images/4128/large/solana.png", chainId: "solana", prc: 145.24, mc: 65000000000, liq: 12500000, vol: 89300000, hld: 1540200, dex: "Raydium" },
       { name: "dogwifhat", symbol: "WIF", logo: "https://assets.coingecko.com/coins/images/33566/large/dogwifhat.png", chainId: "solana", prc: 2.15, mc: 2150000000, liq: 8500200, vol: 45600000, hld: 128400, dex: "Raydium" },
       { name: "Bonk", symbol: "BONK", logo: "https://assets.coingecko.com/coins/images/28600/large/bonk.png", chainId: "solana", prc: 0.00002154, mc: 1540000000, liq: 6245000, vol: 32400000, hld: 754000, dex: "Jupiter" },
@@ -281,8 +281,10 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
     let query = chainTarget;
     if (chainTarget === "all") query = "solana";
     
-    // Perform browser direct CORS request to primary DexScreener search gateway
-    const searchRes = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
+    // Perform browser direct CORS request with cache busting
+    const searchRes = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}&_t=${Date.now()}`, {
+      cache: 'no-store'
+    } as any);
     if (!searchRes.ok) {
       throw new Error(`Direct backup search endpoint returned status code ${searchRes.status}`);
     }
@@ -292,24 +294,56 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       const seenAddresses = new Set<string>();
       
       data.pairs.forEach((pair: any, idx: number) => {
-        const addr = pair.baseToken?.address;
+        if (!pair.baseToken || !pair.baseToken.address) return;
+        
+        // Smart targeting of token of interest. We avoid accidentally selecting the common wrapper pair (like SOL, WETH etc.)
+        // and instead extract our actual target token custom/meme asset.
+        let targetToken = pair.baseToken;
+        const baseAddr = (pair.baseToken.address || "").trim().toLowerCase();
+        const quoteAddr = (pair.quoteToken?.address || "").trim().toLowerCase();
+        
+        const isCommonWrap = (c: string) => {
+          return (
+            c === "so11111111111111111111111111111111111111112" || // native SOL
+            c === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
+            c === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
+            c === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC
+            c === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT
+            c === "11111111111111111111111111111111" ||
+            c === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" ||
+            c.includes("addressfake")
+          );
+        };
+
+        if (isCommonWrap(baseAddr) && !isCommonWrap(quoteAddr)) {
+          targetToken = pair.quoteToken || pair.baseToken;
+        }
+
+        const addr = (targetToken.mint || targetToken.address || "").trim();
         if (!addr || seenAddresses.has(addr)) return;
         seenAddresses.add(addr);
         
         const itemChain = (pair.chainId || "").toLowerCase();
         if (chainTarget !== "all" && itemChain !== chainTarget) return;
 
+        // Safely extract attributes, supporting standard mint, symbol, name, and logoURI aliases
+        const name = targetToken.name || "Unknown Token";
+        const symbol = (targetToken.symbol || "TOKEN").toUpperCase();
+        
+        // Resolve best logo
+        const logo = pair.info?.imageUrl || targetToken.logoURI || targetToken.logo || "";
+
         tokensList.push({
           address: addr,
-          name: pair.baseToken?.name || "Unknown Token",
-          symbol: pair.baseToken?.symbol || "TOKEN",
+          name,
+          symbol,
           priceUsd: parseFloat(pair.priceUsd || "0"),
           priceChange1h: parseFloat(pair.priceChange?.h1 || "0"),
           priceChange24h: parseFloat(pair.priceChange?.h24 || "0"),
           volume24h: parseFloat(pair.volume?.h24 || "0"),
           marketCap: pair.marketCap ? parseFloat(pair.marketCap) : (pair.fdv ? parseFloat(pair.fdv) : null),
           liquidityUsd: parseFloat(pair.liquidity?.usd || "0"),
-          logo: pair.info?.imageUrl || "",
+          logo,
           trendingScore: Math.min(100, Math.max(10, Math.round(98 - idx * 2))),
           chainId: itemChain,
           holdersCount: null,
@@ -376,7 +410,9 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
 
       console.log(`[CLIENT FETCH] Querying primary market indicators: /api/proxy/dexscreener/trending?chain=${chainTarget}&sortBy=${sortTarget}`);
-      const response = await fetch(`/api/proxy/dexscreener/trending?chain=${chainTarget}&sortBy=${sortTarget}`);
+      const response = await fetch(`/api/proxy/dexscreener/trending?chain=${chainTarget}&sortBy=${sortTarget}&_t=${Date.now()}`, {
+        cache: 'no-store'
+      } as any);
       
       // 1. Audit HTTP code responses
       if (!response.ok) {
@@ -841,7 +877,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       </div>
 
       {/* Core table ledger displaying rank, logo, symbol, blockchain, price, 1h change, 24h change, 24h volume, Cap, Liquidity, Holders, Custom Gauge, and Scan trigger */}
-      {loading ? (
+      {(loading || !tokens || tokens.length === 0) ? (
         <div className="overflow-x-auto w-full rounded-lg border border-cyber-border/10 relative">
           <table className="w-full text-left border-collapse min-w-[1200px]">
             <thead>
@@ -1020,7 +1056,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                             />
                           ) : (
                             <div className="text-[10px] font-bold text-cyber-cyan">
-                              {token.symbol.slice(0, 2)}
+                              {token.symbol.length > 6 ? token.symbol.slice(0, 4) : token.symbol}
                             </div>
                           )}
                         </div>
@@ -1172,10 +1208,10 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                   e.stopPropagation();
                   setVisibleCount((prev) => Math.min(100, prev + 20));
                 }}
-                className="px-6 py-2 rounded border text-xs font-mono font-black uppercase text-cyber-cyan hover:text-black hover:bg-white bg-cyber-cyan/15 border-cyber-cyan/50 hover:border-white shadow-[0_0_12px_rgba(0,180,255,0.15)] transition-all cursor-pointer flex items-center gap-2"
+                className="p-2.5 rounded-full border text-cyber-cyan hover:text-black hover:bg-white bg-cyber-cyan/15 border-cyber-cyan/40 hover:border-white shadow-[0_0_12px_rgba(0,180,255,0.15)] transition-all cursor-pointer flex items-center justify-center animate-bounce"
+                title={`Load more tokens (${visibleCount} / ${Math.min(100, sortedAndFilteredTokens.length)} shown)`}
               >
-                <Icons.PlusCircle className="w-4 h-4 animate-pulse shrink-0 text-cyber-cyan" />
-                Load More Tokens ({visibleCount} / {Math.min(100, sortedAndFilteredTokens.length)} Shown)
+                <Icons.ChevronDown className="w-5 h-5 shrink-0" />
               </button>
             </div>
           )}
