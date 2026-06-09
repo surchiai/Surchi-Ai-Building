@@ -194,16 +194,16 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode }
 
               {/* Status Badge */}
               {!loading && (
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="relative flex h-1.5 w-1.5">
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className="relative flex h-1 w-1">
                     <span className={`absolute inline-flex h-full w-full rounded-full ${metrics.isListed ? 'bg-cyber-green' : 'bg-slate-500'} opacity-75 ${metrics.isListed ? 'animate-ping' : ''}`}></span>
-                    <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${metrics.isListed ? 'bg-cyber-green' : 'bg-slate-500'}`}></span>
+                    <span className={`relative inline-flex rounded-full h-1 w-1 ${metrics.isListed ? 'bg-cyber-green' : 'bg-slate-500'}`}></span>
                   </span>
-                  <span className={`text-[7.5px] font-mono font-black tracking-wider px-1.5 py-0.5 rounded leading-none ${metrics.isListed ? 'bg-cyber-green/12 text-cyber-green border border-cyber-green/20' : 'bg-slate-500/10 text-cyber-text-muted border border-slate-500/20'}`}>
+                  <span className={`text-[6px] font-mono font-black tracking-wider px-1 py-0.25 rounded leading-none ${metrics.isListed ? 'bg-cyber-green/12 text-cyber-green border border-cyber-green/20' : 'bg-slate-500/10 text-cyber-text-muted border border-slate-500/20'}`}>
                     {metrics.isListed ? 'LIVE' : 'NOT LISTED'}
                   </span>
                   {metrics.isListed && (
-                    <span className={`text-[7.5px] font-mono font-bold ${metrics.priceChange24h >= 0 ? 'text-cyber-green' : 'text-rose-500'}`}>
+                    <span className={`text-[6.5px] font-mono font-bold ${metrics.priceChange24h >= 0 ? 'text-cyber-green' : 'text-rose-500'}`}>
                       {metrics.priceChange24h >= 0 ? '+' : ''}{metrics.priceChange24h.toFixed(2)}%
                     </span>
                   )}

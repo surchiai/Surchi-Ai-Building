@@ -2229,9 +2229,64 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
   if (!originalDetails) return null;
 
   const [polledDetails, setPolledDetails] = useState<any>(null);
+  const [exchangePairs, setExchangePairs] = useState<any[]>(originalDetails.allPairs || []);
+  const [fetchingExchanges, setFetchingExchanges] = useState(false);
 
   // Active details binds to the polled data or original data
   const details = polledDetails || originalDetails;
+
+  useEffect(() => {
+    if (!details.address) return;
+    let active = true;
+    setFetchingExchanges(true);
+    
+    const fetchExchanges = async () => {
+      try {
+        let data: any = null;
+        try {
+          const res = await fetch(`/api/proxy/dexscreener?address=${encodeURIComponent(details.address)}`);
+          if (res.ok) data = await res.json();
+        } catch (err) {
+          console.warn("Proxy exchange fetch failed, trying direct:", err);
+        }
+        
+        if (!data) {
+          const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${details.address}`);
+          if (res.ok) data = await res.json();
+        }
+        
+        if (data && data.pairs && active) {
+          setExchangePairs(data.pairs);
+          // Also fallback if originalDetails lacks some pairs
+          if (data.pairs.length > 0 && !polledDetails) {
+            const sortedPairs = [...data.pairs].sort((a: any, b: any) => {
+              const aq = a.liquidity?.usd || 0;
+              const bq = b.liquidity?.usd || 0;
+              return bq - aq;
+            });
+            const mainPair = sortedPairs[0];
+            // keep state updated with fresh pair info without breaking
+            setPolledDetails({
+              ...originalDetails,
+              priceUsd: mainPair.priceUsd ? parseFloat(mainPair.priceUsd).toString() : originalDetails.priceUsd,
+              liquidityUsd: mainPair.liquidity?.usd || originalDetails.liquidityUsd,
+              volume24h: mainPair.volume?.h24 || originalDetails.volume24h,
+              dexId: mainPair.dexId || originalDetails.dexId,
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching exchanges:", err);
+      } finally {
+        if (active) setFetchingExchanges(false);
+      }
+    };
+    
+    fetchExchanges();
+    return () => {
+      active = false;
+    };
+  }, [details.address]);
 
   const { 
     holders, 
@@ -2644,6 +2699,62 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
   const safetyStyle = getSafetyColor(safetyScore);
   const isLight = themeMode === 'light';
 
+  const uniqueExchanges = React.useMemo(() => {
+    if (!exchangePairs || exchangePairs.length === 0) return [];
+    
+    const map = new Map<string, any>();
+    
+    exchangePairs.forEach(pair => {
+      const dexId = (pair.dexId || '').toLowerCase();
+      if (!dexId) return;
+      
+      let formattedName = pair.dexId.charAt(0).toUpperCase() + pair.dexId.slice(1);
+      if (dexId === 'uniswap') formattedName = 'Uniswap';
+      else if (dexId === 'pancakeswap') formattedName = 'PancakeSwap';
+      else if (dexId === 'aerodrome') formattedName = 'Aerodrome';
+      else if (dexId === 'traderjoe') formattedName = 'TraderJoe';
+      else if (dexId === 'meteora') formattedName = 'Meteora';
+      else if (dexId === 'jupiter') formattedName = 'Jupiter';
+      else if (dexId === 'raydium') formattedName = 'Raydium';
+      else if (dexId === 'orca') formattedName = 'Orca';
+      else if (dexId === 'lifinity') formattedName = 'Lifinity';
+      else if (dexId === 'fluxbeam') formattedName = 'Fluxbeam';
+      else if (dexId === 'phoenix') formattedName = 'Phoenix';
+      else if (dexId === 'spookyswap') formattedName = 'SpookySwap';
+      else if (dexId === 'quickswap') formattedName = 'QuickSwap';
+      else if (dexId === 'sushiswap') formattedName = 'SushiSwap';
+      
+      if (!map.has(dexId)) {
+        map.set(dexId, {
+          dexId,
+          name: formattedName,
+          url: pair.url,
+          pairAddress: pair.pairAddress,
+          chainId: pair.chainId,
+          quoteSymbol: pair.quoteToken?.symbol || 'USDT',
+          liquidityUsd: pair.liquidity?.usd || 0,
+          volumeUsd: pair.volume?.h24 || 0,
+          priceUsd: pair.priceUsd || '0.00'
+        });
+      } else {
+        const existing = map.get(dexId);
+        if ((pair.liquidity?.usd || 0) > existing.liquidityUsd) {
+          map.set(dexId, {
+            ...existing,
+            url: pair.url,
+            pairAddress: pair.pairAddress,
+            quoteSymbol: pair.quoteToken?.symbol || existing.quoteSymbol,
+            liquidityUsd: pair.liquidity?.usd || 0,
+            volumeUsd: pair.volume?.h24 || 0,
+            priceUsd: pair.priceUsd || existing.priceUsd
+          });
+        }
+      }
+    });
+    
+    return Array.from(map.values()).sort((a, b) => b.liquidityUsd - a.liquidityUsd);
+  }, [exchangePairs]);
+
   // State-driven theme blending variables
   const containerClasses = isLight 
     ? "bg-white border border-slate-200 text-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.05)]"
@@ -2919,6 +3030,95 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
           <span className={`${isLight ? 'text-slate-400' : 'text-slate-505'} text-[7.5px] block uppercase truncate`}>Distinct wallets</span>
         </div>
 
+      </div>
+
+      {/* EXCHANGE LISTINGS SECTION */}
+      <div className={`p-3.5 rounded-xl border text-xs font-mono relative overflow-hidden ${
+        isLight ? 'bg-indigo-50/25 border-indigo-150 text-slate-800' : 'bg-[#04040e]/95 border-cyber-cyan/15 shadow-[inset_0_0_15px_rgba(0,229,255,0.03)] text-white'
+      }`}>
+        <div className="flex items-center justify-between pb-2 border-b border-cyber-border/20 mb-3">
+          <div className="flex items-center gap-1.5 uppercase font-bold tracking-wider">
+            <Icons.Layers className={`w-3.5 h-3.5 ${isLight ? 'text-indigo-650' : 'text-cyber-cyan'}`} />
+            <span>Exchange Listings / Market Venues</span>
+          </div>
+          {fetchingExchanges ? (
+            <span className="text-[9px] text-cyber-cyan flex items-center gap-1 animate-pulse">
+              <Icons.Loader2 className="w-3.5 h-3.5 animate-spin" /> Querying Pools...
+            </span>
+          ) : (
+            <span className="text-[8px] text-slate-500 uppercase">Consensus Sync Active</span>
+          )}
+        </div>
+
+        {uniqueExchanges.length === 0 ? (
+          <div className="flex items-center justify-center py-2">
+            <span className="text-sm font-black text-rose-455 tracking-widest uppercase">N/A</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+            {uniqueExchanges.map((ex) => {
+              let iconColor = 'text-cyber-cyan bg-cyber-cyan/10 border-cyber-cyan/20';
+              let IconComp = Icons.Coins;
+              
+              if (ex.dexId === 'uniswap') {
+                IconComp = Icons.Shuffle;
+                iconColor = 'text-pink-500 bg-pink-500/10 border-pink-500/20';
+              } else if (ex.dexId === 'pancakeswap') {
+                IconComp = Icons.Flame;
+                iconColor = 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+              } else if (ex.dexId === 'aerodrome') {
+                IconComp = Icons.Wind;
+                iconColor = 'text-indigo-400 bg-indigo-400/10 border-indigo-400/20';
+              } else if (ex.dexId === 'raydium') {
+                IconComp = Icons.Orbit;
+                iconColor = 'text-purple-400 bg-purple-400/10 border-purple-400/20';
+              } else if (ex.dexId === 'jupiter') {
+                IconComp = Icons.Zap;
+                iconColor = 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
+              } else if (ex.dexId === 'meteora') {
+                IconComp = Icons.Waves;
+                iconColor = 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20';
+              } else if (ex.dexId === 'orca') {
+                IconComp = Icons.Fish;
+                iconColor = 'text-[#00ffd2] bg-[#00ffd2]/10 border-[#00ffd2]/20';
+              } else if (ex.dexId === 'traderjoe') {
+                IconComp = Icons.Store;
+                iconColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+              } else if (ex.dexId === 'sushiswap') {
+                IconComp = Icons.Soup;
+                iconColor = 'text-red-400 bg-red-400/10 border-red-400/20';
+              }
+
+              return (
+                <a
+                  key={`ex-${ex.dexId}`}
+                  href={ex.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all hover:scale-[1.02] cursor-pointer group select-none ${
+                    isLight 
+                      ? 'bg-slate-50 hover:bg-slate-100 border-slate-205 text-slate-800 hover:border-indigo-300' 
+                      : 'bg-[#08081a]/40 hover:bg-[#11112b]/60 border-cyber-border/30 hover:border-cyber-cyan/35 text-white shadow-xs'
+                  }`}
+                  title={`Trade ${details.symbol}/${ex.quoteSymbol} on ${ex.name}`}
+                >
+                  <div className={`p-1 rounded-lg border flex items-center justify-center shrink-0 ${iconColor}`}>
+                    <IconComp className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="block text-[10px] font-bold leading-tight truncate group-hover:text-cyber-cyan transition-colors uppercase font-sans">
+                      {ex.name}
+                    </span>
+                    <span className="text-[7px] text-slate-405 block uppercase truncate tracking-wider leading-none mt-0.5 font-mono">
+                      {ex.quoteSymbol} Pool
+                    </span>
+                  </div>
+                  <Icons.ExternalLink className="w-2.5 h-2.5 text-slate-500 group-hover:text-cyber-cyan transition-colors opacity-60 group-hover:opacity-100 shrink-0" />
+                </a>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Grid Layout containing Interactive Graph and Rug pull indicators / Safety Score */}

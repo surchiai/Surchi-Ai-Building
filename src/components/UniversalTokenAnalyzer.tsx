@@ -43,6 +43,8 @@ export default function UniversalTokenAnalyzer({
 
   // Progressive Loading state
   const [currentStage, setCurrentStage] = useState<Stage>('network');
+  const [exchangePairs, setExchangePairs] = useState<any[]>(details.allPairs || []);
+  const [fetchingExchanges, setFetchingExchanges] = useState(false);
   const [loadedData, setLoadedData] = useState<Record<Stage, boolean>>({
     network: true,
     contract: false,
@@ -52,6 +54,42 @@ export default function UniversalTokenAnalyzer({
     ai: false,
     complete: false
   });
+
+  useEffect(() => {
+    if (!tokenAddress) return;
+    let active = true;
+    setFetchingExchanges(true);
+    
+    const fetchExchanges = async () => {
+      try {
+        let data: any = null;
+        try {
+          const res = await fetch(`/api/proxy/dexscreener?address=${encodeURIComponent(tokenAddress)}`);
+          if (res.ok) data = await res.json();
+        } catch (err) {
+          console.warn("Proxy exchange fetch failed, trying direct:", err);
+        }
+        
+        if (!data) {
+          const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
+          if (res.ok) data = await res.json();
+        }
+        
+        if (data && data.pairs && active) {
+          setExchangePairs(data.pairs);
+        }
+      } catch (err) {
+        console.error("Error fetching exchanges:", err);
+      } finally {
+        if (active) setFetchingExchanges(false);
+      }
+    };
+    
+    fetchExchanges();
+    return () => {
+      active = false;
+    };
+  }, [tokenAddress]);
 
   // Selected Tab State
   const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'holders' | 'ai' | 'tokenomics'>('overview');
@@ -283,6 +321,62 @@ export default function UniversalTokenAnalyzer({
   };
 
   const metrics = getSeededMetrics();
+
+  const uniqueExchanges = React.useMemo(() => {
+    if (!exchangePairs || exchangePairs.length === 0) return [];
+    
+    const map = new Map<string, any>();
+    
+    exchangePairs.forEach(pair => {
+      const dexId = (pair.dexId || '').toLowerCase();
+      if (!dexId) return;
+      
+      let formattedName = pair.dexId.charAt(0).toUpperCase() + pair.dexId.slice(1);
+      if (dexId === 'uniswap') formattedName = 'Uniswap';
+      else if (dexId === 'pancakeswap') formattedName = 'PancakeSwap';
+      else if (dexId === 'aerodrome') formattedName = 'Aerodrome';
+      else if (dexId === 'traderjoe') formattedName = 'TraderJoe';
+      else if (dexId === 'meteora') formattedName = 'Meteora';
+      else if (dexId === 'jupiter') formattedName = 'Jupiter';
+      else if (dexId === 'raydium') formattedName = 'Raydium';
+      else if (dexId === 'orca') formattedName = 'Orca';
+      else if (dexId === 'lifinity') formattedName = 'Lifinity';
+      else if (dexId === 'fluxbeam') formattedName = 'Fluxbeam';
+      else if (dexId === 'phoenix') formattedName = 'Phoenix';
+      else if (dexId === 'spookyswap') formattedName = 'SpookySwap';
+      else if (dexId === 'quickswap') formattedName = 'QuickSwap';
+      else if (dexId === 'sushiswap') formattedName = 'SushiSwap';
+      
+      if (!map.has(dexId)) {
+        map.set(dexId, {
+          dexId,
+          name: formattedName,
+          url: pair.url,
+          pairAddress: pair.pairAddress,
+          chainId: pair.chainId,
+          quoteSymbol: pair.quoteToken?.symbol || 'USDT',
+          liquidityUsd: pair.liquidity?.usd || 0,
+          volumeUsd: pair.volume?.h24 || 0,
+          priceUsd: pair.priceUsd || '0.00'
+        });
+      } else {
+        const existing = map.get(dexId);
+        if ((pair.liquidity?.usd || 0) > existing.liquidityUsd) {
+          map.set(dexId, {
+            ...existing,
+            url: pair.url,
+            pairAddress: pair.pairAddress,
+            quoteSymbol: pair.quoteToken?.symbol || existing.quoteSymbol,
+            liquidityUsd: pair.liquidity?.usd || 0,
+            volumeUsd: pair.volume?.h24 || 0,
+            priceUsd: pair.priceUsd || existing.priceUsd
+          });
+        }
+      }
+    });
+    
+    return Array.from(map.values()).sort((a, b) => b.liquidityUsd - a.liquidityUsd);
+  }, [exchangePairs]);
 
   // Interactive Recharts candlestick and line chart renderer datasets
   const getChartDataset = () => {
