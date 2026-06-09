@@ -749,6 +749,7 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
 
         const priceUsd = parseFloat(pair.priceUsd) || 0;
         const volume24h = parseFloat(pair.volume?.h24) || 0;
+        const priceChange1h = parseFloat(pair.priceChange?.h1) || 0;
         const priceChange24h = parseFloat(pair.priceChange?.h24) || 0;
         const liquidityUsd = parseFloat(pair.liquidity?.usd) || 0;
         const marketCap = parseFloat(pair.marketCap) || pair.fdv || null;
@@ -764,6 +765,23 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
         
         // Resolve best logo
         const logo = pair.info?.imageUrl || boostMap.get(addr)?.iconUrl || "";
+
+        // Format DEX name
+        const rawDex = pair.dexId || "";
+        let formattedDex = "Raydium";
+        if (rawDex) {
+          if (rawDex.toLowerCase() === "uniswap") formattedDex = "Uniswap";
+          else if (rawDex.toLowerCase() === "pancakeswap") formattedDex = "PancakeSwap";
+          else if (rawDex.toLowerCase() === "aerodrome") formattedDex = "Aerodrome";
+          else if (rawDex.toLowerCase() === "traderjoe") formattedDex = "TraderJoe";
+          else if (rawDex.toLowerCase() === "meteora") formattedDex = "Meteora";
+          else if (rawDex.toLowerCase() === "jupiter") formattedDex = "Jupiter";
+          else if (rawDex.toLowerCase() === "quickswap") formattedDex = "QuickSwap";
+          else if (rawDex.toLowerCase() === "velodrome") formattedDex = "Velodrome";
+          else {
+            formattedDex = rawDex.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+          }
+        }
 
         // Calculate logarithmic scales for volume, txns, and liquidity growth to produce robust trendingScore (0 to 100)
         const logVol = volume24h > 0 ? Math.log10(volume24h) : 0;
@@ -781,6 +799,7 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
           name,
           symbol,
           priceUsd,
+          priceChange1h,
           priceChange24h,
           volume24h,
           marketCap,
@@ -790,6 +809,7 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
           txns24h,
           chainId: pairChain,
           holdersCount: null, // DexScreener does not expose holder counts; rendered as Data Unavailable
+          dexId: formattedDex,
           createdAt: pair.pairCreatedAt ? new Date(pair.pairCreatedAt).toISOString() : new Date(Date.now() - (compiledTokensMap.size * 5 * 60000)).toISOString()
         };
 

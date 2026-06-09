@@ -5369,27 +5369,31 @@ export default function App() {
 
                       {/* Submit triggers */}
                       <div className="flex flex-col items-center justify-center gap-4 pt-2 w-full text-center">
-                        <button
-                          type="submit"
-                          disabled={loading || isFetchingTokenDetails}
-                          className={`px-8 py-3.5 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 ${
-                            themeMode === 'light'
-                              ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
-                              : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
-                          }`}
-                        >
-                          {loading || isFetchingTokenDetails ? (
-                            <>
-                              <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
-                              <span>{isFetchingTokenDetails ? "SYNCING CONTRACT POOL..." : statusMsg}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Icons.Radar className="w-4 h-4" />
-                              <span>{activeModule.buttonText}</span>
-                            </>
-                          )}
-                        </button>
+                        {activeModuleId !== 'token_analyzer' ? (
+                          <button
+                            type="submit"
+                            disabled={loading || isFetchingTokenDetails}
+                            className={`px-8 py-3.5 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 ${
+                              themeMode === 'light'
+                                ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
+                                : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
+                            }`}
+                          >
+                            {loading || isFetchingTokenDetails ? (
+                              <>
+                                <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
+                                <span>{isFetchingTokenDetails ? "SYNCING CONTRACT POOL..." : statusMsg}</span>
+                              </>
+                            ) : (
+                              <>
+                                <Icons.Radar className="w-4 h-4" />
+                                <span>{activeModule.buttonText}</span>
+                              </>
+                            )}
+                          </button>
+                        ) : (
+                          <button type="submit" className="hidden" />
+                        )}
                         {(loading || isFetchingTokenDetails) && (
                           <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 ${
                             themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
