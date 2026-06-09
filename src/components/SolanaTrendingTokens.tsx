@@ -278,145 +278,342 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
 
   // Helper: Direct public client-side search query (Secondary failover to circumvent any gateway blocks)
   const fetchDirectBackupFromDexScreener = async (chainTarget: string): Promise<TrendingToken[]> => {
-    let query = chainTarget;
-    if (chainTarget === "all") query = "solana";
+    const chain = (chainTarget || "all").toLowerCase();
     
-    // Perform browser direct CORS request with cache busting
-    const searchRes = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}&_t=${Date.now()}`, {
-      cache: 'no-store'
-    } as any);
-    if (!searchRes.ok) {
-      throw new Error(`Direct backup search endpoint returned status code ${searchRes.status}`);
-    }
-    const data = await searchRes.json();
-    if (data && Array.isArray(data.pairs)) {
-      const tokensList: TrendingToken[] = [];
-      const seenAddresses = new Set<string>();
+    // Set up a helper utility to classify native currencies, stablecoins, or common wrappers to keep charts premium and clean.
+    const isCommonWrapOrStable = (addrStr: string, symStr: string, nameStr: string): boolean => {
+      const lowerAddr = (addrStr || "").trim().toLowerCase();
+      const upperSym = (symStr || "").trim().toUpperCase();
+      const lowerName = (nameStr || "").trim().toLowerCase();
+
+      // Check explicit common addresses across multiple platforms
+      if (
+        lowerAddr === "so11111111111111111111111111111111111111112" || // native SOL
+        lowerAddr === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
+        lowerAddr === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
+        lowerAddr === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC on Solana
+        lowerAddr === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT on Solana
+        lowerAddr === "11111111111111111111111111111111" || // generic native placeholder
+        lowerAddr === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" || // Sol wrap
+        lowerAddr === "0xdac17f958d2ee523a2206206994597c13d831ec7" || // USDT on Ethereum
+        lowerAddr === "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" // USDC on Ethereum
+      ) {
+        return true;
+      }
+
+      // Check common symbols of wrappers/stables
+      const commonSymbols = [
+        "SOL", "WSOL", "SOLANA",
+        "ETH", "WETH", "ETHER", "ETHEREUM",
+        "BNB", "WBNB",
+        "USDC", "USDT", "DAI", "BUSD", "USDE", "USDS", "PYUSD", "FDUSD",
+        "BTC", "WBTC", "BTCB",
+        "MATIC", "WMATIC", "POL",
+        "AVAX", "WAVAX",
+        "SUI", "WSUI",
+        "TRX", "WTRX",
+        "APT", "WAPT",
+        "FTM", "WFTM",
+        "OP", "ARB"
+      ];
+      if (commonSymbols.includes(upperSym)) {
+        return true;
+      }
+
+      // Check key text markers in names
+      if (
+        lowerName.includes("wrapped sol") ||
+        lowerName.includes("wrapped eth") ||
+        lowerName.includes("wrapped ether") ||
+        lowerName.includes("wrapped bnb") ||
+        lowerName.includes("wrapped native") ||
+        lowerName.includes("wrapped bitcoin") ||
+        lowerName.includes("wrapped matic") ||
+        lowerName.includes("wrapped avax") ||
+        lowerName.includes("usd coin") ||
+        lowerName.includes("tether usd") ||
+        lowerName.includes("multi-collateral dai") ||
+        lowerName.includes("paypal usd") ||
+        lowerName.includes("first digital usd") ||
+        lowerName.includes("binance-pegged")
+      ) {
+        return true;
+      }
+
+      if (lowerName === "solana" || lowerName === "ethereum" || lowerName === "bitcoin") {
+        return true;
+      }
+
+      return false;
+    };
+
+    // 1. Gather potential trending token addresses from multiple live sources (Top & Latest Boosts)
+    const activeAddresses = new Set<string>();
+    const addressToChainMap = new Map<string, string>();
+    const boostMap = new Map<string, { totalAmount: number; iconUrl?: string }>();
+
+    try {
+      const boostUrls = [
+        "https://api.dexscreener.com/token-boosts/top/v1",
+        "https://api.dexscreener.com/token-boosts/latest/v1"
+      ];
       
-      // Set up a helper utility to classify native currencies, stablecoins, or common wrappers to keep charts premium and clean.
-      const isCommonWrapOrStable = (addrStr: string, symStr: string, nameStr: string): boolean => {
-        const lowerAddr = (addrStr || "").trim().toLowerCase();
-        const upperSym = (symStr || "").trim().toUpperCase();
-        const lowerName = (nameStr || "").trim().toLowerCase();
+      const responses = await Promise.allSettled(
+        boostUrls.map(url => fetch(url).then(r => r.ok ? r.json() : []))
+      );
 
-        // Check explicit common addresses across multiple platforms
-        if (
-          lowerAddr === "so11111111111111111111111111111111111111112" || // native SOL
-          lowerAddr === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
-          lowerAddr === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
-          lowerAddr === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC on Solana
-          lowerAddr === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT on Solana
-          lowerAddr === "11111111111111111111111111111111" || // generic native placeholder
-          lowerAddr === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" || // Sol wrap
-          lowerAddr === "0xdac17f958d2ee523a2206206994597c13d831ec7" || // USDT on Ethereum
-          lowerAddr === "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" // USDC on Ethereum
-        ) {
-          return true;
+      responses.forEach((result) => {
+        if (result.status === "fulfilled" && Array.isArray(result.value)) {
+          result.value.forEach((item: any) => {
+            const itemChain = (item.chainId || "").toLowerCase();
+            const addr = item.tokenAddress ? item.tokenAddress.trim() : "";
+            
+            if (addr && addr.length >= 20 && itemChain) {
+              // If we are looking for a specific chain, only process that chain
+              if (chain !== "all" && itemChain !== chain) return;
+              
+              activeAddresses.add(addr);
+              addressToChainMap.set(addr, itemChain);
+              
+              const currentBoost = boostMap.get(addr)?.totalAmount || 0;
+              boostMap.set(addr, {
+                totalAmount: currentBoost + (item.totalAmount || 0),
+                iconUrl: item.icon ? `https://cdn.dexscreener.com/cms/images/${item.icon}` : item.openGraph || undefined
+              });
+            }
+          });
         }
+      });
+    } catch (boostError) {
+      console.warn("Failed to fetch DexScreener token boosts browser-side:", boostError);
+    }
 
-        // Check common symbols of wrappers/stables
-        const commonSymbols = [
-          "SOL", "WSOL", "SOLANA",
-          "ETH", "WETH", "ETHER", "ETHEREUM",
-          "BNB", "WBNB",
-          "USDC", "USDT", "DAI", "BUSD", "USDE", "USDS", "PYUSD", "FDUSD",
-          "BTC", "WBTC", "BTCB",
-          "MATIC", "WMATIC", "POL",
-          "AVAX", "WAVAX",
-          "SUI", "WSUI",
-          "TRX", "WTRX",
-          "APT", "WAPT",
-          "FTM", "WFTM",
-          "OP", "ARB"
-        ];
-        if (commonSymbols.includes(upperSym)) {
-          return true;
+    // 2. Fetch search pairs to supplement the pool if we have under 60 unique addresses
+    const searchTerms: Record<string, string> = {
+      solana: "solana",
+      ethereum: "ethereum",
+      bsc: "bsc",
+      base: "base",
+      arbitrum: "arbitrum",
+      polygon: "polygon",
+      avalanche: "avalanche",
+      optimism: "optimism",
+      sui: "sui",
+      tron: "tron"
+    };
+
+    const chainsToSearch = chain === "all" ? ["solana", "ethereum", "base", "bsc"] : [chain];
+    
+    if (activeAddresses.size < 60) {
+      const searchPromises = chainsToSearch.map(async (c) => {
+        const term = searchTerms[c];
+        if (!term) return [];
+        try {
+          const searchRes = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${term}&_t=${Date.now()}`);
+          if (searchRes.ok) {
+            const searchJson = await searchRes.json();
+            return searchJson && Array.isArray(searchJson.pairs) ? searchJson.pairs : [];
+          }
+        } catch (err) {
+          console.warn(`Browser-side search fallback failed for chain ${c}:`, err);
         }
+        return [];
+      });
 
-        // Check key text markers in names
-        if (
-          lowerName.includes("wrapped sol") ||
-          lowerName.includes("wrapped eth") ||
-          lowerName.includes("wrapped ether") ||
-          lowerName.includes("wrapped bnb") ||
-          lowerName.includes("wrapped native") ||
-          lowerName.includes("wrapped bitcoin") ||
-          lowerName.includes("wrapped matic") ||
-          lowerName.includes("wrapped avax") ||
-          lowerName.includes("usd coin") ||
-          lowerName.includes("tether usd") ||
-          lowerName.includes("multi-collateral dai") ||
-          lowerName.includes("paypal usd") ||
-          lowerName.includes("first digital usd") ||
-          lowerName.includes("binance-pegged")
-        ) {
-          return true;
+      const searchResults = await Promise.allSettled(searchPromises);
+      const searchPairs: any[] = [];
+      searchResults.forEach((result) => {
+        if (result.status === "fulfilled") {
+          searchPairs.push(...result.value);
         }
+      });
 
-        if (lowerName === "solana" || lowerName === "ethereum" || lowerName === "bitcoin") {
-          return true;
-        }
-
-        return false;
-      };
-
-      data.pairs.forEach((pair: any, idx: number) => {
+      // Extract address candidates from search results
+      searchPairs.forEach((pair: any) => {
         if (!pair.baseToken || !pair.baseToken.address) return;
-        
-        const baseAddr = (pair.baseToken.address || "").trim().toLowerCase();
+        const baseAddr = pair.baseToken.address.trim();
         const baseSym = (pair.baseToken.symbol || "").trim();
         const baseName = (pair.baseToken.name || "").trim();
+        
+        const quoteAddr = pair.quoteToken?.address ? pair.quoteToken.address.trim() : "";
+        const quoteSym = pair.quoteToken?.symbol ? pair.quoteToken.symbol.trim() : "";
+        const quoteName = pair.quoteToken?.name ? pair.quoteToken.name.trim() : "";
 
-        const quoteAddr = pair.quoteToken?.address ? (pair.quoteToken.address || "").trim().toLowerCase() : "";
-        const quoteSym = pair.quoteToken?.symbol ? (pair.quoteToken.symbol || "").trim() : "";
-        const quoteName = pair.quoteToken?.name ? (pair.quoteToken.name || "").trim() : "";
-
-        // Skip entirely if both sides represent wrappers or stablecoins
-        if (isCommonWrapOrStable(baseAddr, baseSym, baseName) && isCommonWrapOrStable(quoteAddr, quoteSym, quoteName)) {
+        const pairChain = (pair.chainId || "").toLowerCase();
+        
+        // If base token is a common wrap/stable asset, look at the quote token instead
+        if (isCommonWrapOrStable(baseAddr, baseSym, baseName)) {
+          if (quoteAddr && !isCommonWrapOrStable(quoteAddr, quoteSym, quoteName)) {
+            if (chain === "all" || pairChain === chain) {
+              activeAddresses.add(quoteAddr);
+              if (!addressToChainMap.has(quoteAddr)) {
+                addressToChainMap.set(quoteAddr, pairChain);
+              }
+            }
+          }
           return;
         }
 
-        // Smart selection of our actual target custom/meme token from the pair
-        let targetToken = pair.baseToken;
-        if (isCommonWrapOrStable(baseAddr, baseSym, baseName)) {
-          targetToken = pair.quoteToken || pair.baseToken;
+        if (chain === "all" || pairChain === chain) {
+          activeAddresses.add(baseAddr);
+          if (!addressToChainMap.has(baseAddr)) {
+            addressToChainMap.set(baseAddr, pairChain);
+          }
         }
-
-        const addr = (targetToken.mint || targetToken.address || "").trim();
-        if (!addr || seenAddresses.has(addr)) return;
-        seenAddresses.add(addr);
-        
-        const itemChain = (pair.chainId || "").toLowerCase();
-        if (chainTarget !== "all" && itemChain !== chainTarget) return;
-
-        // Safely extract attributes, supporting standard mint, symbol, name, and logoURI aliases
-        const name = targetToken.name || "Unknown Token";
-        const symbol = (targetToken.symbol || "TOKEN").toUpperCase();
-        
-        // Resolve best logo, checking info imageUrl/image and fallback properties
-        const logo = pair.info?.imageUrl || pair.info?.image || targetToken.logoURI || targetToken.logo || "";
-
-        tokensList.push({
-          address: addr,
-          name,
-          symbol,
-          priceUsd: parseFloat(pair.priceUsd || "0"),
-          priceChange1h: parseFloat(pair.priceChange?.h1 || "0"),
-          priceChange24h: parseFloat(pair.priceChange?.h24 || "0"),
-          volume24h: parseFloat(pair.volume?.h24 || "0"),
-          marketCap: pair.marketCap ? parseFloat(pair.marketCap) : (pair.fdv ? parseFloat(pair.fdv) : null),
-          liquidityUsd: parseFloat(pair.liquidity?.usd || "0"),
-          logo,
-          trendingScore: Math.min(100, Math.max(10, Math.round(98 - idx * 2))),
-          chainId: itemChain,
-          holdersCount: null,
-          dexId: pair.dexId,
-          createdAt: new Date(Date.now() - (idx * 15 * 60000)).toISOString()
-        });
       });
-      return tokensList;
     }
-    return [];
+
+    // Convert Set to array and slice up to max 120
+    const addressesToQuery = Array.from(activeAddresses).slice(0, 120);
+
+    let finalTokens: TrendingToken[] = [];
+    const compiledTokensMap = new Map<string, TrendingToken>();
+
+    if (addressesToQuery.length > 0) {
+      // 3. Batch fetch details in parallel chunks of 30 (due to DexScreener API limit)
+      const chunkSize = 30;
+      const addressChunks: string[][] = [];
+      for (let i = 0; i < addressesToQuery.length; i += chunkSize) {
+        addressChunks.push(addressesToQuery.slice(i, i + chunkSize));
+      }
+
+      const chunkPromises = addressChunks.map(async (chunk) => {
+        try {
+          const tokensDetailsUrl = `https://api.dexscreener.com/latest/dex/tokens/${chunk.join(",")}`;
+          const detailsRes = await fetch(tokensDetailsUrl);
+          if (!detailsRes.ok) return [];
+          const data = await detailsRes.json();
+          return data && Array.isArray(data.pairs) ? data.pairs : [];
+        } catch (err) {
+          return [];
+        }
+      });
+
+      const chunkResults = await Promise.allSettled(chunkPromises);
+      const allPairs: any[] = [];
+      chunkResults.forEach((res) => {
+        if (res.status === "fulfilled" && Array.isArray(res.value)) {
+          allPairs.push(...res.value);
+        }
+      });
+
+      if (allPairs.length > 0) {
+        allPairs.forEach((pair: any) => {
+          if (!pair.baseToken || !pair.baseToken.address) return;
+          
+          const baseAddr = (pair.baseToken.address || "").trim().toLowerCase();
+          const baseSym = (pair.baseToken.symbol || "").trim();
+          const baseName = (pair.baseToken.name || "").trim();
+
+          const quoteAddr = pair.quoteToken?.address ? (pair.quoteToken.address || "").trim().toLowerCase() : "";
+          const quoteSym = pair.quoteToken?.symbol ? (pair.quoteToken.symbol || "").trim() : "";
+          const quoteName = pair.quoteToken?.name ? (pair.quoteToken.name || "").trim() : "";
+          
+          if (isCommonWrapOrStable(baseAddr, baseSym, baseName) && isCommonWrapOrStable(quoteAddr, quoteSym, quoteName)) {
+            return;
+          }
+
+          let targetToken = pair.baseToken;
+          if (isCommonWrapOrStable(baseAddr, baseSym, baseName)) {
+            targetToken = pair.quoteToken || pair.baseToken;
+          }
+
+          const addr = (targetToken.mint || targetToken.address || "").trim();
+          if (!addr) return;
+
+          const pairChain = (pair.chainId || "").toLowerCase();
+          if (chain !== "all" && pairChain !== chain) return;
+
+          const priceUsd = parseFloat(pair.priceUsd) || 0;
+          const volume24h = parseFloat(pair.volume?.h24) || 0;
+          const priceChange1h = parseFloat(pair.priceChange?.h1) || 0;
+          const priceChange24h = parseFloat(pair.priceChange?.h24) || 0;
+          const liquidityUsd = parseFloat(pair.liquidity?.usd) || 0;
+          const marketCap = parseFloat(pair.marketCap) || pair.fdv || null;
+          
+          const buys24h = parseInt(pair.txns?.h24?.buys) || 0;
+          const sells24h = parseInt(pair.txns?.h24?.sells) || 0;
+          const txns24h = buys24h + sells24h;
+
+          const name = targetToken.name || "Unknown Token";
+          const symbol = (targetToken.symbol || "TOKEN").toUpperCase();
+          
+          const logo = pair.info?.imageUrl || pair.info?.image || targetToken.logoURI || targetToken.logo || boostMap.get(addr)?.iconUrl || "";
+
+          // Format DEX name
+          const rawDex = pair.dexId || "";
+          let formattedDex = "Raydium";
+          if (rawDex) {
+            if (rawDex.toLowerCase() === "uniswap") formattedDex = "Uniswap";
+            else if (rawDex.toLowerCase() === "pancakeswap") formattedDex = "PancakeSwap";
+            else if (rawDex.toLowerCase() === "aerodrome") formattedDex = "Aerodrome";
+            else if (rawDex.toLowerCase() === "traderjoe") formattedDex = "TraderJoe";
+            else if (rawDex.toLowerCase() === "meteora") formattedDex = "Meteora";
+            else if (rawDex.toLowerCase() === "jupiter") formattedDex = "Jupiter";
+            else if (rawDex.toLowerCase() === "quickswap") formattedDex = "QuickSwap";
+            else if (rawDex.toLowerCase() === "velodrome") formattedDex = "Velodrome";
+            else {
+              formattedDex = rawDex.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            }
+          }
+
+          const logVol = volume24h > 0 ? Math.log10(volume24h) : 0;
+          const logLiq = liquidityUsd > 0 ? Math.log10(liquidityUsd) : 0;
+          const logTx = txns24h > 0 ? Math.log10(txns24h) : 0;
+          const boostVal = boostMap.get(addr)?.totalAmount || 0;
+          const priceChangeAbs = Math.abs(priceChange24h);
+          const changeFactor = Math.min(20, priceChangeAbs / 5);
+
+          const rawScore = (logVol * 12) + (logTx * 10) + (logLiq * 5) + changeFactor + (boostVal * 0.05);
+          const trendingScore = Math.min(100, Math.max(1, Math.round(rawScore)));
+
+          const customTokenRecord: TrendingToken = {
+            address: addr,
+            name,
+            symbol,
+            priceUsd,
+            priceChange1h,
+            priceChange24h,
+            volume24h,
+            marketCap,
+            liquidityUsd,
+            logo,
+            trendingScore,
+            chainId: pairChain,
+            holdersCount: null,
+            dexId: formattedDex,
+            createdAt: pair.pairCreatedAt ? new Date(pair.pairCreatedAt).toISOString() : new Date(Date.now() - (compiledTokensMap.size * 5 * 60000)).toISOString()
+          };
+
+          const existingRecord = compiledTokensMap.get(addr);
+          if (!existingRecord || existingRecord.volume24h < volume24h) {
+            compiledTokensMap.set(addr, customTokenRecord);
+          }
+        });
+      }
+    }
+
+    finalTokens = Array.from(compiledTokensMap.values());
+
+    // Backfill if needed
+    if (finalTokens.length < 100) {
+      const fallbackList = generateClientFallbackTokens(chain);
+      for (const fItem of fallbackList) {
+        if (finalTokens.length >= 100) break;
+        const isDuplicate = finalTokens.some(
+          t => t.address.toLowerCase() === fItem.address.toLowerCase() ||
+               t.symbol.toUpperCase() === fItem.symbol.toUpperCase()
+        );
+        if (!isDuplicate) {
+          finalTokens.push({
+            ...fItem,
+            chainId: fItem.chainId || chain
+          });
+        }
+      }
+    }
+
+    return finalTokens.slice(0, 100);
   };
 
   // Memoized dynamic lists using selected sorting criteria & Search keyword filters
@@ -490,6 +687,12 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
         } else {
           throw new Error(`Market scanner API returned status code ${response.status}`);
         }
+      }
+
+      // Check Content-Type to prevent parsing HTML on environments like Vercel
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Market scanner API returned non-JSON response (Likely static hosting fallback redirect).");
       }
 
       const data = await response.json();
