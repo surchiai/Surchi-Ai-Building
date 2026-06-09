@@ -615,13 +615,19 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
       const addr = pair.baseToken.address.trim();
       const pairChain = (pair.chainId || "").toLowerCase();
       
-      // Filter out duplicate master native wrapped pairs to prevent polluting trending charts
+      const lowerAddr = addr.toLowerCase();
+      // Filter out duplicate master native wrapped pairs and stablecoins to prevent polluting trending charts
       const isNativeWrap = 
-        addr === "So11111111111111111111111111111111111111112" || // SOL
-        addr === "C02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" || // WETH
-        addr === "bb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" || // WBNB
-        addr === "4k3DyjzvN882b5W3YmGTo942i6ypBwHXxsR745P9gP" || // SUI or other wrap
-        addr === "11111111111111111111111111111111"; // placeholder
+        lowerAddr === "so11111111111111111111111111111111111111112" || // SOL
+        lowerAddr === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
+        lowerAddr === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
+        lowerAddr === "4k3dyjzvn882b5ymgto942i6ypbwhxsr745p9gp" || // SUI or other wrap
+        lowerAddr === "11111111111111111111111111111111" || // placeholder
+        lowerAddr === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC on Solana
+        lowerAddr === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT on Solana
+        lowerAddr === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" || // Sol wrap
+        lowerAddr === "0xdac17f958d2ee523a2206206994597c13d831ec7" || // USDT on Ethereum
+        lowerAddr === "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"; // USDC on Ethereum
       
       if (isNativeWrap) return;
 
@@ -684,21 +690,27 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
         const quoteAddr = (pair.quoteToken?.address || "").trim().toLowerCase();
         
         const isCommonWrap = (c: string) => {
+          const norm = (c || "").trim().toLowerCase();
           return (
-            c === "so11111111111111111111111111111111111111112" || // native SOL
-            c === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
-            c === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
-            c === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC
-            c === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT
-            c === "11111111111111111111111111111111" || // generic native placeholder
-            c === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" || // raydium wrapped SOL
-            c.includes("addressfake")
+            norm === "so11111111111111111111111111111111111111112" || // native SOL
+            norm === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
+            norm === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
+            norm === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC on Solana
+            norm === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT on Solana
+            norm === "11111111111111111111111111111111" || // generic native placeholder
+            norm === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" || // raydium wrapped SOL
+            norm === "0xdac17f958d2ee523a2206206994597c13d831ec7" || // USDT on Ethereum
+            norm === "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" || // USDC on Ethereum
+            norm.includes("addressfake")
           );
         };
 
-        if (activeAddresses.has(quoteAddr) && !activeAddresses.has(baseAddr)) {
-          targetToken = pair.quoteToken;
-        } else if (isCommonWrap(baseAddr) && !isCommonWrap(quoteAddr)) {
+        // If both are common wrap/stable assets, skip the pair entirely to avoid polluting trending charts with parent coins
+        if (isCommonWrap(baseAddr) && isCommonWrap(quoteAddr)) {
+          return;
+        }
+
+        if (isCommonWrap(baseAddr)) {
           targetToken = pair.quoteToken || pair.baseToken;
         }
 
@@ -726,7 +738,7 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
         const symbol = (targetToken.symbol || "TOKEN").toUpperCase();
         
         // Resolve best logo, checking local icon, fallback logoURI, info image url and boostMap
-        const logo = pair.info?.imageUrl || targetToken.logoURI || targetToken.logo || boostMap.get(addr)?.iconUrl || "";
+        const logo = pair.info?.imageUrl || pair.info?.image || targetToken.logoURI || targetToken.logo || boostMap.get(addr)?.iconUrl || "";
 
         // Format DEX name
         const rawDex = pair.dexId || "";

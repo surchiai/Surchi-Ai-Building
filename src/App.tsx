@@ -4121,7 +4121,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070710] text-[#e2e8f0] font-sans flex relative overflow-x-hidden">
+    <div className={`min-h-screen ${themeMode === 'light' ? 'bg-white text-slate-900' : 'bg-black text-[#e2e8f0]'} font-sans flex relative overflow-x-hidden`}>
       
       {/* Dynamic Theme Color Style Injections */}
       <style>{`

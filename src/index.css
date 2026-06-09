@@ -7,21 +7,21 @@
 
 /* Base definitions for Dark Mode (Defaults) */
 :root, html, html.dark {
-  --color-cyber-bg: #070710;
-  --color-cyber-card: rgba(13, 13, 30, 0.75);
-  --color-cyber-card-light: rgba(22, 22, 48, 0.65);
-  --color-cyber-border: rgba(30, 30, 63, 0.5);
+  --color-cyber-bg: #000000;
+  --color-cyber-card: #000000;
+  --color-cyber-card-light: #000000;
+  --color-cyber-border: rgba(60, 60, 100, 0.25);
   --color-cyber-neon: #00ff88;     /* Neon Green */
   --color-cyber-purple: #7c3aed;   /* Electric purple */
   --color-cyber-cyan: #00e5ff;     /* Laser Cyan */
   --color-cyber-text: #e2e8f0;     /* slate-200 */
   --color-cyber-text-muted: #94a3b8; /* slate-400 */
   
-  --color-cyber-pure-bg: #070710;
-  --color-cyber-pure-card: #0d0d22;
-  --color-cyber-pure-header: rgba(11, 11, 30, 0.85);
-  --color-cyber-pure-modal: #0b0b1a;
-  --color-cyber-pure-inner: #050512;
+  --color-cyber-pure-bg: #000000;
+  --color-cyber-pure-card: #000000;
+  --color-cyber-pure-header: #000000;
+  --color-cyber-pure-modal: #000000;
+  --color-cyber-pure-inner: #000000;
   
   --matrix-opacity: 0.2;
   --glass-blur: blur(12px) saturate(180%);

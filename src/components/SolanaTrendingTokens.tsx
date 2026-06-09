@@ -303,19 +303,27 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
         const quoteAddr = (pair.quoteToken?.address || "").trim().toLowerCase();
         
         const isCommonWrap = (c: string) => {
+          const norm = (c || "").trim().toLowerCase();
           return (
-            c === "so11111111111111111111111111111111111111112" || // native SOL
-            c === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
-            c === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
-            c === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC
-            c === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT
-            c === "11111111111111111111111111111111" ||
-            c === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" ||
-            c.includes("addressfake")
+            norm === "so11111111111111111111111111111111111111112" || // native SOL
+            norm === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
+            norm === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
+            norm === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC on Solana
+            norm === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT on Solana
+            norm === "11111111111111111111111111111111" || // place holder
+            norm === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" || // raydium Sol wrap
+            norm === "0xdac17f958d2ee523a2206206994597c13d831ec7" || // USDT on Ethereum
+            norm === "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" || // USDC on Ethereum
+            norm.includes("addressfake")
           );
         };
 
-        if (isCommonWrap(baseAddr) && !isCommonWrap(quoteAddr)) {
+        // If both are common wrap/stable assets, skip the pair entirely to avoid polluting trending charts with parent coins
+        if (isCommonWrap(baseAddr) && isCommonWrap(quoteAddr)) {
+          return;
+        }
+
+        if (isCommonWrap(baseAddr)) {
           targetToken = pair.quoteToken || pair.baseToken;
         }
 
@@ -330,8 +338,8 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
         const name = targetToken.name || "Unknown Token";
         const symbol = (targetToken.symbol || "TOKEN").toUpperCase();
         
-        // Resolve best logo
-        const logo = pair.info?.imageUrl || targetToken.logoURI || targetToken.logo || "";
+        // Resolve best logo, checking info imageUrl/image and fallback properties
+        const logo = pair.info?.imageUrl || pair.info?.image || targetToken.logoURI || targetToken.logo || "";
 
         tokensList.push({
           address: addr,
