@@ -34,6 +34,16 @@ const PORT = 3000;
 
 app.use(express.json());
 
+// Global Request Logger Middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    console.log(`[SURCHI REQUEST LOG] ${req.method} ${req.originalUrl} - STATUS: ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
+
 // Lazy-loaded Gemini initialization
 let aiClient: GoogleGenAI | null = null;
 
