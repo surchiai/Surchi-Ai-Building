@@ -271,68 +271,9 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       }
     });
 
-    // 2. Pad up to EXACTLY 100 tokens
-    let paddingIndex = 0;
-    while (results.length < 100) {
-      const itemChain = norm === "all" ? getChainForIdx(paddingIndex) : norm;
-      const nameSeed1 = NAMES_POOL[(paddingIndex + minSeed) % NAMES_POOL.length];
-      const nameSeed2 = SUFFIX_POOL[(paddingIndex + minSeed * 7) % SUFFIX_POOL.length];
-      const pName = `${nameSeed1} ${nameSeed2}`;
-      const pSymbol = (nameSeed1.substring(0, 3) + nameSeed2.substring(0, 2)).toUpperCase() + (paddingIndex % 10 + 1);
-      
-      const address = itemChain === "solana" 
-        ? `${pSymbol}fakeAddress${paddingIndex}SolanaPlatform` 
-        : `0x${pSymbol.toLowerCase()}f${paddingIndex}e51a9437b7fc8da908cc35e`;
-
-      const baseP = 0.0001 * ((paddingIndex * 77 + minSeed) % 10000 + 1);
-      const volume24h = Math.round(15000 + ((paddingIndex * 9271 + minSeed) % 1800000));
-      const liquidityUsd = Math.round(10000 + ((paddingIndex * 3824 + minSeed) % 900000));
-      const marketCap = Math.round(volume24h * 4 + ((paddingIndex * 1827 + minSeed) % 5000000));
-      const priceChange1h = parseFloat(((Math.cos(paddingIndex + minSeed) * 12)).toFixed(2));
-      const priceChange24h = parseFloat(((Math.cos(paddingIndex * 2 + minSeed) * 60)).toFixed(2));
-      const holdersCount = Math.round(120 + ((paddingIndex * 412 + minSeed) % 18500));
-
-      const logVol = volume24h > 0 ? Math.log10(volume24h) : 0;
-      const logTx = (volume24h * 0.004) > 0 ? Math.log10(volume24h * 0.004) : 0;
-      const logLiq = liquidityUsd > 0 ? Math.log10(liquidityUsd) : 0;
-      const logHld = holdersCount > 0 ? Math.log10(holdersCount) : 0;
-      const momentumVal = Math.abs(priceChange24h) * 0.4 + Math.abs(priceChange1h) * 1.5;
-
-      const volW = Math.min(100, Math.max(1, (logVol / 8) * 100));
-      const txW = Math.min(100, Math.max(1, (logTx / 5) * 100));
-      const liqW = Math.min(100, Math.max(1, (logLiq / 7) * 100));
-      const hldW = Math.min(100, Math.max(1, (logHld / 6) * 100));
-      const momW = Math.min(100, Math.max(1, (momentumVal / 40) * 100));
-
-      const trendingScore = Math.min(98, Math.max(10, Math.round(
-        (volW * 0.30) + (txW * 0.20) + (liqW * 0.15) + (hldW * 0.1) + (momW * 0.25)
-      )));
-
-      const chainDexes = DEX_POOL[itemChain] || ["Uniswap V3"];
-      const dex = chainDexes[(paddingIndex + minSeed) % chainDexes.length];
-
-      results.push({
-        address,
-        name: pName,
-        symbol: pSymbol,
-        priceUsd: parseFloat(baseP.toFixed(baseP < 0.01 ? 8 : 4)),
-        priceChange1h,
-        priceChange24h,
-        volume24h,
-        marketCap,
-        liquidityUsd,
-        logo: "",
-        chainId: itemChain,
-        holdersCount,
-        dexId: dex,
-        trendingScore,
-        createdAt: new Date(Date.now() - (paddingIndex * 5 * 3600000)).toISOString()
-      });
-
-      paddingIndex++;
-    }
-
-    return results.sort((a,b) => b.trendingScore - a.trendingScore || b.volume24h - a.volume24h).slice(0, 100);
+    // No random procedural padding is performed.
+    // We only return highly accurate, authentic, real top coins.
+    return results.sort((a,b) => b.trendingScore - a.trendingScore || b.volume24h - a.volume24h);
   };
 
   // Helper: Direct public client-side search query (Secondary failover to circumvent any gateway blocks)
@@ -901,11 +842,101 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
 
       {/* Core table ledger displaying rank, logo, symbol, blockchain, price, 1h change, 24h change, 24h volume, Cap, Liquidity, Holders, Custom Gauge, and Scan trigger */}
       {loading ? (
-        <div className="py-24 flex flex-col items-center justify-center space-y-3">
-          <div className="w-8 h-8 border-2 border-cyber-cyan border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest animate-pulse">
-            Querying Live Decentralized Pools...
-          </span>
+        <div className="overflow-x-auto w-full rounded-lg border border-cyber-border/10 relative">
+          <table className="w-full text-left border-collapse min-w-[1200px]">
+            <thead>
+              <tr className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 ${
+                isLight ? 'text-slate-500 bg-slate-50' : 'text-slate-400 bg-[#060613]/80'
+              }`}>
+                <th className="py-3 px-3 text-center w-12">Rank</th>
+                <th className="py-3 px-3">Token Info</th>
+                <th className="py-3 px-2">Contract Address</th>
+                <th className="py-3 px-3">Blockchain</th>
+                <th className="py-3 px-3">DEX</th>
+                <th className="py-3 px-3 text-right">Price (USD)</th>
+                <th className="py-3 px-3 text-right">1H Change</th>
+                <th className="py-3 px-3 text-right">24H Change</th>
+                <th className="py-3 px-3 text-right">24H Volume</th>
+                <th className="py-3 px-3 text-right">Market Cap</th>
+                <th className="py-3 px-3 text-right">Liquidity</th>
+                <th className="py-3 px-3 text-right">Holders</th>
+                <th className="py-3 px-3 text-center w-28">Score</th>
+                <th className="py-3 px-3 text-center w-14">Scan</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-cyber-border/10">
+              {Array.from({ length: 12 }).map((_, idx) => (
+                <tr
+                  key={`skeleton-row-${idx}`}
+                  className={`${isLight ? 'bg-white' : 'bg-[#04040a]/80'} text-[11.5px] font-mono border-b border-cyber-border/5`}
+                >
+                  {/* Rank */}
+                  <td className="py-4 px-3 text-center">
+                    <div className="h-4 w-6 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* Token Info */}
+                  <td className="py-4 px-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-slate-350 dark:bg-cyber-border/25 animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                      <div className="flex flex-col gap-1.5">
+                        <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                        <div className="h-3 w-20 bg-slate-350 dark:bg-cyber-border/20 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                      </div>
+                    </div>
+                  </td>
+                  {/* Contract Address */}
+                  <td className="py-4 px-2">
+                    <div className="h-3.5 w-18 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* Blockchain badge */}
+                  <td className="py-4 px-3">
+                    <div className="h-6 w-24 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* DEX Badge */}
+                  <td className="py-4 px-3">
+                    <div className="h-5 w-16 bg-slate-350 dark:bg-cyber-border/25  rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* Price */}
+                  <td className="py-4 px-3 text-right">
+                    <div className="h-4 w-16 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* 1H Change */}
+                  <td className="py-4 px-3 text-right">
+                    <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* 24H Change */}
+                  <td className="py-4 px-3 text-right">
+                    <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* 24H Volume */}
+                  <td className="py-4 px-3 text-right">
+                    <div className="h-4 w-20 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* Market Cap */}
+                  <td className="py-4 px-3 text-right">
+                    <div className="h-4 w-24 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* Liquidity */}
+                  <td className="py-4 px-3 text-right">
+                    <div className="h-4 w-20 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* Holders */}
+                  <td className="py-4 px-3 text-right">
+                    <div className="h-4 w-14 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                  {/* Score */}
+                  <td className="py-4 px-3 text-center">
+                    <div className="h-1.5 w-16 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse mb-1" />
+                    <div className="h-2 w-8 bg-slate-350 dark:bg-cyber-border/20 rounded mx-auto animate-pulse" />
+                  </td>
+                  {/* Scan */}
+                  <td className="py-4 px-3 text-center">
+                    <div className="h-7 w-7 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : error ? (
         <div className="py-16 text-center text-xs font-mono max-w-md mx-auto">

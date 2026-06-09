@@ -504,73 +504,9 @@ function getFallbackTrending(chain: string): any[] {
     }
   });
 
-  // 2. Pad up to exactly 100 tokens with realistic generated indices
-  let paddingIndex = 0;
-  while (results.length < 100) {
-    const itemChain = norm === "all" ? getChainForIdx(paddingIndex) : norm;
-    const nameSeed1 = NAMES_POOL[(paddingIndex + minSeed) % NAMES_POOL.length];
-    const nameSeed2 = SUFFIX_POOL[(paddingIndex + minSeed * 7) % SUFFIX_POOL.length];
-    const pName = `${nameSeed1} ${nameSeed2}`;
-    const pSymbol = (nameSeed1.substring(0, 3) + nameSeed2.substring(0, 2)).toUpperCase() + (paddingIndex % 10 + 1);
-    
-    // Address format
-    const address = itemChain === "solana" 
-      ? `${pSymbol}fakeAddress${paddingIndex}SolanaPlatform` 
-      : `0x${pSymbol.toLowerCase()}f${paddingIndex}e51a9437b7fc8da908cc30fa`;
-
-    // Numeric indicators
-    const baseP = 0.0001 * ((paddingIndex * 77 + minSeed) % 10000 + 1);
-    const volume24h = Math.round(15000 + ((paddingIndex * 9271 + minSeed) % 1800000));
-    const liquidityUsd = Math.round(10000 + ((paddingIndex * 3824 + minSeed) % 900000));
-    const marketCap = Math.round(volume24h * 4 + ((paddingIndex * 1827 + minSeed) % 5000000));
-    const priceChange1h = parseFloat(((Math.cos(paddingIndex + minSeed) * 12)).toFixed(2));
-    const priceChange24h = parseFloat(((Math.cos(paddingIndex * 2 + minSeed) * 60)).toFixed(2));
-    const holdersCount = Math.round(120 + ((paddingIndex * 412 + minSeed) % 18500));
-
-    // Calculate Trending Score precisely using the algorithm weights
-    const logVol = volume24h > 0 ? Math.log10(volume24h) : 0;
-    const logTx = (volume24h * 0.004) > 0 ? Math.log10(volume24h * 0.004) : 0;
-    const logLiq = liquidityUsd > 0 ? Math.log10(liquidityUsd) : 0;
-    const logHld = holdersCount > 0 ? Math.log10(holdersCount) : 0;
-    const momentumVal = Math.abs(priceChange24h) * 0.4 + Math.abs(priceChange1h) * 1.5;
-
-    const volW = Math.min(100, Math.max(1, (logVol / 8) * 100));
-    const txW = Math.min(100, Math.max(1, (logTx / 5) * 100));
-    const liqW = Math.min(100, Math.max(1, (logLiq / 7) * 100));
-    const hldW = Math.min(100, Math.max(1, (logHld / 6) * 100));
-    const momW = Math.min(100, Math.max(1, (momentumVal / 40) * 100));
-
-    const trendingScore = Math.min(98, Math.max(10, Math.round(
-      (volW * 0.30) + (txW * 0.20) + (liqW * 0.15) + (hldW * 0.1) + (momW * 0.25)
-    )));
-
-    // Select dex
-    const chainDexes = DEX_POOL[itemChain] || ["Uniswap V3"];
-    const dex = chainDexes[(paddingIndex + minSeed) % chainDexes.length];
-
-    results.push({
-      address,
-      name: pName,
-      symbol: pSymbol,
-      priceUsd: parseFloat(baseP.toFixed(baseP < 0.01 ? 8 : 4)),
-      priceChange1h,
-      priceChange24h,
-      volume24h,
-      marketCap,
-      liquidityUsd,
-      logo: "", // Layout fallback handles nicely
-      chainId: itemChain,
-      holdersCount,
-      dexId: dex,
-      trendingScore,
-      createdAt: new Date(Date.now() - (paddingIndex * 5 * 3600000)).toISOString()
-    });
-
-    paddingIndex++;
-  }
-
-  // Sorted by Trending Score descending
-  return results.sort((a,b) => b.trendingScore - a.trendingScore || b.volume24h - a.volume24h).slice(0, 100);
+  // No random procedural padding is performed. 
+  // We only return highly accurate, authentic, real top coins.
+  return results.sort((a,b) => b.trendingScore - a.trendingScore || b.volume24h - a.volume24h);
 }
 
 app.get("/api/proxy/dexscreener/trending", async (req, res) => {
