@@ -434,11 +434,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       </div>
 
       {/* Subtitle & State Badges Sub-header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2.5 text-left">
-        <span className="text-[9px] text-slate-500 font-mono font-bold uppercase tracking-wider leading-none">
-          Enterprise-Grade Market Screener
-        </span>
-
+      <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-1.5 mb-2.5 text-left">
         {/* Compact Horizontal Status Badges */}
         <div className="flex flex-wrap items-center gap-1.5 select-none shrink-0">
           <div className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${isLight ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-cyber-card-light/50 border-cyber-border/20 text-slate-400'}`}>
