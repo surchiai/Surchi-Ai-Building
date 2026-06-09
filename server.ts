@@ -609,32 +609,104 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
       }
     });
 
-    // Extract address candidates from search results
-    searchPairs.forEach((pair: any) => {
-      if (!pair.baseToken || !pair.baseToken.address) return;
-      const addr = pair.baseToken.address.trim();
-      const pairChain = (pair.chainId || "").toLowerCase();
-      
-      const lowerAddr = addr.toLowerCase();
-      // Filter out duplicate master native wrapped pairs and stablecoins to prevent polluting trending charts
-      const isNativeWrap = 
-        lowerAddr === "so11111111111111111111111111111111111111112" || // SOL
+    // Set up a helper utility to classify native currencies, stablecoins, or common wrappers to keep charts premium and clean.
+    const isCommonWrapOrStable = (addrStr: string, symStr: string, nameStr: string): boolean => {
+      const lowerAddr = (addrStr || "").trim().toLowerCase();
+      const upperSym = (symStr || "").trim().toUpperCase();
+      const lowerName = (nameStr || "").trim().toLowerCase();
+
+      // Check explicit common addresses across multiple platforms
+      if (
+        lowerAddr === "so11111111111111111111111111111111111111112" || // native SOL
         lowerAddr === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
         lowerAddr === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
-        lowerAddr === "4k3dyjzvn882b5ymgto942i6ypbwhxsr745p9gp" || // SUI or other wrap
-        lowerAddr === "11111111111111111111111111111111" || // placeholder
         lowerAddr === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC on Solana
         lowerAddr === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT on Solana
+        lowerAddr === "11111111111111111111111111111111" || // generic native placeholder
         lowerAddr === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" || // Sol wrap
         lowerAddr === "0xdac17f958d2ee523a2206206994597c13d831ec7" || // USDT on Ethereum
-        lowerAddr === "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"; // USDC on Ethereum
-      
-      if (isNativeWrap) return;
+        lowerAddr === "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" // USDC on Ethereum
+      ) {
+        return true;
+      }
 
+      // Check common symbols of wrappers/stables
+      const commonSymbols = [
+        "SOL", "WSOL", "SOLANA",
+        "ETH", "WETH", "ETHER", "ETHEREUM",
+        "BNB", "WBNB",
+        "USDC", "USDT", "DAI", "BUSD", "USDE", "USDS", "PYUSD", "FDUSD",
+        "BTC", "WBTC", "BTCB",
+        "MATIC", "WMATIC", "POL",
+        "AVAX", "WAVAX",
+        "SUI", "WSUI",
+        "TRX", "WTRX",
+        "APT", "WAPT",
+        "FTM", "WFTM",
+        "OP", "ARB"
+      ];
+      if (commonSymbols.includes(upperSym)) {
+        return true;
+      }
+
+      // Check key text markers in names
+      if (
+        lowerName.includes("wrapped sol") ||
+        lowerName.includes("wrapped eth") ||
+        lowerName.includes("wrapped ether") ||
+        lowerName.includes("wrapped bnb") ||
+        lowerName.includes("wrapped native") ||
+        lowerName.includes("wrapped bitcoin") ||
+        lowerName.includes("wrapped matic") ||
+        lowerName.includes("wrapped avax") ||
+        lowerName.includes("usd coin") ||
+        lowerName.includes("tether usd") ||
+        lowerName.includes("multi-collateral dai") ||
+        lowerName.includes("paypal usd") ||
+        lowerName.includes("first digital usd") ||
+        lowerName.includes("binance-pegged")
+      ) {
+        return true;
+      }
+
+      if (lowerName === "solana" || lowerName === "ethereum" || lowerName === "bitcoin") {
+        return true;
+      }
+
+      return false;
+    };
+
+    // Extract address candidates from search results, targeting the custom/meme side of each pool
+    searchPairs.forEach((pair: any) => {
+      if (!pair.baseToken || !pair.baseToken.address) return;
+      const baseAddr = pair.baseToken.address.trim();
+      const baseSym = (pair.baseToken.symbol || "").trim();
+      const baseName = (pair.baseToken.name || "").trim();
+      
+      const quoteAddr = pair.quoteToken?.address ? pair.quoteToken.address.trim() : "";
+      const quoteSym = pair.quoteToken?.symbol ? pair.quoteToken.symbol.trim() : "";
+      const quoteName = pair.quoteToken?.name ? pair.quoteToken.name.trim() : "";
+
+      const pairChain = (pair.chainId || "").toLowerCase();
+      
+      // If base token is a common wrap/stable asset, look at the quote token instead
+      if (isCommonWrapOrStable(baseAddr, baseSym, baseName)) {
+        if (quoteAddr && !isCommonWrapOrStable(quoteAddr, quoteSym, quoteName)) {
+          if (chain === "all" || pairChain === chain) {
+            activeAddresses.add(quoteAddr);
+            if (!addressToChainMap.has(quoteAddr)) {
+              addressToChainMap.set(quoteAddr, pairChain);
+            }
+          }
+        }
+        return;
+      }
+
+      // Base is not a common wrap, check quote as well. If both are custom, prioritize base or check if quote is stable/wrap
       if (chain === "all" || pairChain === chain) {
-        activeAddresses.add(addr);
-        if (!addressToChainMap.has(addr)) {
-          addressToChainMap.set(addr, pairChain);
+        activeAddresses.add(baseAddr);
+        if (!addressToChainMap.has(baseAddr)) {
+          addressToChainMap.set(baseAddr, pairChain);
         }
       }
     });
@@ -683,34 +755,22 @@ app.get("/api/proxy/dexscreener/trending", async (req, res) => {
       allPairs.forEach((pair: any) => {
         if (!pair.baseToken || !pair.baseToken.address) return;
         
-        // Smart targeting of token of interest. We avoid accidentally selecting the common wrapper pair (like SOL, WETH etc.)
-        // and instead extract our actual target token custom/meme asset.
-        let targetToken = pair.baseToken;
         const baseAddr = (pair.baseToken.address || "").trim().toLowerCase();
-        const quoteAddr = (pair.quoteToken?.address || "").trim().toLowerCase();
-        
-        const isCommonWrap = (c: string) => {
-          const norm = (c || "").trim().toLowerCase();
-          return (
-            norm === "so11111111111111111111111111111111111111112" || // native SOL
-            norm === "c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" || // WETH
-            norm === "bb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c" || // WBNB
-            norm === "epjfwdd5aufqssqem2qn1xzybapc8g4wegkzwgtd1v" || // USDC on Solana
-            norm === "es9vmfrzacermjfrf4h2fyd4kconky11mcce8benwynyb" || // USDT on Solana
-            norm === "11111111111111111111111111111111" || // generic native placeholder
-            norm === "hznd32vxvxcnsw6byg3aa2i8f972bpxk6scwndvynmws" || // raydium wrapped SOL
-            norm === "0xdac17f958d2ee523a2206206994597c13d831ec7" || // USDT on Ethereum
-            norm === "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" || // USDC on Ethereum
-            norm.includes("addressfake")
-          );
-        };
+        const baseSym = (pair.baseToken.symbol || "").trim();
+        const baseName = (pair.baseToken.name || "").trim();
 
-        // If both are common wrap/stable assets, skip the pair entirely to avoid polluting trending charts with parent coins
-        if (isCommonWrap(baseAddr) && isCommonWrap(quoteAddr)) {
+        const quoteAddr = pair.quoteToken?.address ? (pair.quoteToken.address || "").trim().toLowerCase() : "";
+        const quoteSym = pair.quoteToken?.symbol ? (pair.quoteToken.symbol || "").trim() : "";
+        const quoteName = pair.quoteToken?.name ? (pair.quoteToken.name || "").trim() : "";
+        
+        // Skip entirely if both sides of the pool represent wrappers or stablecoins
+        if (isCommonWrapOrStable(baseAddr, baseSym, baseName) && isCommonWrapOrStable(quoteAddr, quoteSym, quoteName)) {
           return;
         }
 
-        if (isCommonWrap(baseAddr)) {
+        // Smart selection of our actual target custom/meme token from the pair
+        let targetToken = pair.baseToken;
+        if (isCommonWrapOrStable(baseAddr, baseSym, baseName)) {
           targetToken = pair.quoteToken || pair.baseToken;
         }
 
