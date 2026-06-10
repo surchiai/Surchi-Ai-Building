@@ -171,8 +171,8 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
   return (
     <div 
       onClick={onPriceClick}
-      className={`w-full max-w-[360px] mx-auto rounded-[18px] border select-none transition-all duration-300 relative group overflow-hidden ${
-        onPriceClick ? 'cursor-pointer hover:shadow-lg hover:scale-[1.002] active:scale-[0.998]' : ''
+      className={`w-full max-w-[380px] sm:max-w-lg md:max-w-2xl mx-auto rounded-[20px] border select-none transition-all duration-300 relative group overflow-hidden ${
+        onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-[1.002] active:scale-[0.998]' : ''
       } ${
         themeMode === 'light'
           ? 'bg-white border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.015)]'
@@ -186,25 +186,25 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             e.stopPropagation();
             if (onPriceClick) onPriceClick();
           }}
-          className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
+          className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all ${
             themeMode === 'light'
               ? 'bg-slate-50 border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-100'
               : 'bg-purple-500/5 border-purple-500/10 text-slate-400 hover:text-white hover:bg-purple-500/15'
           }`}
           title="Open Ecosystem Terminal"
         >
-          <Icons.MoreVertical className="w-3.5 h-3.5" />
+          <Icons.MoreVertical className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="p-4 space-y-3.5">
+      <div className="p-4 sm:p-5 space-y-4">
         
         {/* HEADER BLOCK - Highly compact & closely arranged */}
-        <div className="flex items-center justify-between gap-2 pr-5">
+        <div className="flex items-center justify-between gap-2 pr-6">
           
           {/* Real Surchi Logo & Identity info */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-lg overflow-hidden border border-purple-500/15 shadow-[0_2px_8px_rgba(139,92,246,0.15)] shrink-0 bg-black">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl overflow-hidden border border-purple-500/15 shadow-[0_2px_8px_rgba(139,92,246,0.15)] shrink-0 bg-black">
               <img
                 src="https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg"
                 alt="SURCHI Logo"
@@ -214,38 +214,38 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             </div>
             
             <div className="flex flex-col text-left justify-center min-w-0">
-              <div className="flex items-center gap-1">
-                <h3 className={`text-sm font-black tracking-tight leading-none uppercase truncate ${
+              <div className="flex items-center gap-1.5">
+                <h3 className={`text-sm sm:text-base font-black tracking-tight leading-none uppercase truncate ${
                   themeMode === 'light' ? 'text-slate-900' : 'text-white'
                 }`}>
                   SURCHI
                 </h3>
-                <Icons.CheckCircle2 className="w-3 h-3 text-indigo-500 shrink-0" />
+                <Icons.CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
               </div>
-              <p className="text-[10px] font-mono font-bold text-slate-400 leading-none mt-1">
+              <p className="text-[10px] sm:text-xs font-mono font-bold text-slate-400 leading-none mt-1">
                 $SURCHI
               </p>
             </div>
           </div>
 
           {/* Price status right: compact, balanced and matching height of the logo block */}
-          <div className="h-10 flex flex-col justify-between items-end text-right">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+          <div className="h-11 flex flex-col justify-between items-end text-right">
+            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
               Price
             </span>
-            <div className={`text-lg font-black tracking-tight font-sans leading-none ${
+            <div className={`text-lg sm:text-xl font-black tracking-tight font-sans leading-none ${
               themeMode === 'light' ? 'text-slate-900' : 'text-white'
             }`}>
               $0.000
             </div>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/15 text-[8px] font-extrabold tracking-wider text-[#8b5cf6] dark:text-purple-400 uppercase leading-none">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/15 text-[8px] sm:text-[9px] font-extrabold tracking-wider text-[#8b5cf6] dark:text-purple-400 uppercase leading-none">
               PRE-LAUNCH
             </span>
           </div>
         </div>
 
         {/* METRICS THREE-COL GRID - Ultra Compact and highly structured */}
-        <div className={`p-2.5 rounded-lg border ${
+        <div className={`p-3 rounded-xl border ${
           themeMode === 'light'
             ? 'bg-slate-50/40 border-slate-100 text-slate-800'
             : 'bg-[#030408] border-[#8b5cf6]/5 text-white'
@@ -254,10 +254,10 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             
             {/* Market Cap */}
             <div className="flex flex-col items-center justify-center text-center px-1">
-              <span className="text-[8px] font-medium text-slate-400 tracking-wide uppercase leading-none">
+              <span className="text-[8px] sm:text-[10px] font-medium text-slate-400 tracking-wide uppercase leading-none">
                 Mkt Cap
               </span>
-              <strong className={`text-[11px] font-extrabold font-sans mt-1 leading-none ${
+              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-1 leading-none ${
                 themeMode === 'light' ? 'text-slate-900' : 'text-white'
               }`}>
                 $0.000
@@ -266,10 +266,10 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             
             {/* 24H Volume */}
             <div className="flex flex-col items-center justify-center text-center px-1">
-              <span className="text-[8px] font-medium text-slate-400 tracking-wide uppercase leading-none">
+              <span className="text-[8px] sm:text-[10px] font-medium text-slate-400 tracking-wide uppercase leading-none">
                 24H Vol
               </span>
-              <strong className={`text-[11px] font-extrabold font-sans mt-1 leading-none ${
+              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-1 leading-none ${
                 themeMode === 'light' ? 'text-slate-900' : 'text-white'
               }`}>
                 $0.000
@@ -278,10 +278,10 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
 
             {/* Liquidity */}
             <div className="flex flex-col items-center justify-center text-center px-1">
-              <span className="text-[8px] font-medium text-slate-400 tracking-wide uppercase leading-none">
+              <span className="text-[8px] sm:text-[10px] font-medium text-slate-400 tracking-wide uppercase leading-none">
                 Liquidity
               </span>
-              <strong className={`text-[11px] font-extrabold font-sans mt-1 leading-none ${
+              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-1 leading-none ${
                 themeMode === 'light' ? 'text-slate-900' : 'text-white'
               }`}>
                 $0.000
