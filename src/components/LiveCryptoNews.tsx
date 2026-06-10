@@ -381,8 +381,9 @@ export default function LiveCryptoNews({ themeMode }: { themeMode?: 'dark' | 'li
     try {
       const url = `/api/crypto-news?category=${catId}&search=${encodeURIComponent(searchVal)}&page=${pageNum}`;
       const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`Proxy interface returned code: ${res.status}`);
+      const contentType = res.headers.get("content-type") || "";
+      if (!res.ok || !contentType.includes("application/json")) {
+        throw new Error(`Proxy interface offline or non-JSON (html/routing) returned`);
       }
       const data = await res.json();
       if (data.success && Array.isArray(data.posts)) {

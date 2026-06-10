@@ -324,8 +324,10 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
         const term = searchTerms[c];
         if (!term) return [];
         try {
-          const searchRes = await fetch(`/api/proxy/dexscreener/search?q=${term}`);
-          if (searchRes.ok) {
+          // Fetch directly from public DexScreener API bypassing the local proxy
+          const searchRes = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${term}`);
+          const contentType = searchRes.headers.get("content-type") || "";
+          if (searchRes.ok && contentType.includes("application/json")) {
             const searchJson = await searchRes.json();
             return searchJson && Array.isArray(searchJson.pairs) ? searchJson.pairs : [];
           }
@@ -394,11 +396,15 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
 
       const chunkPromises = addressChunks.map(async (chunk) => {
         try {
-          const tokensDetailsUrl = `/api/proxy/dexscreener?address=${chunk.join(",")}`;
+          // Fetch directly from public DexScreener tokens API
+          const tokensDetailsUrl = `https://api.dexscreener.com/latest/dex/tokens/${chunk.join(",")}`;
           const detailsRes = await fetch(tokensDetailsUrl);
-          if (!detailsRes.ok) return [];
-          const data = await detailsRes.json();
-          return data && Array.isArray(data.pairs) ? data.pairs : [];
+          const contentType = detailsRes.headers.get("content-type") || "";
+          if (detailsRes.ok && contentType.includes("application/json")) {
+            const data = await detailsRes.json();
+            return data && Array.isArray(data.pairs) ? data.pairs : [];
+          }
+          return [];
         } catch (err) {
           return [];
         }

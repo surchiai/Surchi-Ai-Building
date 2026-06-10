@@ -44,12 +44,24 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
     }
 
     try {
-      // Search DexScreener for SURCHI tokens via cached backend proxy
-      const response = await fetch('/api/proxy/dexscreener/search?q=SURCHI');
-      if (!response.ok) {
-        throw new Error('Network response got interrupted');
+      // Search DexScreener for SURCHI tokens via cached backend proxy, fallback to direct public endpoint on static hosting
+      let response;
+      let data;
+      try {
+        response = await fetch('/api/proxy/dexscreener/search?q=SURCHI');
+        const contentType = response?.headers.get("content-type") || "";
+        if (!response.ok || !contentType.includes("application/json")) {
+          throw new Error('Not a valid json response (proxy offline/redirected)');
+        }
+        data = await response.json();
+      } catch (err) {
+        console.info('SurchiTokenMetrics backend proxy offline, falling back directly to public DexScreener API:', err);
+        response = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI');
+        if (!response.ok) {
+          throw new Error('Direct query returned error');
+        }
+        data = await response.json();
       }
-      const data = await response.json();
 
       if (data && data.pairs && data.pairs.length > 0) {
         const surchiPairs = data.pairs.filter((p: any) => {

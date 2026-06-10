@@ -65,7 +65,12 @@ export default function UniversalTokenAnalyzer({
         let data: any = null;
         try {
           const res = await fetch(`/api/proxy/dexscreener?address=${encodeURIComponent(tokenAddress)}`);
-          if (res.ok) data = await res.json();
+          const contentType = res.headers.get("content-type") || "";
+          if (res.ok && contentType.includes("application/json")) {
+            data = await res.json();
+          } else {
+            throw new Error("Local proxy returned offline or invalid JSON");
+          }
         } catch (err) {
           console.warn("Proxy exchange fetch failed, trying direct:", err);
         }
