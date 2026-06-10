@@ -981,6 +981,95 @@ export default function UniversalTokenAnalyzer({
                 </div>
               </div>
 
+              {/* EXCHANGE LISTINGS SECTION */}
+              <div className={`p-3.5 rounded-xl border text-xs font-mono relative overflow-hidden ${
+                themeMode === 'light' ? 'bg-indigo-50/25 border-indigo-150 text-slate-800' : 'bg-[#04040e]/95 border-cyber-cyan/15 shadow-[inset_0_0_15px_rgba(0,229,255,0.03)] text-white'
+              }`}>
+                <div className="flex items-center justify-between pb-2 border-b border-cyber-border/20 mb-3">
+                  <div className="flex items-center gap-1.5 uppercase font-bold tracking-wider">
+                    <Icons.Layers className={`w-3.5 h-3.5 ${themeMode === 'light' ? 'text-indigo-650' : 'text-cyber-cyan'}`} />
+                    <span>Exchange Listings & Liquidity Venues</span>
+                  </div>
+                  {fetchingExchanges ? (
+                    <span className="text-[9px] text-cyber-cyan flex items-center gap-1 animate-pulse">
+                      <Icons.Loader2 className="w-3.5 h-3.5 animate-spin" /> Querying Pools...
+                    </span>
+                  ) : (
+                    <span className="text-[8px] text-slate-500 uppercase">On-chain consensus active</span>
+                  )}
+                </div>
+
+                {uniqueExchanges.length === 0 ? (
+                  <div className="flex items-center justify-center py-2">
+                    <span className="text-sm font-black text-rose-455 tracking-widest uppercase">N/A</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+                    {uniqueExchanges.map((ex) => {
+                      let iconColor = 'text-cyber-cyan bg-cyber-cyan/10 border-cyber-cyan/20';
+                      let IconComp = Icons.Coins;
+                      
+                      if (ex.dexId === 'uniswap') {
+                        IconComp = Icons.Shuffle;
+                        iconColor = 'text-pink-500 bg-pink-500/10 border-pink-500/20';
+                      } else if (ex.dexId === 'pancakeswap') {
+                        IconComp = Icons.Flame;
+                        iconColor = 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+                      } else if (ex.dexId === 'aerodrome') {
+                        IconComp = Icons.Wind;
+                        iconColor = 'text-indigo-400 bg-indigo-400/10 border-indigo-400/20';
+                      } else if (ex.dexId === 'raydium') {
+                        IconComp = Icons.Orbit;
+                        iconColor = 'text-purple-400 bg-purple-400/10 border-purple-400/20';
+                      } else if (ex.dexId === 'jupiter') {
+                        IconComp = Icons.Zap;
+                        iconColor = 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
+                      } else if (ex.dexId === 'meteora') {
+                        IconComp = Icons.Waves;
+                        iconColor = 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20';
+                      } else if (ex.dexId === 'orca') {
+                        IconComp = Icons.Fish;
+                        iconColor = 'text-[#00ffd2] bg-[#00ffd2]/10 border-[#00ffd2]/20';
+                      } else if (ex.dexId === 'traderjoe') {
+                        IconComp = Icons.Store;
+                        iconColor = 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                      } else if (ex.dexId === 'sushiswap') {
+                        IconComp = Icons.Soup;
+                        iconColor = 'text-red-400 bg-red-400/10 border-red-400/20';
+                      }
+
+                      return (
+                        <a
+                          key={`ex-${ex.dexId}`}
+                          href={ex.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all hover:scale-[1.02] cursor-pointer group select-none ${
+                            themeMode === 'light' 
+                              ? 'bg-slate-50 hover:bg-slate-100 border-slate-205 text-slate-800' 
+                              : 'bg-[#08081a]/40 hover:bg-[#11112b]/60 border-cyber-border/30 hover:border-cyber-cyan/35 text-white shadow-xs'
+                          }`}
+                          title={`Trade ${tokenSymbol}/${ex.quoteSymbol} on ${ex.name}`}
+                        >
+                          <div className={`p-1 rounded-lg border flex items-center justify-center shrink-0 ${iconColor}`}>
+                            <IconComp className="w-3.5 h-3.5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="block text-[10px] font-bold leading-tight truncate group-hover:text-cyber-cyan transition-colors uppercase font-sans">
+                              {ex.name}
+                            </span>
+                            <span className="text-[7px] text-slate-405 block uppercase truncate tracking-wider leading-none mt-0.5 font-mono">
+                              {ex.quoteSymbol} Pool
+                            </span>
+                          </div>
+                          <Icons.ExternalLink className="w-2.5 h-2.5 text-slate-500 group-hover:text-cyber-cyan transition-colors opacity-60 group-hover:opacity-100 shrink-0" />
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               {/* SUPPLY STATUS METEOROLOGY SECTION */}
               <div className="bg-[#03030d] border border-cyber-border/30 rounded-xl p-4 space-y-4">
                 <div className="flex items-center gap-2">

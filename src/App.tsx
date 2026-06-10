@@ -2340,7 +2340,7 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
     const pollInterval = setInterval(async () => {
       if (document.visibilityState !== 'visible') return;
       try {
-        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${originalDetails.address}`);
+        const res = await fetch(`/api/proxy/dexscreener?address=${encodeURIComponent(originalDetails.address)}`);
         if (!res.ok) return;
         const data = await res.json();
         if (data && data.pairs && data.pairs.length > 0 && active) {
@@ -3668,19 +3668,12 @@ export default function App() {
     localStorage.setItem('surchi_theme_accent', themeAccent);
   }, [themeAccent]);
 
-  const [themeMode, setThemeMode] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('surchi_theme_mode') as 'dark' | 'light') || 'dark';
-  });
+  const [themeMode, setThemeMode] = useState<'dark' | 'light'>('light');
 
   useEffect(() => {
-    localStorage.setItem('surchi_theme_mode', themeMode);
-    if (themeMode === 'light') {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    } else {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-    }
+    localStorage.setItem('surchi_theme_mode', 'light');
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
   }, [themeMode]);
 
 
@@ -3723,7 +3716,7 @@ export default function App() {
   const [showAnalyzeGuide, setShowAnalyzeGuide] = useState(false);
 
   // Splash Screen State
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   
   // SURCHI Legal Compliance Gateway States
   const [termsAccepted, setTermsAccepted] = useState<boolean>(() => {
@@ -4358,7 +4351,9 @@ export default function App() {
       `}</style>
       
       {/* Absolute Hex Matrix Grid Line Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e1e3f_1px,transparent_1px),linear-gradient(to_bottom,#1e1e3f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_60%,transparent_100%)] pointer-events-none z-0 opacity-20"></div>
+      {themeMode !== 'light' && (
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e1e3f_1px,transparent_1px),linear-gradient(to_bottom,#1e1e3f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_60%,transparent_100%)] pointer-events-none z-0 opacity-20"></div>
+      )}
 
       {/* BACKGROUND APP CONTENT LOCK WRAPPER */}
       <div className={`flex-grow flex flex-col min-h-screen relative z-10 transition-all duration-500 w-full ${
@@ -5038,7 +5033,7 @@ export default function App() {
         </header>
 
         {/* WORKSPACE MAIN BODY AREA */}
-        <div className="px-4 py-6 sm:p-6 md:p-10 max-w-4xl w-full mx-auto flex-1 space-y-8 animate-fade-in">
+        <div className={`px-4 py-4 sm:py-5 ${activeModuleId === 'token_analyzer' && !activeCustomPage ? 'max-w-2xl sm:px-6' : 'max-w-4xl sm:px-6 md:px-8'} w-full mx-auto flex-1 space-y-6 md:space-y-8 animate-fade-in`}>
           
           {!activeCustomPage && isTokenAnalyzed && analyzedDetails ? (
             <div className="space-y-4 text-left animate-fade-in">
@@ -5413,24 +5408,6 @@ export default function App() {
                 </div>
               ) : (
                 <div className="space-y-4 animate-fade-in select-text">
-                  {isHomePage && (
-                    <SurchiTokenMetrics 
-                      themeMode={themeMode}
-                      onPriceClick={() => {
-                        setActiveCustomPage('surchi_live');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      onMetricsFetched={(metrics) => {
-                        setSurchiMetrics({
-                          priceUsd: metrics.priceUsd,
-                          marketCap: metrics.marketCap,
-                          volume24h: metrics.volume24h,
-                          isListed: metrics.isListed,
-                        });
-                      }}
-                    />
-                  )}
-
                   {/* Header Title Accent */}
                   <div className="space-y-2">
                     <h2 className={`text-2xl md:text-3xl font-bold tracking-tight font-display flex items-center gap-3 flex-wrap ${
@@ -5463,7 +5440,7 @@ export default function App() {
                   </div>
 
                   {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
-                  <section className={`rounded-xl border p-4 sm:p-6 shadow-2xl relative overflow-hidden ${
+                  <section className={`rounded-xl border ${activeModuleId === 'token_analyzer' ? 'p-3.5 sm:p-4.5' : 'p-4 sm:p-6'} shadow-2xl relative overflow-hidden ${
                     themeMode === 'light'
                       ? 'bg-white border-slate-200 shadow-slate-200/55'
                       : 'bg-[#0b0b1a] border-cyber-border/80 shadow-2xl'
@@ -5473,12 +5450,13 @@ export default function App() {
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
                     ) : (
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-transparent pointer-events-none rounded-bl-full"></div>
-                    )}
+                    )
+                    }
                     
-                    <form onSubmit={handleRunAnalysis} className="space-y-5">
-                      <div className="grid grid-cols-1 gap-5">
+                    <form onSubmit={handleRunAnalysis} className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4">
                         {activeModule.inputs.map(input => (
-                          <div key={input.key} className="space-y-2 text-left">
+                          <div key={input.key} className="space-y-1.5 text-left">
                             <label className={`block text-xs font-bold uppercase tracking-wider font-mono ${
                               themeMode === 'light' ? 'text-slate-700' : 'text-slate-300'
                             }`}>
@@ -5493,7 +5471,7 @@ export default function App() {
                                   value={formInputs[input.key] || ''}
                                   onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
                                   placeholder={input.placeholder}
-                                  className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all ${
+                                  className={`w-full border rounded-lg ${activeModuleId === 'token_analyzer' ? 'px-3.5 py-2' : 'px-4 py-3'} text-xs font-mono transition-all ${
                                     themeMode === 'light'
                                       ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
                                       : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
@@ -5633,6 +5611,25 @@ export default function App() {
                         </div>
                       )}
                     </div>
+                  )}
+
+                  {isHomePage && (
+                    <SurchiTokenMetrics 
+                      themeMode={themeMode}
+                      onPriceClick={() => {
+                        setActiveCustomPage('surchi_live');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      onMetricsFetched={(metrics) => {
+                        setSurchiMetrics({
+                          priceUsd: metrics.priceUsd,
+                          marketCap: metrics.marketCap,
+                          volume24h: metrics.volume24h,
+                          isListed: metrics.isListed,
+                        });
+                      }}
+                      hideSocials={true}
+                    />
                   )}
                 </div>
               )}
@@ -5915,15 +5912,15 @@ export default function App() {
               <div className="flex justify-center items-center gap-4 pt-2">
                 <button
                   onClick={() => setShowSurchiIntroModal(true)}
-                  className={`inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-xs sm:text-sm font-mono font-black tracking-widest uppercase hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none border ${
+                  className={`inline-flex items-center gap-1.5 px-4.5 py-2 rounded-lg text-[10px] sm:text-xs font-mono font-black tracking-widest uppercase hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none border ${
                     themeMode === 'light'
                       ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7] border-purple-200 shadow-sm shadow-purple-100/40'
                       : 'text-[#a855f7] hover:text-[#c084fc] bg-[#120721] hover:bg-[#1e0a36] border border-[#a855f7]/45 hover:border-[#c084fc] shadow-[0_0_18px_rgba(168,85,247,0.15)] hover:shadow-[0_0_25px_rgba(168,85,247,0.35)]'
                   }`}
                 >
-                  <Icons.Cpu className={`w-4.5 h-4.5 shrink-0 animate-pulse ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
+                  <Icons.Cpu className={`w-3.5 h-3.5 shrink-0 animate-pulse ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
                   <span>WHAT IS SURCHI?</span>
-                  <Icons.ChevronRight className={`w-4.5 h-4.5 shrink-0 ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
+                  <Icons.ChevronRight className={`w-3.5 h-3.5 shrink-0 ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
                 </button>
               </div>
 
@@ -6351,32 +6348,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-      {/* Floating Accent Theme Switcher */}
-      <button
-        onClick={() => setThemeAccent(prev => prev === 'preset' ? 'white' : 'preset')}
-        className={`fixed bottom-6 right-20 z-50 w-12 h-12 rounded-full bg-cyber-card border-2 border-cyber-border text-white flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 shadow-[0_8px_32px_rgba(0,0,0,0.5)] active:scale-95 group select-none hover:border-cyber-cyan ${
-          themeAccent === 'white' 
-            ? 'hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] border-white/60' 
-            : 'hover:shadow-[0_0_20px_rgba(0,229,255,0.4)]'
-        }`}
-        title={themeAccent === 'preset' ? 'Switch to Sleek Monochrome White Accent' : 'Switch to Preset Neon Accent'}
-      >
-        <Icons.Palette className={`w-5.5 h-5.5 transition-transform duration-300 group-hover:scale-115 ${themeAccent === 'white' ? 'text-cyber-neon' : 'text-cyber-cyan'}`} />
-      </button>
-
-      {/* Floating High-Contrast Theme Mode Switcher */}
-      <button
-        onClick={() => setThemeMode(prev => prev === 'dark' ? 'light' : 'dark')}
-        className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-cyber-card border-2 border-cyber-border text-[#ffffff] flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:border-cyber-cyan active:scale-95 group select-none hover:shadow-[0_0_20px_rgba(0,229,255,0.4)]"
-        title={themeMode === 'dark' ? 'Switch to High-Contrast Light Mode' : 'Switch to Dark Mode'}
-      >
-        {themeMode === 'dark' ? (
-          <Icons.Sun className="w-6 h-6 text-amber-400 group-hover:rotate-90 transition-transform duration-500" />
-        ) : (
-          <Icons.Moon className="w-5.5 h-5.5 text-cyber-cyan group-hover:-rotate-12 transition-transform duration-500" />
-        )}
-      </button>
 
       {/* Dynamic Coming Soon Notification Toast */}
       {comingSoonToast?.show && (
