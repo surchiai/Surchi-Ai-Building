@@ -37,6 +37,50 @@ const CHAIN_LOGOS: Record<string, string> = {
   tron: 'https://assets.coingecko.com/coins/images/1094/large/tron-logo.png'
 };
 
+const Sparkline: React.FC<{
+  seed: string;
+  isUp: boolean;
+}> = ({ seed, isUp }) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+  }
+  
+  const points: number[] = [];
+  const startY = isUp ? 22 : 8;
+  const endY = isUp ? 8 : 22;
+  
+  points.push(startY);
+  for (let i = 1; i < 7; i++) {
+    const r = Math.abs(Math.sin(hash + i)) * 14 + 6;
+    points.push(r);
+  }
+  points.push(endY);
+  
+  const width = 100;
+  const step = width / (points.length - 1);
+  const pathD = points.map((p, index) => {
+    const x = index * step;
+    return `${index === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${p.toFixed(1)}`;
+  }).join(' ');
+
+  const strokeColor = isUp ? '#10b981' : '#f43f5e';
+  const areaD = `${pathD} L 100 30 L 0 30 Z`;
+
+  return (
+    <svg className="w-20 h-6 overflow-visible" viewBox="0 0 100 30">
+      <defs>
+        <linearGradient id={`grad-${seed.replace(/[^a-zA-Z0-9]/g, '')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={strokeColor} stopOpacity="0.15" />
+          <stop offset="100%" stopColor={strokeColor} stopOpacity="0.0" />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#grad-${seed.replace(/[^a-zA-Z0-9]/g, '')})`} />
+      <path d={pathD} fill="none" stroke={strokeColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+};
+
 const BlockchainIcon: React.FC<{ 
   chainId: string; 
   className?: string; 
@@ -1090,101 +1134,65 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       {(loading || !tokens || tokens.length === 0) ? (
         <div className="w-full relative">
           {/* Desktop Tabular Skeleton */}
-          <div className="hidden lg:block overflow-x-auto w-full rounded-lg border border-cyber-border/10">
-            <table className="w-full text-left border-collapse min-w-[1200px]">
-              <thead>
-                <tr className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 ${
-                  isLight ? 'text-slate-500 bg-slate-50' : 'text-slate-400 bg-[#060613]/80'
-                }`}>
-                  <th className="py-3 px-3 text-center w-12">Rank</th>
-                  <th className="py-3 px-3">Token Info</th>
-                  <th className="py-3 px-2">Contract Address</th>
-                  <th className="py-3 px-3">Blockchain</th>
-                  <th className="py-3 px-3">DEX</th>
-                  <th className="py-3 px-3 text-right">Price (USD)</th>
-                  <th className="py-3 px-3 text-right">1H Change</th>
-                  <th className="py-3 px-3 text-right">24H Change</th>
-                  <th className="py-3 px-3 text-right">24H Volume</th>
-                  <th className="py-3 px-3 text-right">Market Cap</th>
-                  <th className="py-3 px-3 text-right">Liquidity</th>
-                  <th className="py-3 px-3 text-right">Holders</th>
-                  <th className="py-3 px-3 text-center w-28">Score</th>
-                  <th className="py-3 px-3 text-center w-14">Scan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-cyber-border/10">
-                {Array.from({ length: 12 }).map((_, idx) => (
-                  <tr
-                    key={`skeleton-row-${idx}`}
-                    className={`${isLight ? 'bg-white' : 'bg-[#04040a]/80'} text-[11.5px] font-mono border-b border-cyber-border/5`}
-                  >
-                    {/* Rank */}
-                    <td className="py-4 px-3 text-center">
-                      <div className="h-4 w-6 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* Token Info */}
-                    <td className="py-4 px-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-slate-350 dark:bg-cyber-border/25 animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                        <div className="flex flex-col gap-1.5">
-                          <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                          <div className="h-3 w-20 bg-slate-350 dark:bg-cyber-border/20 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                        </div>
-                      </div>
-                    </td>
-                    {/* Contract Address */}
-                    <td className="py-4 px-2">
-                      <div className="h-3.5 w-18 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* Blockchain badge */}
-                    <td className="py-4 px-3">
-                      <div className="h-6 w-24 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* DEX Badge */}
-                    <td className="py-4 px-3">
-                      <div className="h-5 w-16 bg-slate-350 dark:bg-cyber-border/25  rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* Price */}
-                    <td className="py-4 px-3 text-right">
-                      <div className="h-4 w-16 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* 1H Change */}
-                    <td className="py-4 px-3 text-right">
-                      <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* 24H Change */}
-                    <td className="py-4 px-3 text-right">
-                      <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* 24H Volume */}
-                    <td className="py-4 px-3 text-right">
-                      <div className="h-4 w-20 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* Market Cap */}
-                    <td className="py-4 px-3 text-right">
-                      <div className="h-4 w-24 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* Liquidity */}
-                    <td className="py-4 px-3 text-right">
-                      <div className="h-4 w-20 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* Holders */}
-                    <td className="py-4 px-3 text-right">
-                      <div className="h-4 w-14 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                    {/* Score */}
-                    <td className="py-4 px-3 text-center">
-                      <div className="h-1.5 w-16 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse mb-1" />
-                      <div className="h-2 w-8 bg-slate-350 dark:bg-cyber-border/20 rounded mx-auto animate-pulse" />
-                    </td>
-                    {/* Scan */}
-                    <td className="py-4 px-3 text-center">
-                      <div className="h-7 w-7 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="hidden lg:block w-full space-y-2">
+            {/* Header Row */}
+            <div className={`grid grid-cols-[48px_2.5fr_1.2fr_1fr_1.2fr_1.2fr_1.2fr_1.2fr_48px] gap-4 items-center px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
+              isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
+            }`}>
+              <div className="text-center">Rank</div>
+              <div>Token Info / CA</div>
+              <div>Price (USD)</div>
+              <div>24H Change</div>
+              <div>Market Cap</div>
+              <div>24H Volume</div>
+              <div>Liquidity</div>
+              <div className="pl-2">Trend Trace</div>
+              <div className="text-center">Scan</div>
+            </div>
+
+            {/* Skeleton rows */}
+            <div className="space-y-2 flex-1">
+              {Array.from({ length: 12 }).map((_, idx) => (
+                <div
+                  key={`skeleton-row-${idx}`}
+                  className={`grid grid-cols-[48px_2.5fr_1.2fr_1fr_1.2fr_1.2fr_1.2fr_1.2fr_48px] gap-4 items-center px-4 py-4 border border-cyber-border/5 rounded-xl ${
+                    isLight ? 'bg-white border-slate-100' : 'bg-[#04040a]/80 border-cyber-border/5'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="h-4 w-6 bg-slate-300 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-cyber-border/25 animate-pulse" />
+                    <div className="flex flex-col gap-1 w-24">
+                      <div className="h-3 w-16 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                      <div className="h-2 w-24 bg-slate-300 dark:bg-cyber-border/20 rounded animate-pulse" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="h-4 w-16 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="h-4 w-12 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                  </div>
+                  <div className="pl-1">
+                    <div className="h-6 w-20 bg-slate-300 dark:bg-cyber-border/20 rounded animate-pulse" />
+                  </div>
+                  <div className="text-center">
+                    <div className="h-7 w-7 bg-slate-300 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Mobile List Skeletons */}
@@ -1237,101 +1245,91 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
         </div>
       ) : (
         <div className="w-full space-y-4">
-          {/* Desktop Display Format */}
-          <div className="hidden lg:block overflow-x-auto w-full rounded-lg border border-cyber-border/10 relative">
-            <table className="w-full text-left border-collapse min-w-[1200px]">
-              <thead>
-                <tr className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 ${
-                  isLight ? 'text-slate-500 bg-slate-50' : 'text-slate-400 bg-[#060613]/80'
-                }`}>
-                  <th className="py-3 px-3 text-center w-12">Rank</th>
-                  <th className="py-3 px-3">Token Info</th>
-                  <th className="py-3 px-2">Contract Address</th>
-                  <th className="py-3 px-3">Blockchain</th>
-                  <th className="py-3 px-3">DEX</th>
-                  <th className="py-3 px-3 text-right">Price (USD)</th>
-                  <th className="py-3 px-3 text-right">1H Change</th>
-                  <th className="py-3 px-3 text-right">24H Change</th>
-                  <th className="py-3 px-3 text-right">24H Volume</th>
-                  <th className="py-3 px-3 text-right">Market Cap</th>
-                  <th className="py-3 px-3 text-right">Liquidity</th>
-                  <th className="py-3 px-3 text-right">Holders</th>
-                  <th className="py-3 px-3 text-center w-28">Score</th>
-                  <th className="py-3 px-3 text-center w-14">Scan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-cyber-border/10 flex-1">
-                {pageTokens.map((token, index) => {
-                  const rank = startIndex + index + 1;
-                  const isUp = token.priceChange24h >= 0;
-                  const is1hUp = (token.priceChange1h ?? 0) >= 0;
-                  const rankColor = rank === 1 
-                    ? 'text-yellow-500 font-extrabold scale-105' 
-                    : rank === 2 
-                    ? 'text-slate-400 font-extrabold' 
-                    : rank === 3 
-                    ? 'text-amber-600 font-extrabold' 
-                    : 'text-slate-500';
+          {/* Desktop Display Format - Multi-Chain Live Trending Hub Grid List */}
+          <div className="hidden lg:block w-full space-y-2">
+            {/* Header Row */}
+            <div className={`grid grid-cols-[48px_2.5fr_1.2fr_1fr_1.2fr_1.2fr_1.2fr_1.2fr_48px] gap-4 items-center px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
+              isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
+            }`}>
+              <div className="text-center">Rank</div>
+              <div>Token Info / CA</div>
+              <div>Price (USD)</div>
+              <div>24H Change</div>
+              <div>Market Cap</div>
+              <div>24H Volume</div>
+              <div>Liquidity</div>
+              <div className="pl-2">Trend Trace</div>
+              <div className="text-center">Scan</div>
+            </div>
 
-                  return (
-                    <tr
-                      key={token.address + '-' + token.chainId}
-                      onClick={() => onSelectToken(token.address)}
-                      className={`cursor-pointer transition-all border-b border-cyber-border/5 text-[11.5px] font-mono ${
-                        isLight 
-                          ? 'bg-white hover:bg-slate-50/90 text-slate-800' 
-                          : 'bg-[#04040a]/80 hover:bg-[#0c0c1e] text-slate-300'
-                      }`}
-                    >
-                      {/* Rank */}
-                      <td className="py-3 px-3 text-center font-bold">
-                        <span className={rankColor}>#{rank}</span>
-                      </td>
+            {/* List of custom grid rows with sparklines */}
+            <div className="space-y-2 flex-1">
+              {pageTokens.map((token, index) => {
+                const rank = startIndex + index + 1;
+                const isUp = token.priceChange24h >= 0;
+                const rankColor = rank === 1 
+                  ? 'text-yellow-500 font-extrabold scale-105' 
+                  : rank === 2 
+                  ? 'text-slate-400 font-extrabold' 
+                  : rank === 3 
+                  ? 'text-amber-600 font-extrabold' 
+                  : 'text-slate-500';
 
-                      {/* Token Info */}
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-2.5 px-1">
-                          <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-cyber-cyan/5 border border-cyber-border/20 flex items-center justify-center">
-                            {token.logo ? (
-                              <img 
-                                src={token.logo} 
-                                alt={token.symbol} 
-                                referrerPolicy="no-referrer"
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLElement).style.display = 'none';
-                                }}
-                              />
-                            ) : (
-                              <div className="text-[10px] font-bold text-cyber-cyan">
-                                {token.symbol.length > 6 ? token.symbol.slice(0, 4) : token.symbol}
-                              </div>
-                            )}
+                return (
+                  <div
+                    key={token.address + '-' + token.chainId}
+                    onClick={() => onSelectToken(token.address)}
+                    className={`grid grid-cols-[48px_2.5fr_1.2fr_1fr_1.2fr_1.2fr_1.2fr_1.2fr_48px] gap-4 items-center px-4 py-3 border border-cyber-border/5 rounded-xl cursor-pointer transition-all duration-200 text-[11.5px] font-mono ${
+                      isLight 
+                        ? 'bg-white hover:bg-slate-50 border-slate-200 hover:shadow-2xs text-slate-800' 
+                        : 'bg-[#04040a]/80 hover:bg-[#0c0c24] border-cyber-border/10 hover:border-cyber-cyan/30 text-slate-300'
+                    }`}
+                  >
+                    {/* Rank */}
+                    <div className="text-center font-bold text-xs">
+                      <span className={rankColor}>#{rank}</span>
+                    </div>
+
+                    {/* Token Info & Contract Address & Blockchain badge */}
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Token logo */}
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-cyber-cyan/5 border border-cyber-border/20 flex items-center justify-center relative">
+                        {token.logo ? (
+                          <img 
+                            src={token.logo} 
+                            alt={token.symbol} 
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="text-[10px] font-bold text-cyber-cyan">
+                            {token.symbol.length > 6 ? token.symbol.slice(0, 4) : token.symbol}
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className={`font-sans font-bold tracking-tight truncate flex items-center gap-1.5 ${
-                              isLight ? 'text-slate-900' : 'text-white'
-                            }`}>
-                              {token.symbol}
-                              <BlockchainIcon chainId={token.chainId} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            </span>
-                            <span className="text-[8.5px] text-slate-500 truncate mt-0.5" title={token.name}>
-                              {token.name}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
+                        )}
+                      </div>
 
-                      {/* Contract Address */}
-                      <td className="py-3 px-2">
-                        <div className="flex items-center gap-1 text-[10.5px]">
-                          <span className="text-slate-500 font-mono">
-                            {token.address ? `${token.address.slice(0, 5)}...${token.address.slice(-4)}` : 'N/A'}
+                      {/* Display Info */}
+                      <div className="flex flex-col min-w-0 pr-2">
+                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                          <span className={`font-sans font-black tracking-tight truncate ${
+                            isLight ? 'text-slate-900' : 'text-white'
+                          }`}>
+                            {token.symbol}
                           </span>
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.25 text-[8px] font-extrabold font-mono rounded border capitalize ${getChainBadgeColor(token.chainId)}`}>
+                            {getChainDisplayName(token.chainId)}
+                          </span>
+                        </div>
+                        {/* Contract address copy */}
+                        <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-0.5" onClick={e => e.stopPropagation()}>
+                          <span className="truncate">{token.address ? `${token.address.slice(0, 6)}...${token.address.slice(-6)}` : 'N/A'}</span>
                           {token.address && (
                             <button
                               onClick={(e) => handleCopyAddress(e, token.address)}
-                              className="p-1 text-slate-400 hover:text-white transition-colors"
+                              className="p-1 text-slate-500 hover:text-white transition-colors"
                               title="Copy Contract Address"
                             >
                               {copiedAddress === token.address ? (
@@ -1342,109 +1340,63 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                             </button>
                           )}
                         </div>
-                      </td>
+                      </div>
+                    </div>
 
-                      {/* Blockchain Badge */}
-                      <td className="py-3 px-3">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-[9px] font-extrabold font-mono rounded-md border ${getChainBadgeColor(token.chainId)}`}>
-                          <BlockchainIcon chainId={token.chainId} className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px]" />
-                          <span>{getChainDisplayName(token.chainId)}</span>
-                        </span>
-                      </td>
+                    {/* Price */}
+                    <div className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-slate-200'}`}>
+                      ${formatPrice(token.priceUsd)}
+                    </div>
 
-                      {/* DEX Badge */}
-                      <td className="py-3 px-3">
-                        <span className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono border font-bold ${
-                          isLight ? 'bg-slate-100 text-slate-700 border-slate-300/40' : 'bg-cyber-cyan/5 text-slate-300 border-cyber-border/10'
-                        }`}>
-                          {token.dexId || 'Raydium'}
-                        </span>
-                      </td>
+                    {/* 24H Change */}
+                    <div className={`font-extrabold ${isUp ? 'text-emerald-500' : 'text-rose-500'}`}>
+                      <span className="inline-flex items-center gap-0.5">
+                        {isUp ? <Icons.ArrowUpRight className="w-3.5 h-3.5" /> : <Icons.ArrowDownRight className="w-3.5 h-3.5" />}
+                        {isUp ? '+' : ''}{token.priceChange24h.toFixed(2)}%
+                      </span>
+                    </div>
 
-                      {/* Price */}
-                      <td className={`py-3 px-3 text-right font-bold ${isLight ? 'text-slate-900' : 'text-slate-200'}`}>
-                        ${formatPrice(token.priceUsd)}
-                      </td>
+                    {/* Market Cap */}
+                    <div className={`font-medium ${token.marketCap ? (isLight ? 'text-slate-700' : 'text-slate-400') : 'text-slate-500 text-[10px] italic'}`}>
+                      {formatMarketCap(token.marketCap)}
+                    </div>
 
-                      {/* 1H Change */}
-                      <td className={`py-3 px-3 text-right font-black ${
-                        is1hUp ? 'text-emerald-500' : 'text-rose-500'
-                      }`}>
-                        <span className="inline-flex items-center gap-0.5 justify-end">
-                          {is1hUp ? <Icons.ArrowUpRight className="w-3.5 h-3.5" /> : <Icons.ArrowDownRight className="w-3.5 h-3.5" />}
-                          {is1hUp ? '+' : ''}{(token.priceChange1h ?? 0).toFixed(2)}%
-                        </span>
-                      </td>
+                    {/* Volume */}
+                    <div className={`font-medium ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
+                      {formatVolume(token.volume24h)}
+                    </div>
 
-                      {/* 24H Change */}
-                      <td className={`py-3 px-3 text-right font-black ${
-                        isUp ? 'text-emerald-500' : 'text-rose-500'
-                      }`}>
-                        <span className="inline-flex items-center gap-0.5 justify-end">
-                          {isUp ? <Icons.ArrowUpRight className="w-3.5 h-3.5" /> : <Icons.ArrowDownRight className="w-3.5 h-3.5" />}
-                          {isUp ? '+' : ''}{token.priceChange24h.toFixed(2)}%
-                        </span>
-                      </td>
+                    {/* Liquidity */}
+                    <div className={`font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                      {formatVolume(token.liquidityUsd)}
+                    </div>
 
-                      {/* 24H Volume */}
-                      <td className={`py-3 px-3 text-right font-medium ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
-                        {formatVolume(token.volume24h)}
-                      </td>
+                    {/* Mini Sparkline Chart */}
+                    <div className="pl-1">
+                      <Sparkline seed={token.address} isUp={isUp} />
+                    </div>
 
-                      {/* Market Cap */}
-                      <td className={`py-3 px-3 text-right font-medium ${
-                        token.marketCap ? (isLight ? 'text-slate-700' : 'text-slate-400') : 'text-slate-500 text-[10px] italic'
-                      }`}>
-                        {formatMarketCap(token.marketCap)}
-                      </td>
-
-                      {/* Liquidity */}
-                      <td className={`py-3 px-3 text-right font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                        {formatVolume(token.liquidityUsd)}
-                      </td>
-
-                      {/* Holders */}
-                      <td className={`py-3 px-3 text-right font-medium ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
-                        {token.holdersCount 
-                          ? token.holdersCount.toLocaleString() 
-                          : (Math.round(token.volume24h * 0.015) || 120).toLocaleString()}
-                      </td>
-
-                      {/* Score */}
-                      <td className="py-3 px-3 text-center">
-                        <div className="flex flex-col items-center justify-center gap-0.5">
-                          <div className="w-20 bg-cyber-border/20 rounded-full h-1.25 overflow-hidden">
-                            <div 
-                              className="bg-cyber-cyan h-full rounded-full" 
-                              style={{ width: `${token.trendingScore}%` }}
-                            />
-                          </div>
-                          <span className="text-[8px] font-bold text-cyber-cyan">{token.trendingScore}/100</span>
-                        </div>
-                      </td>
-
-                      {/* Scan */}
-                      <td className="py-3 px-3 text-center">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectToken(token.address);
-                          }}
-                          className={`p-1.5 rounded cursor-pointer transition-all hover:scale-105 active:scale-95 ${
-                            isLight
-                              ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7]'
-                              : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/20'
-                          }`}
-                          title={`Run instant security scan for ${token.symbol}`}
-                        >
-                          <Icons.Cpu className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                    {/* Scan Action */}
+                    <div className="text-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectToken(token.address);
+                        }}
+                        className={`p-1.5 rounded cursor-pointer transition-all hover:scale-110 active:scale-95 ${
+                          isLight
+                            ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7]'
+                            : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/20'
+                        }`}
+                        title={`Run instant security scan for ${token.symbol}`}
+                      >
+                        <Icons.Cpu className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Adaptive/Mobile & Tablet Display Format */}

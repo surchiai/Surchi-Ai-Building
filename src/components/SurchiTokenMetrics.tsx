@@ -177,7 +177,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
   return (
     <div 
       onClick={onPriceClick}
-      className={`w-full max-w-lg lg:max-w-none mx-auto rounded-[20px] border select-none transition-all duration-300 relative group overflow-hidden ${
+      className={`w-full mx-auto rounded-[20px] border select-none transition-all duration-300 relative group overflow-hidden ${
         onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-[1.002] active:scale-[0.998]' : ''
       } ${
         themeMode === 'light'

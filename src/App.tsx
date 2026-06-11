@@ -5555,11 +5555,11 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* HIGHLY OPTIMIZED RESPONSIVE SIDE-BY-SIDE / GRID LAYOUT */}
+                  {/* HIGHLY OPTIMIZED RESPONSIVE FULL-WIDTH LAYOUT */}
                   {isHomePage ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <div className="flex flex-col w-full gap-6">
                       {/* Left Block: Search fields and Loading states */}
-                      <div className="lg:col-span-7 space-y-4">
+                      <div className="w-full space-y-4">
                         {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
                         <section className={`rounded-xl border p-3.5 sm:p-4.5 shadow-2xl relative overflow-hidden ${
                           themeMode === 'light'
@@ -5671,7 +5671,7 @@ export default function App() {
                               {(loading || isFetchingTokenDetails) && (
                                 <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 ${
                                   themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
-                                }`}>
+                                  }`}>
                                   <span className={`w-1.5 h-1.5 rounded-full inline-block animate-ping ${
                                     themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon'
                                   }`}></span> quantum ledger scanning active
@@ -5711,7 +5711,7 @@ export default function App() {
                       </div>
 
                       {/* Right Block: SurchiTokenMetrics Card and Charts */}
-                      <div className="lg:col-span-5 space-y-4">
+                      <div className="w-full space-y-4">
                         <SurchiTokenMetrics 
                           themeMode={themeMode}
                           onPriceClick={() => {
