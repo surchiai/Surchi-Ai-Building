@@ -147,6 +147,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sortBy, setSortBy] = useState<'trending' | 'volume' | 'liquidity' | 'marketcap' | 'holders' | 'newest' | 'gainers'>('trending');
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [expandedTokens, setExpandedTokens] = useState<Record<string, boolean>>({});
   
   // Pagination States
   const tokensPerPage = 50;
@@ -1087,101 +1088,137 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
 
       {/* Core table ledger displaying rank, logo, symbol, blockchain, price, 1h change, 24h change, 24h volume, Cap, Liquidity, Holders, Custom Gauge, and Scan trigger */}
       {(loading || !tokens || tokens.length === 0) ? (
-        <div className="overflow-x-auto w-full rounded-lg border border-cyber-border/10 relative">
-          <table className="w-full text-left border-collapse min-w-[1200px]">
-            <thead>
-              <tr className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 ${
-                isLight ? 'text-slate-500 bg-slate-50' : 'text-slate-400 bg-[#060613]/80'
-              }`}>
-                <th className="py-3 px-3 text-center w-12">Rank</th>
-                <th className="py-3 px-3">Token Info</th>
-                <th className="py-3 px-2">Contract Address</th>
-                <th className="py-3 px-3">Blockchain</th>
-                <th className="py-3 px-3">DEX</th>
-                <th className="py-3 px-3 text-right">Price (USD)</th>
-                <th className="py-3 px-3 text-right">1H Change</th>
-                <th className="py-3 px-3 text-right">24H Change</th>
-                <th className="py-3 px-3 text-right">24H Volume</th>
-                <th className="py-3 px-3 text-right">Market Cap</th>
-                <th className="py-3 px-3 text-right">Liquidity</th>
-                <th className="py-3 px-3 text-right">Holders</th>
-                <th className="py-3 px-3 text-center w-28">Score</th>
-                <th className="py-3 px-3 text-center w-14">Scan</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-cyber-border/10">
-              {Array.from({ length: 12 }).map((_, idx) => (
-                <tr
-                  key={`skeleton-row-${idx}`}
-                  className={`${isLight ? 'bg-white' : 'bg-[#04040a]/80'} text-[11.5px] font-mono border-b border-cyber-border/5`}
-                >
-                  {/* Rank */}
-                  <td className="py-4 px-3 text-center">
-                    <div className="h-4 w-6 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* Token Info */}
-                  <td className="py-4 px-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-slate-350 dark:bg-cyber-border/25 animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                      <div className="flex flex-col gap-1.5">
-                        <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                        <div className="h-3 w-20 bg-slate-350 dark:bg-cyber-border/20 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                      </div>
-                    </div>
-                  </td>
-                  {/* Contract Address */}
-                  <td className="py-4 px-2">
-                    <div className="h-3.5 w-18 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* Blockchain badge */}
-                  <td className="py-4 px-3">
-                    <div className="h-6 w-24 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* DEX Badge */}
-                  <td className="py-4 px-3">
-                    <div className="h-5 w-16 bg-slate-350 dark:bg-cyber-border/25  rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* Price */}
-                  <td className="py-4 px-3 text-right">
-                    <div className="h-4 w-16 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* 1H Change */}
-                  <td className="py-4 px-3 text-right">
-                    <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* 24H Change */}
-                  <td className="py-4 px-3 text-right">
-                    <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* 24H Volume */}
-                  <td className="py-4 px-3 text-right">
-                    <div className="h-4 w-20 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* Market Cap */}
-                  <td className="py-4 px-3 text-right">
-                    <div className="h-4 w-24 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* Liquidity */}
-                  <td className="py-4 px-3 text-right">
-                    <div className="h-4 w-20 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* Holders */}
-                  <td className="py-4 px-3 text-right">
-                    <div className="h-4 w-14 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
-                  {/* Score */}
-                  <td className="py-4 px-3 text-center">
-                    <div className="h-1.5 w-16 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse mb-1" />
-                    <div className="h-2 w-8 bg-slate-350 dark:bg-cyber-border/20 rounded mx-auto animate-pulse" />
-                  </td>
-                  {/* Scan */}
-                  <td className="py-4 px-3 text-center">
-                    <div className="h-7 w-7 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
-                  </td>
+        <div className="w-full relative">
+          {/* Desktop Tabular Skeleton */}
+          <div className="hidden lg:block overflow-x-auto w-full rounded-lg border border-cyber-border/10">
+            <table className="w-full text-left border-collapse min-w-[1200px]">
+              <thead>
+                <tr className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 ${
+                  isLight ? 'text-slate-500 bg-slate-50' : 'text-slate-400 bg-[#060613]/80'
+                }`}>
+                  <th className="py-3 px-3 text-center w-12">Rank</th>
+                  <th className="py-3 px-3">Token Info</th>
+                  <th className="py-3 px-2">Contract Address</th>
+                  <th className="py-3 px-3">Blockchain</th>
+                  <th className="py-3 px-3">DEX</th>
+                  <th className="py-3 px-3 text-right">Price (USD)</th>
+                  <th className="py-3 px-3 text-right">1H Change</th>
+                  <th className="py-3 px-3 text-right">24H Change</th>
+                  <th className="py-3 px-3 text-right">24H Volume</th>
+                  <th className="py-3 px-3 text-right">Market Cap</th>
+                  <th className="py-3 px-3 text-right">Liquidity</th>
+                  <th className="py-3 px-3 text-right">Holders</th>
+                  <th className="py-3 px-3 text-center w-28">Score</th>
+                  <th className="py-3 px-3 text-center w-14">Scan</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-cyber-border/10">
+                {Array.from({ length: 12 }).map((_, idx) => (
+                  <tr
+                    key={`skeleton-row-${idx}`}
+                    className={`${isLight ? 'bg-white' : 'bg-[#04040a]/80'} text-[11.5px] font-mono border-b border-cyber-border/5`}
+                  >
+                    {/* Rank */}
+                    <td className="py-4 px-3 text-center">
+                      <div className="h-4 w-6 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* Token Info */}
+                    <td className="py-4 px-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-slate-350 dark:bg-cyber-border/25 animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                        <div className="flex flex-col gap-1.5">
+                          <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                          <div className="h-3 w-20 bg-slate-350 dark:bg-cyber-border/20 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                        </div>
+                      </div>
+                    </td>
+                    {/* Contract Address */}
+                    <td className="py-4 px-2">
+                      <div className="h-3.5 w-18 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* Blockchain badge */}
+                    <td className="py-4 px-3">
+                      <div className="h-6 w-24 bg-slate-350 dark:bg-cyber-border/25 rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* DEX Badge */}
+                    <td className="py-4 px-3">
+                      <div className="h-5 w-16 bg-slate-350 dark:bg-cyber-border/25  rounded animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* Price */}
+                    <td className="py-4 px-3 text-right">
+                      <div className="h-4 w-16 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* 1H Change */}
+                    <td className="py-4 px-3 text-right">
+                      <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* 24H Change */}
+                    <td className="py-4 px-3 text-right">
+                      <div className="h-4 w-12 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* 24H Volume */}
+                    <td className="py-4 px-3 text-right">
+                      <div className="h-4 w-20 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* Market Cap */}
+                    <td className="py-4 px-3 text-right">
+                      <div className="h-4 w-24 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* Liquidity */}
+                    <td className="py-4 px-3 text-right">
+                      <div className="h-4 w-20 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* Holders */}
+                    <td className="py-4 px-3 text-right">
+                      <div className="h-4 w-14 bg-slate-350 dark:bg-cyber-border/25 rounded ml-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                    {/* Score */}
+                    <td className="py-4 px-3 text-center">
+                      <div className="h-1.5 w-16 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse mb-1" />
+                      <div className="h-2 w-8 bg-slate-350 dark:bg-cyber-border/20 rounded mx-auto animate-pulse" />
+                    </td>
+                    {/* Scan */}
+                    <td className="py-4 px-3 text-center">
+                      <div className="h-7 w-7 bg-slate-350 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" style={{ animationDelay: `${idx * 75}ms` }} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile List Skeletons */}
+          <div className="lg:hidden block space-y-3">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div
+                key={`skeleton-card-${idx}`}
+                className={`p-4 rounded-xl border ${
+                  isLight 
+                    ? 'bg-white border-slate-100' 
+                    : 'bg-[#04040a]/80 border-cyber-border/15'
+                } animate-pulse space-y-3.5`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-5 h-5 rounded-md bg-slate-300 dark:bg-cyber-border/25 shrink-0" />
+                    <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-cyber-border/25 shrink-0" />
+                    <div className="space-y-1.5 min-w-0">
+                      <div className="h-3 w-16 bg-slate-300 dark:bg-cyber-border/25 rounded" />
+                      <div className="h-2.5 w-24 bg-slate-300 dark:bg-cyber-border/20 rounded" />
+                    </div>
+                  </div>
+                  <div className="text-right space-y-1.5 shrink-0">
+                    <div className="h-3 w-16 bg-slate-300 dark:bg-cyber-border/25 rounded ml-auto" />
+                    <div className="h-2.5 w-10 bg-slate-300 dark:bg-cyber-border/20 rounded ml-auto" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-cyber-border/5">
+                  <div className="h-3 w-20 bg-slate-300 dark:bg-cyber-border/20 rounded" />
+                  <div className="h-3 w-24 bg-slate-300 dark:bg-cyber-border/20 rounded ml-auto" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : error ? (
         <div className="py-16 text-center text-xs font-mono max-w-md mx-auto">
@@ -1199,60 +1236,251 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
           No live trading activities captured on this network right now.
         </div>
       ) : (
-        <div className="overflow-x-auto w-full rounded-lg border border-cyber-border/10 relative">
-          <table className="w-full text-left border-collapse min-w-[1200px]">
-            <thead>
-              <tr className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 ${
-                isLight ? 'text-slate-500 bg-slate-50' : 'text-slate-400 bg-[#060613]/80'
-              }`}>
-                <th className="py-3 px-3 text-center w-12">Rank</th>
-                <th className="py-3 px-3">Token Info</th>
-                <th className="py-3 px-2">Contract Address</th>
-                <th className="py-3 px-3">Blockchain</th>
-                <th className="py-3 px-3">DEX</th>
-                <th className="py-3 px-3 text-right">Price (USD)</th>
-                <th className="py-3 px-3 text-right">1H Change</th>
-                <th className="py-3 px-3 text-right">24H Change</th>
-                <th className="py-3 px-3 text-right">24H Volume</th>
-                <th className="py-3 px-3 text-right">Market Cap</th>
-                <th className="py-3 px-3 text-right">Liquidity</th>
-                <th className="py-3 px-3 text-right">Holders</th>
-                <th className="py-3 px-3 text-center w-28">Score</th>
-                <th className="py-3 px-3 text-center w-14">Scan</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-cyber-border/10 flex-1">
-              {pageTokens.map((token, index) => {
-                const rank = startIndex + index + 1;
-                const isUp = token.priceChange24h >= 0;
-                const is1hUp = (token.priceChange1h ?? 0) >= 0;
-                const rankColor = rank === 1 
-                  ? 'text-yellow-500 font-extrabold scale-105' 
-                  : rank === 2 
-                  ? 'text-slate-400 font-extrabold' 
-                  : rank === 3 
-                  ? 'text-amber-600 font-extrabold' 
-                  : 'text-slate-500';
+        <div className="w-full space-y-4">
+          {/* Desktop Display Format */}
+          <div className="hidden lg:block overflow-x-auto w-full rounded-lg border border-cyber-border/10 relative">
+            <table className="w-full text-left border-collapse min-w-[1200px]">
+              <thead>
+                <tr className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 ${
+                  isLight ? 'text-slate-500 bg-slate-50' : 'text-slate-400 bg-[#060613]/80'
+                }`}>
+                  <th className="py-3 px-3 text-center w-12">Rank</th>
+                  <th className="py-3 px-3">Token Info</th>
+                  <th className="py-3 px-2">Contract Address</th>
+                  <th className="py-3 px-3">Blockchain</th>
+                  <th className="py-3 px-3">DEX</th>
+                  <th className="py-3 px-3 text-right">Price (USD)</th>
+                  <th className="py-3 px-3 text-right">1H Change</th>
+                  <th className="py-3 px-3 text-right">24H Change</th>
+                  <th className="py-3 px-3 text-right">24H Volume</th>
+                  <th className="py-3 px-3 text-right">Market Cap</th>
+                  <th className="py-3 px-3 text-right">Liquidity</th>
+                  <th className="py-3 px-3 text-right">Holders</th>
+                  <th className="py-3 px-3 text-center w-28">Score</th>
+                  <th className="py-3 px-3 text-center w-14">Scan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-cyber-border/10 flex-1">
+                {pageTokens.map((token, index) => {
+                  const rank = startIndex + index + 1;
+                  const isUp = token.priceChange24h >= 0;
+                  const is1hUp = (token.priceChange1h ?? 0) >= 0;
+                  const rankColor = rank === 1 
+                    ? 'text-yellow-500 font-extrabold scale-105' 
+                    : rank === 2 
+                    ? 'text-slate-400 font-extrabold' 
+                    : rank === 3 
+                    ? 'text-amber-600 font-extrabold' 
+                    : 'text-slate-500';
 
-                return (
-                  <tr
-                    key={token.address + '-' + token.chainId}
-                    onClick={() => onSelectToken(token.address)}
-                    className={`cursor-pointer transition-all border-b border-cyber-border/5 text-[11.5px] font-mono ${
-                      isLight 
-                        ? 'bg-white hover:bg-slate-50/90 text-slate-800' 
-                        : 'bg-[#04040a]/80 hover:bg-[#0c0c1e] text-slate-300'
-                    }`}
-                  >
-                    {/* Rank */}
-                    <td className="py-3 px-3 text-center font-bold">
-                      <span className={rankColor}>#{rank}</span>
-                    </td>
+                  return (
+                    <tr
+                      key={token.address + '-' + token.chainId}
+                      onClick={() => onSelectToken(token.address)}
+                      className={`cursor-pointer transition-all border-b border-cyber-border/5 text-[11.5px] font-mono ${
+                        isLight 
+                          ? 'bg-white hover:bg-slate-50/90 text-slate-800' 
+                          : 'bg-[#04040a]/80 hover:bg-[#0c0c1e] text-slate-300'
+                      }`}
+                    >
+                      {/* Rank */}
+                      <td className="py-3 px-3 text-center font-bold">
+                        <span className={rankColor}>#{rank}</span>
+                      </td>
 
-                    {/* Token Info */}
-                    <td className="py-3 px-3">
-                      <div className="flex items-center gap-2.5 px-1">
-                        <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-cyber-cyan/5 border border-cyber-border/20 flex items-center justify-center">
+                      {/* Token Info */}
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2.5 px-1">
+                          <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-cyber-cyan/5 border border-cyber-border/20 flex items-center justify-center">
+                            {token.logo ? (
+                              <img 
+                                src={token.logo} 
+                                alt={token.symbol} 
+                                referrerPolicy="no-referrer"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLElement).style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="text-[10px] font-bold text-cyber-cyan">
+                                {token.symbol.length > 6 ? token.symbol.slice(0, 4) : token.symbol}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className={`font-sans font-bold tracking-tight truncate flex items-center gap-1.5 ${
+                              isLight ? 'text-slate-900' : 'text-white'
+                            }`}>
+                              {token.symbol}
+                              <BlockchainIcon chainId={token.chainId} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            </span>
+                            <span className="text-[8.5px] text-slate-500 truncate mt-0.5" title={token.name}>
+                              {token.name}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Contract Address */}
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-1 text-[10.5px]">
+                          <span className="text-slate-500 font-mono">
+                            {token.address ? `${token.address.slice(0, 5)}...${token.address.slice(-4)}` : 'N/A'}
+                          </span>
+                          {token.address && (
+                            <button
+                              onClick={(e) => handleCopyAddress(e, token.address)}
+                              className="p-1 text-slate-400 hover:text-white transition-colors"
+                              title="Copy Contract Address"
+                            >
+                              {copiedAddress === token.address ? (
+                                <Icons.Check className="w-3 h-3 text-emerald-500" />
+                              ) : (
+                                <Icons.Copy className="w-3 h-3 hover:scale-110 active:scale-90 transition-transform" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Blockchain Badge */}
+                      <td className="py-3 px-3">
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-[9px] font-extrabold font-mono rounded-md border ${getChainBadgeColor(token.chainId)}`}>
+                          <BlockchainIcon chainId={token.chainId} className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px]" />
+                          <span>{getChainDisplayName(token.chainId)}</span>
+                        </span>
+                      </td>
+
+                      {/* DEX Badge */}
+                      <td className="py-3 px-3">
+                        <span className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono border font-bold ${
+                          isLight ? 'bg-slate-100 text-slate-700 border-slate-300/40' : 'bg-cyber-cyan/5 text-slate-300 border-cyber-border/10'
+                        }`}>
+                          {token.dexId || 'Raydium'}
+                        </span>
+                      </td>
+
+                      {/* Price */}
+                      <td className={`py-3 px-3 text-right font-bold ${isLight ? 'text-slate-900' : 'text-slate-200'}`}>
+                        ${formatPrice(token.priceUsd)}
+                      </td>
+
+                      {/* 1H Change */}
+                      <td className={`py-3 px-3 text-right font-black ${
+                        is1hUp ? 'text-emerald-500' : 'text-rose-500'
+                      }`}>
+                        <span className="inline-flex items-center gap-0.5 justify-end">
+                          {is1hUp ? <Icons.ArrowUpRight className="w-3.5 h-3.5" /> : <Icons.ArrowDownRight className="w-3.5 h-3.5" />}
+                          {is1hUp ? '+' : ''}{(token.priceChange1h ?? 0).toFixed(2)}%
+                        </span>
+                      </td>
+
+                      {/* 24H Change */}
+                      <td className={`py-3 px-3 text-right font-black ${
+                        isUp ? 'text-emerald-500' : 'text-rose-500'
+                      }`}>
+                        <span className="inline-flex items-center gap-0.5 justify-end">
+                          {isUp ? <Icons.ArrowUpRight className="w-3.5 h-3.5" /> : <Icons.ArrowDownRight className="w-3.5 h-3.5" />}
+                          {isUp ? '+' : ''}{token.priceChange24h.toFixed(2)}%
+                        </span>
+                      </td>
+
+                      {/* 24H Volume */}
+                      <td className={`py-3 px-3 text-right font-medium ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
+                        {formatVolume(token.volume24h)}
+                      </td>
+
+                      {/* Market Cap */}
+                      <td className={`py-3 px-3 text-right font-medium ${
+                        token.marketCap ? (isLight ? 'text-slate-700' : 'text-slate-400') : 'text-slate-500 text-[10px] italic'
+                      }`}>
+                        {formatMarketCap(token.marketCap)}
+                      </td>
+
+                      {/* Liquidity */}
+                      <td className={`py-3 px-3 text-right font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        {formatVolume(token.liquidityUsd)}
+                      </td>
+
+                      {/* Holders */}
+                      <td className={`py-3 px-3 text-right font-medium ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
+                        {token.holdersCount 
+                          ? token.holdersCount.toLocaleString() 
+                          : (Math.round(token.volume24h * 0.015) || 120).toLocaleString()}
+                      </td>
+
+                      {/* Score */}
+                      <td className="py-3 px-3 text-center">
+                        <div className="flex flex-col items-center justify-center gap-0.5">
+                          <div className="w-20 bg-cyber-border/20 rounded-full h-1.25 overflow-hidden">
+                            <div 
+                              className="bg-cyber-cyan h-full rounded-full" 
+                              style={{ width: `${token.trendingScore}%` }}
+                            />
+                          </div>
+                          <span className="text-[8px] font-bold text-cyber-cyan">{token.trendingScore}/100</span>
+                        </div>
+                      </td>
+
+                      {/* Scan */}
+                      <td className="py-3 px-3 text-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectToken(token.address);
+                          }}
+                          className={`p-1.5 rounded cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                            isLight
+                              ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7]'
+                              : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/20'
+                          }`}
+                          title={`Run instant security scan for ${token.symbol}`}
+                        >
+                          <Icons.Cpu className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Adaptive/Mobile & Tablet Display Format */}
+          <div className="lg:hidden block space-y-3.5">
+            {pageTokens.map((token, index) => {
+              const rank = startIndex + index + 1;
+              const isUp = token.priceChange24h >= 0;
+              const is1hUp = (token.priceChange1h ?? 0) >= 0;
+              const isExpanded = !!expandedTokens[token.address];
+              const rankColor = rank === 1 
+                ? 'text-yellow-500 font-extrabold' 
+                : rank === 2 
+                ? 'text-slate-400 font-extrabold' 
+                : rank === 3 
+                ? 'text-amber-600 font-extrabold' 
+                : 'text-slate-500';
+
+              return (
+                <div
+                  key={token.address + '-' + token.chainId + '-mobile'}
+                  onClick={() => onSelectToken(token.address)}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                    isLight 
+                      ? 'bg-white hover:bg-slate-50 border-slate-100 text-slate-800 shadow-[0_4px_12px_rgba(0,0,0,0.012)]' 
+                      : 'bg-[#04040a]/85 hover:bg-[#080816] border-cyber-border/20 text-slate-300 shadow-[0_4px_20px_rgba(0,0,0,0.25)]'
+                  }`}
+                >
+                  {/* Header Row: Rank, Logo, Name/Symbol, Price, 24h Change, Trigger expand */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {/* Rank */}
+                      <span className={`text-xs font-mono font-bold shrink-0 ${rankColor}`}>#{rank}</span>
+                      
+                      {/* Logo and Badge */}
+                      <div className="relative shrink-0">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-cyber-cyan/5 border border-cyber-border/20 flex items-center justify-center">
                           {token.logo ? (
                             <img 
                               src={token.logo} 
@@ -1265,152 +1493,175 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                             />
                           ) : (
                             <div className="text-[10px] font-bold text-cyber-cyan">
-                              {token.symbol.length > 6 ? token.symbol.slice(0, 4) : token.symbol}
+                              {token.symbol.length > 5 ? token.symbol.slice(0, 3) : token.symbol}
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className={`font-sans font-bold tracking-tight truncate flex items-center gap-1.5 ${
-                            isLight ? 'text-slate-900' : 'text-white'
-                          }`}>
+                        <div className="absolute -bottom-1 -right-1 bg-[#030308] rounded-full p-0.5 border border-cyber-border/25">
+                          <BlockchainIcon chainId={token.chainId} className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+
+                      {/* Name/Symbol & Address copy */}
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`font-sans font-extrabold tracking-tight truncate ${isLight ? 'text-slate-900' : 'text-white'}`}>
                             {token.symbol}
-                            <BlockchainIcon chainId={token.chainId} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          </span>
-                          <span className="text-[8.5px] text-slate-500 truncate mt-0.5" title={token.name}>
-                            {token.name}
                           </span>
                         </div>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="text-[9px] text-slate-500 font-mono">
+                            {token.address ? `${token.address.slice(0, 5)}...${token.address.slice(-4)}` : 'N/A'}
+                          </span>
+                          {token.address && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyAddress(e, token.address);
+                              }}
+                              className="p-0.5 text-slate-500 hover:text-white transition-colors"
+                            >
+                              {copiedAddress === token.address ? (
+                                <Icons.Check className="w-2.5 h-2.5 text-emerald-500" />
+                              ) : (
+                                <Icons.Copy className="w-2.5 h-2.5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </td>
+                    </div>
 
-                    {/* Contract Address */}
-                    <td className="py-3 px-2">
-                      <div className="flex items-center gap-1 text-[10.5px]">
-                        <span className="text-slate-500 font-mono">
-                          {token.address ? `${token.address.slice(0, 5)}...${token.address.slice(-4)}` : 'N/A'}
+                    {/* Price and 24h Change */}
+                    <div className="flex items-center gap-3 shrink-0 text-right">
+                      <div className="flex flex-col">
+                        <span className={`text-[12px] font-bold ${isLight ? 'text-slate-900' : 'text-slate-200'}`}>
+                          ${formatPrice(token.priceUsd)}
                         </span>
-                        {token.address && (
-                          <button
-                            onClick={(e) => handleCopyAddress(e, token.address)}
-                            className="p-1 text-slate-400 hover:text-white transition-colors"
-                            title="Copy Contract Address"
-                          >
-                            {copiedAddress === token.address ? (
-                              <Icons.Check className="w-3 h-3 text-emerald-500" />
-                            ) : (
-                              <Icons.Copy className="w-3 h-3 hover:scale-110 active:scale-90 transition-transform" />
-                            )}
-                          </button>
-                        )}
+                        <span className={`text-[10px] font-black inline-flex items-center gap-0.5 justify-end mt-0.5 ${
+                          isUp ? 'text-emerald-500' : 'text-rose-500'
+                        }`}>
+                          {isUp ? '+' : ''}{token.priceChange24h.toFixed(1)}%
+                        </span>
                       </div>
-                    </td>
 
-                    {/* Blockchain Badge */}
-                    <td className="py-3 px-3">
-                      <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-[9px] font-extrabold font-mono rounded-md border ${getChainBadgeColor(token.chainId)}`}>
-                        <BlockchainIcon chainId={token.chainId} className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px]" />
-                        <span>{getChainDisplayName(token.chainId)}</span>
-                      </span>
-                    </td>
-
-                    {/* DEX Badge */}
-                    <td className="py-3 px-3">
-                      <span className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono border font-bold ${
-                        isLight ? 'bg-slate-100 text-slate-700 border-slate-300/40' : 'bg-cyber-cyan/5 text-slate-300 border-cyber-border/10'
-                      }`}>
-                        {token.dexId || 'Raydium'}
-                      </span>
-                    </td>
-
-                    {/* Price */}
-                    <td className={`py-3 px-3 text-right font-bold ${isLight ? 'text-slate-900' : 'text-slate-200'}`}>
-                      ${formatPrice(token.priceUsd)}
-                    </td>
-
-                    {/* 1H Change */}
-                    <td className={`py-3 px-3 text-right font-black ${
-                      is1hUp ? 'text-emerald-500' : 'text-rose-500'
-                    }`}>
-                      <span className="inline-flex items-center gap-0.5 justify-end">
-                        {is1hUp ? <Icons.ArrowUpRight className="w-3.5 h-3.5" /> : <Icons.ArrowDownRight className="w-3.5 h-3.5" />}
-                        {is1hUp ? '+' : ''}{(token.priceChange1h ?? 0).toFixed(2)}%
-                      </span>
-                    </td>
-
-                    {/* 24H Change */}
-                    <td className={`py-3 px-3 text-right font-black ${
-                      isUp ? 'text-emerald-500' : 'text-rose-500'
-                    }`}>
-                      <span className="inline-flex items-center gap-0.5 justify-end">
-                        {isUp ? <Icons.ArrowUpRight className="w-3.5 h-3.5" /> : <Icons.ArrowDownRight className="w-3.5 h-3.5" />}
-                        {isUp ? '+' : ''}{token.priceChange24h.toFixed(2)}%
-                      </span>
-                    </td>
-
-                    {/* 24H Volume */}
-                    <td className={`py-3 px-3 text-right font-medium ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
-                      {formatVolume(token.volume24h)}
-                    </td>
-
-                    {/* Market Cap */}
-                    <td className={`py-3 px-3 text-right font-medium ${
-                      token.marketCap ? (isLight ? 'text-slate-700' : 'text-slate-400') : 'text-slate-500 text-[10px] italic'
-                    }`}>
-                      {formatMarketCap(token.marketCap)}
-                    </td>
-
-                    {/* Liquidity */}
-                    <td className={`py-3 px-3 text-right font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                      {formatVolume(token.liquidityUsd)}
-                    </td>
-
-                    {/* Holders */}
-                    <td className={`py-3 px-3 text-right font-medium ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
-                      {token.holdersCount 
-                        ? token.holdersCount.toLocaleString() 
-                        : (Math.round(token.volume24h * 0.015) || 120).toLocaleString()}
-                    </td>
-
-                    {/* Score */}
-                    <td className="py-3 px-3 text-center">
-                      <div className="flex flex-col items-center justify-center gap-0.5">
-                        <div className="w-20 bg-cyber-border/20 rounded-full h-1.25 overflow-hidden">
-                          <div 
-                            className="bg-cyber-cyan h-full rounded-full" 
-                            style={{ width: `${token.trendingScore}%` }}
-                          />
-                        </div>
-                        <span className="text-[8px] font-bold text-cyber-cyan">{token.trendingScore}/100</span>
-                      </div>
-                    </td>
-
-                    {/* Scan */}
-                    <td className="py-3 px-3 text-center">
+                      {/* Expand Button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectToken(token.address);
+                          setExpandedTokens(prev => ({ ...prev, [token.address]: !prev[token.address] }));
                         }}
-                        className={`p-1.5 rounded cursor-pointer transition-all hover:scale-105 active:scale-95 ${
-                          isLight
-                            ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7]'
-                            : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/20'
+                        className={`p-1 rounded border shrink-0 transition-colors ${
+                          isLight 
+                            ? 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500' 
+                            : 'bg-cyber-cyan/5 hover:bg-cyber-cyan/15 border-cyber-border/30 text-cyber-cyan'
                         }`}
-                        title={`Run instant security scan for ${token.symbol}`}
                       >
-                        <Icons.Cpu className="w-3.5 h-3.5" />
+                        {isExpanded ? (
+                          <Icons.ChevronUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <Icons.ChevronDown className="w-3.5 h-3.5" />
+                        )}
                       </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                  </div>
+
+                  {/* Expandable Parameters Zone */}
+                  {isExpanded && (
+                    <div className="mt-3.5 pt-3.5 border-t border-cyber-border/10 space-y-3.5 animate-fade-in text-xs font-mono">
+                      {/* Grid parameters */}
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                        <div className="flex justify-between items-center pb-1 border-b border-cyber-border/5">
+                          <span className="text-slate-500 text-[10px]">1H CHANGE</span>
+                          <span className={`font-bold ${is1hUp ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {is1hUp ? '+' : ''}{(token.priceChange1h ?? 0).toFixed(2)}%
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center pb-1 border-b border-cyber-border/5">
+                          <span className="text-slate-500 text-[10px]">24H VOLUME</span>
+                          <span className={`font-semibold ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
+                            {formatVolume(token.volume24h)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center pb-1 border-b border-cyber-border/5">
+                          <span className="text-slate-500 text-[10px]">MARKET CAP</span>
+                          <span className={`font-semibold ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
+                            {formatMarketCap(token.marketCap)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center pb-1 border-b border-cyber-border/5">
+                          <span className="text-slate-500 text-[10px]">LIQUIDITY</span>
+                          <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
+                            {formatVolume(token.liquidityUsd)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center pb-1 border-b border-cyber-border/5">
+                          <span className="text-slate-500 text-[10px]">BLOCKCHAIN</span>
+                          <span className={`font-bold text-[9px] uppercase ${isLight ? 'text-slate-800' : 'text-cyber-cyan'}`}>
+                            {getChainDisplayName(token.chainId)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center pb-1 border-b border-cyber-border/5">
+                          <span className="text-slate-500 text-[10px]">DEX PLATFORM</span>
+                          <span className="font-bold text-[10px] text-slate-400">
+                            {token.dexId || 'Raydium'}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center pb-1 border-b border-cyber-border/5 col-span-2">
+                          <span className="text-slate-500 text-[10px]">HOLDERS</span>
+                          <span className={`font-semibold ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
+                            {token.holdersCount 
+                              ? token.holdersCount.toLocaleString() 
+                              : (Math.round(token.volume24h * 0.015) || 120).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Score gauge */}
+                      <div className="flex items-center justify-between bg-cyber-border/5 p-2 rounded-lg gap-4">
+                        <span className="text-[10px] text-slate-500 tracking-wider">SURCHI SCORE INDICATOR</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <div className="w-16 bg-cyber-border/20 rounded-full h-1 overflow-hidden">
+                            <div className="bg-cyber-cyan h-full rounded-full" style={{ width: `${token.trendingScore}%` }} />
+                          </div>
+                          <span className="text-[10px] font-black text-cyber-cyan">{token.trendingScore}/100</span>
+                        </div>
+                      </div>
+
+                      {/* Action trigger scan */}
+                      <div className="flex gap-2 pt-1 font-sans">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectToken(token.address);
+                          }}
+                          className={`flex-1 py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5 font-bold transition-all hover:opacity-90 text-[11px] cursor-pointer ${
+                            isLight
+                              ? 'bg-purple-600 text-white shadow-md'
+                              : 'bg-gradient-to-r from-cyber-cyan to-blue-500 text-black shadow-[0_0_15px_rgba(0,229,255,0.2)] font-black'
+                          }`}
+                        >
+                          <Icons.Cpu className="w-3.5 h-3.5" />
+                          <span>Run Audit Scanning Scan</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
           {/* Pagination bar with Previous and Next */}
-          <div className={`p-4 border-t flex items-center justify-center gap-6 font-sans text-xs ${
+          <div className={`p-4 border border-cyber-border/15 flex items-center justify-center gap-6 font-sans text-xs ${
             isLight ? 'border-slate-200 bg-slate-50 text-slate-600' : 'border-cyber-border/10 bg-[#060613]/50 text-slate-400'
-          }`}>
+          } rounded-lg`}>
             <button
               onClick={(e) => {
                 e.stopPropagation();

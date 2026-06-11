@@ -5130,11 +5130,11 @@ export default function App() {
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 sm:gap-6 font-mono text-[10px] text-slate-400">
-            <span className="hidden lg:inline">LIVE QUANTUM STREAM: <strong className="text-[#ffffff]">SECURE</strong></span>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-cyber-neon animate-pulse shadow-[0_0_6px_var(--color-cyber-neon)]"></div>
-              <span className="text-[#ffffff] uppercase font-bold text-[9px] tracking-wider">SECURE GRID ONLINE</span>
+          <div className="flex items-center gap-2 sm:gap-4 font-mono text-[10px] text-slate-400">
+            <span className="hidden xl:inline">LIVE QUANTUM STREAM: <strong className="text-[#ffffff]">SECURE</strong></span>
+            <div className="hidden xs:flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-cyber-neon animate-pulse"></div>
+              <span className="text-[#ffffff] uppercase font-bold text-[8px] sm:text-[9px] tracking-wider">SECURE GRID ONLINE</span>
             </div>
 
             <button
@@ -5149,7 +5149,7 @@ export default function App() {
         </header>
 
         {/* WORKSPACE MAIN BODY AREA */}
-        <div className={`px-4 py-4 sm:py-5 ${activeModuleId === 'token_analyzer' && !activeCustomPage ? 'max-w-2xl sm:px-6' : 'max-w-4xl sm:px-6 md:px-8'} w-full mx-auto flex-1 space-y-6 md:space-y-8 animate-fade-in`}>
+        <div className={`px-2 sm:px-4 py-4 sm:py-5 max-w-7xl lg:max-w-[1700px] w-full mx-auto flex-1 space-y-6 md:space-y-8 animate-fade-in`}>
           
           {!activeCustomPage && isTokenAnalyzed && analyzedDetails ? (
             <div className="space-y-4 text-left animate-fade-in">
@@ -5555,197 +5555,357 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
-                  <section className={`rounded-xl border ${activeModuleId === 'token_analyzer' ? 'p-3.5 sm:p-4.5' : 'p-4 sm:p-6'} shadow-2xl relative overflow-hidden ${
-                    themeMode === 'light'
-                      ? 'bg-white border-slate-200 shadow-slate-200/55'
-                      : 'bg-[#0b0b1a] border-cyber-border/80 shadow-2xl'
-                  }`}>
-                    {/* Ambient Corner Glow grids */}
-                    {themeMode !== 'light' ? (
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
-                    ) : (
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-transparent pointer-events-none rounded-bl-full"></div>
-                    )
-                    }
-                    
-                    <form onSubmit={handleRunAnalysis} className="space-y-4">
-                      <div className="grid grid-cols-1 gap-4">
-                        {activeModule.inputs.map(input => (
-                          <div key={input.key} className="space-y-1.5 text-left">
-                            <label className={`block text-xs font-bold uppercase tracking-wider font-mono ${
-                              themeMode === 'light' ? 'text-slate-700' : 'text-slate-300'
-                            }`}>
-                              {input.label}
-                            </label>
+                  {/* HIGHLY OPTIMIZED RESPONSIVE SIDE-BY-SIDE / GRID LAYOUT */}
+                  {isHomePage ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                      {/* Left Block: Search fields and Loading states */}
+                      <div className="lg:col-span-7 space-y-4">
+                        {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
+                        <section className={`rounded-xl border p-3.5 sm:p-4.5 shadow-2xl relative overflow-hidden ${
+                          themeMode === 'light'
+                            ? 'bg-white border-slate-200 shadow-slate-200/55'
+                            : 'bg-[#0b0b1a] border-cyber-border/80 shadow-2xl'
+                        }`}>
+                          {/* Ambient Corner Glow grids */}
+                          {themeMode !== 'light' ? (
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full animate-pulse"></div>
+                          ) : (
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-transparent pointer-events-none rounded-bl-full"></div>
+                          )}
+                          
+                          <form onSubmit={handleRunAnalysis} className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4">
+                              {activeModule.inputs.map(input => (
+                                <div key={input.key} className="space-y-1.5 text-left">
+                                  <label className={`block text-xs font-bold uppercase tracking-wider font-mono ${
+                                    themeMode === 'light' ? 'text-slate-700' : 'text-slate-300'
+                                  }`}>
+                                    {input.label}
+                                  </label>
 
-                            {input.type === 'text' && (
-                              <>
-                                <input
-                                  type="text"
-                                  required
-                                  value={formInputs[input.key] || ''}
-                                  onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                                  placeholder={input.placeholder}
-                                  className={`w-full border rounded-lg ${activeModuleId === 'token_analyzer' ? 'px-3.5 py-2' : 'px-4 py-3'} text-xs font-mono transition-all ${
-                                    themeMode === 'light'
-                                      ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
-                                      : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
-                                  }`}
-                                />
-                                {activeModule.id === 'smart_money_tracker' && input.key === 'wallet' && detectedNetwork === 'evm' && (
-                                  <div className="mt-3 p-3 rounded-lg border flex flex-col gap-2 text-left animate-fade-in font-mono bg-[#00e5ff]/5 border-[#00e5ff]/20">
-                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1.5">
-                                      <Icons.Network className="w-3.5 h-3.5 text-[#00e5ff]" /> Select EVM Network Segment:
-                                    </span>
-                                    <div className="flex flex-wrap gap-2 pt-0.5">
-                                      {(['ethereum', 'base', 'arbitrum', 'optimism', 'polygon'] as const).map(subnet => (
-                                        <button
-                                          key={subnet}
-                                          type="button"
-                                          onClick={() => {
-                                            setSelectedEvmSubnet(subnet);
-                                          }}
-                                          className={`px-3 py-1.5 rounded text-[10px] font-extrabold border transition-all cursor-pointer ${
-                                            selectedEvmSubnet === subnet
-                                              ? themeMode === 'light'
-                                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm'
-                                                : 'bg-[#00e5ff] border-[#00e5ff] text-[#04040a] shadow-[0_0_10px_rgba(0,229,255,0.3)]'
-                                              : themeMode === 'light'
-                                                ? 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
-                                                : 'bg-[#03030f]/60 border-cyber-border text-slate-400 hover:text-white'
-                                          }`}
-                                        >
-                                          {subnet.toUpperCase()}
-                                        </button>
+                                  {input.type === 'text' && (
+                                    <>
+                                      <input
+                                        type="text"
+                                        required
+                                        value={formInputs[input.key] || ''}
+                                        onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                        placeholder={input.placeholder}
+                                        className={`w-full border rounded-lg px-3.5 py-2 text-xs font-mono transition-all ${
+                                          themeMode === 'light'
+                                            ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
+                                            : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
+                                        }`}
+                                      />
+                                      {activeModule.id === 'smart_money_tracker' && input.key === 'wallet' && detectedNetwork === 'evm' && (
+                                        <div className="mt-3 p-3 rounded-lg border flex flex-col gap-2 text-left animate-fade-in font-mono bg-[#00e5ff]/5 border-[#00e5ff]/20">
+                                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1.5">
+                                            <Icons.Network className="w-3.5 h-3.5 text-[#00e5ff]" /> Select EVM Network Segment:
+                                          </span>
+                                          <div className="flex flex-wrap gap-2 pt-0.5">
+                                            {(['ethereum', 'base', 'arbitrum', 'optimism', 'polygon'] as const).map(subnet => (
+                                              <button
+                                                key={subnet}
+                                                type="button"
+                                                onClick={() => {
+                                                  setSelectedEvmSubnet(subnet);
+                                                }}
+                                                className={`px-3 py-1.5 rounded text-[10px] font-extrabold border transition-all cursor-pointer ${
+                                                  selectedEvmSubnet === subnet
+                                                    ? themeMode === 'light'
+                                                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm'
+                                                      : 'bg-[#00e5ff] border-[#00e5ff] text-[#04040a] shadow-[0_0_10px_rgba(0,229,255,0.3)]'
+                                                    : themeMode === 'light'
+                                                      ? 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                                                      : 'bg-[#03030f]/60 border-cyber-border text-slate-400 hover:text-white'
+                                                }`}
+                                              >
+                                                {subnet.toUpperCase()}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+
+                                  {input.type === 'textarea' && (
+                                    <textarea
+                                      required
+                                      rows={6}
+                                      value={formInputs[input.key] || ''}
+                                      onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                      placeholder={input.placeholder}
+                                      className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all resize-y ${
+                                        themeMode === 'light'
+                                          ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
+                                          : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
+                                      }`}
+                                    />
+                                  )}
+
+                                  {input.type === 'select' && (
+                                    <select
+                                      value={formInputs[input.key] || ''}
+                                      onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                      className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all ${
+                                        themeMode === 'light'
+                                          ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500'
+                                          : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)]'
+                                      }`}
+                                    >
+                                      {input.options?.map(opt => (
+                                        <option key={opt.value} value={opt.value} className={themeMode === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b1a] text-white'}>
+                                          {opt.label}
+                                        </option>
                                       ))}
-                                    </div>
+                                    </select>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Submit triggers */}
+                            <div className="flex flex-col items-center justify-center gap-4 pt-2 w-full text-center">
+                              <button type="submit" className="hidden" />
+                              {(loading || isFetchingTokenDetails) && (
+                                <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 ${
+                                  themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
+                                }`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full inline-block animate-ping ${
+                                    themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon'
+                                  }`}></span> quantum ledger scanning active
+                                </span>
+                              )}
+                            </div>
+                          </form>
+                        </section>
+
+                        {/* Real-time Address Detect Loading & Ledger Board */}
+                        {activeModuleId === 'token_analyzer' && !currentResult && (isFetchingTokenDetails || liveTokenInfo) && (
+                          <div className="space-y-4">
+                            {isFetchingTokenDetails && (
+                              <div className="p-4 rounded-xl border border-cyber-cyan/30 bg-[#060613] flex items-center justify-between gap-3 text-left animate-pulse">
+                                <div className="flex items-center gap-3">
+                                  <Icons.Loader2 className="w-5 h-5 text-cyber-cyan animate-spin" />
+                                  <div>
+                                    <span className="text-xs font-bold text-cyber-cyan font-mono block uppercase">● DETECTED CONTRACT ADDRESS</span>
+                                    <p className="text-[10px] text-slate-400 font-mono">Syncing directly with blockchain indexers and live Dex pools...</p>
                                   </div>
+                                </div>
+                                <span className="text-[9px] font-mono text-cyber-cyan/80 font-bold uppercase tracking-wider">MAINNET ACTIVE</span>
+                              </div>
+                            )}
+
+                            {liveTokenInfo && !isFetchingTokenDetails && (
+                              <div className="space-y-2 text-left animate-fade-in">
+                                <header className="flex items-center gap-1.5 px-3 py-1 bg-cyber-cyan/5 w-max rounded border border-cyber-cyan/25">
+                                  <span className={`w-1.5 h-1.5 rounded-full ${themeAccent === 'white' ? 'bg-white' : 'bg-[#00ff88]'} animate-ping`}></span>
+                                  <span className={`text-[10px] ${themeAccent === 'white' ? 'text-white' : 'text-[#00ff88]'} font-mono font-bold uppercase tracking-wider`}>Live Mainnet Snapshot Connected</span>
+                                </header>
+                                <LiveTokenLedgerCard details={liveTokenInfo} themeAccent={themeAccent} themeMode={themeMode} onClose={() => setLiveTokenInfo(null)} />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right Block: SurchiTokenMetrics Card and Charts */}
+                      <div className="lg:col-span-5 space-y-4">
+                        <SurchiTokenMetrics 
+                          themeMode={themeMode}
+                          onPriceClick={() => {
+                            setActiveCustomPage('surchi_live');
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          onMetricsFetched={(metrics) => {
+                            setSurchiMetrics({
+                              priceUsd: metrics.priceUsd,
+                              marketCap: metrics.marketCap,
+                              volume24h: metrics.volume24h,
+                              isListed: metrics.isListed,
+                            });
+                          }}
+                          hideSocials={true}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    // Regular full-width stacked view for other deep modules (Auditor, Alerts, Locker, news feed...)
+                    <>
+                      {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
+                      <section className={`rounded-xl border ${activeModuleId === 'token_analyzer' ? 'p-3.5 sm:p-4.5' : 'p-4 sm:p-6'} shadow-2xl relative overflow-hidden ${
+                        themeMode === 'light'
+                          ? 'bg-white border-slate-200 shadow-slate-200/55'
+                          : 'bg-[#0b0b1a] border-cyber-border/80 shadow-2xl'
+                      }`}>
+                        {/* Ambient Corner Glow grids */}
+                        {themeMode !== 'light' ? (
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
+                        ) : (
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-transparent pointer-events-none rounded-bl-full"></div>
+                        )}
+                        
+                        <form onSubmit={handleRunAnalysis} className="space-y-4">
+                          <div className="grid grid-cols-1 gap-4">
+                            {activeModule.inputs.map(input => (
+                              <div key={input.key} className="space-y-1.5 text-left">
+                                <label className={`block text-xs font-bold uppercase tracking-wider font-mono ${
+                                  themeMode === 'light' ? 'text-slate-700' : 'text-slate-300'
+                                }`}>
+                                  {input.label}
+                                </label>
+
+                                {input.type === 'text' && (
+                                  <>
+                                    <input
+                                      type="text"
+                                      required
+                                      value={formInputs[input.key] || ''}
+                                      onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                      placeholder={input.placeholder}
+                                      className={`w-full border rounded-lg ${activeModuleId === 'token_analyzer' ? 'px-3.5 py-2' : 'px-4 py-3'} text-xs font-mono transition-all ${
+                                        themeMode === 'light'
+                                          ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
+                                          : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
+                                      }`}
+                                    />
+                                    {activeModule.id === 'smart_money_tracker' && input.key === 'wallet' && detectedNetwork === 'evm' && (
+                                      <div className="mt-3 p-3 rounded-lg border flex flex-col gap-2 text-left animate-fade-in font-mono bg-[#00e5ff]/5 border-[#00e5ff]/20">
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1.5">
+                                          <Icons.Network className="w-3.5 h-3.5 text-[#00e5ff]" /> Select EVM Network Segment:
+                                        </span>
+                                        <div className="flex flex-wrap gap-2 pt-0.5">
+                                          {(['ethereum', 'base', 'arbitrum', 'optimism', 'polygon'] as const).map(subnet => (
+                                            <button
+                                              key={subnet}
+                                              type="button"
+                                              onClick={() => {
+                                                setSelectedEvmSubnet(subnet);
+                                              }}
+                                              className={`px-3 py-1.5 rounded text-[10px] font-extrabold border transition-all cursor-pointer ${
+                                                selectedEvmSubnet === subnet
+                                                  ? themeMode === 'light'
+                                                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm'
+                                                    : 'bg-[#00e5ff] border-[#00e5ff] text-[#04040a] shadow-[0_0_10px_rgba(0,229,255,0.3)]'
+                                                  : themeMode === 'light'
+                                                    ? 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                                                    : 'bg-[#03030f]/60 border-cyber-border text-slate-400 hover:text-white'
+                                              }`}
+                                            >
+                                              {subnet.toUpperCase()}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </>
                                 )}
-                              </>
-                            )}
 
-                            {input.type === 'textarea' && (
-                              <textarea
-                                required
-                                rows={6}
-                                value={formInputs[input.key] || ''}
-                                onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                                placeholder={input.placeholder}
-                                className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all resize-y ${
-                                  themeMode === 'light'
-                                    ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
-                                    : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
-                                }`}
-                              />
-                            )}
+                                {input.type === 'textarea' && (
+                                  <textarea
+                                    required
+                                    rows={6}
+                                    value={formInputs[input.key] || ''}
+                                    onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                    placeholder={input.placeholder}
+                                    className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all resize-y ${
+                                      themeMode === 'light'
+                                        ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
+                                        : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
+                                    }`}
+                                  />
+                                )}
 
-                            {input.type === 'select' && (
-                              <select
-                                value={formInputs[input.key] || ''}
-                                onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                                className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all ${
+                                {input.type === 'select' && (
+                                  <select
+                                    value={formInputs[input.key] || ''}
+                                    onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
+                                    className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all ${
+                                      themeMode === 'light'
+                                        ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500'
+                                        : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)]'
+                                    }`}
+                                  >
+                                    {input.options?.map(opt => (
+                                      <option key={opt.value} value={opt.value} className={themeMode === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b1a] text-white'}>
+                                        {opt.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Submit triggers */}
+                          <div className="flex flex-col items-center justify-center gap-4 pt-2 w-full text-center">
+                            {activeModuleId !== 'token_analyzer' ? (
+                              <button
+                                type="submit"
+                                disabled={loading || isFetchingTokenDetails}
+                                className={`px-8 py-3.5 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 ${
                                   themeMode === 'light'
-                                    ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500'
-                                    : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)]'
+                                    ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
+                                    : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
                                 }`}
                               >
-                                {input.options?.map(opt => (
-                                  <option key={opt.value} value={opt.value} className={themeMode === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b1a] text-white'}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Submit triggers */}
-                      <div className="flex flex-col items-center justify-center gap-4 pt-2 w-full text-center">
-                        {activeModuleId !== 'token_analyzer' ? (
-                          <button
-                            type="submit"
-                            disabled={loading || isFetchingTokenDetails}
-                            className={`px-8 py-3.5 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 ${
-                              themeMode === 'light'
-                                ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
-                                : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
-                            }`}
-                          >
-                            {loading || isFetchingTokenDetails ? (
-                              <>
-                                <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
-                                <span>{isFetchingTokenDetails ? "SYNCING CONTRACT POOL..." : statusMsg}</span>
-                              </>
+                                {loading || isFetchingTokenDetails ? (
+                                  <>
+                                    <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
+                                    <span>{isFetchingTokenDetails ? "SYNCING CONTRACT POOL..." : statusMsg}</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Icons.Radar className="w-4 h-4" />
+                                    <span>{activeModule.buttonText}</span>
+                                  </>
+                                )}
+                              </button>
                             ) : (
-                              <>
-                                <Icons.Radar className="w-4 h-4" />
-                                <span>{activeModule.buttonText}</span>
-                              </>
+                              <button type="submit" className="hidden" />
                             )}
-                          </button>
-                        ) : (
-                          <button type="submit" className="hidden" />
-                        )}
-                        {(loading || isFetchingTokenDetails) && (
-                          <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 ${
-                            themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full inline-block animate-ping ${
-                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon'
-                            }`}></span> quantum ledger scanning active
-                          </span>
-                        )}
-                      </div>
-                    </form>
-                  </section>
-
-                  {/* Real-time Address Detect Loading & Ledger Board */}
-                  {activeModuleId === 'token_analyzer' && !currentResult && (isFetchingTokenDetails || liveTokenInfo) && (
-                    <div className="space-y-4">
-                      {isFetchingTokenDetails && (
-                        <div className="p-4 rounded-xl border border-cyber-cyan/30 bg-[#060613] flex items-center justify-between gap-3 text-left animate-pulse">
-                          <div className="flex items-center gap-3">
-                            <Icons.Loader2 className="w-5 h-5 text-cyber-cyan animate-spin" />
-                            <div>
-                              <span className="text-xs font-bold text-cyber-cyan font-mono block uppercase">● DETECTED CONTRACT ADDRESS</span>
-                              <p className="text-[10px] text-slate-400 font-mono">Syncing directly with blockchain indexers and live Dex pools...</p>
-                            </div>
+                            {(loading || isFetchingTokenDetails) && (
+                              <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 ${
+                                themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
+                              }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full inline-block animate-ping ${
+                                  themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon'
+                                }`}></span> quantum ledger scanning active
+                              </span>
+                            )}
                           </div>
-                          <span className="text-[9px] font-mono text-cyber-cyan/80 font-bold uppercase tracking-wider">MAINNET ACTIVE</span>
+                        </form>
+                      </section>
+
+                      {/* Real-time Address Detect Loading & Ledger Board */}
+                      {activeModuleId === 'token_analyzer' && !currentResult && (isFetchingTokenDetails || liveTokenInfo) && (
+                        <div className="space-y-4">
+                          {isFetchingTokenDetails && (
+                            <div className="p-4 rounded-xl border border-cyber-cyan/30 bg-[#060613] flex items-center justify-between gap-3 text-left animate-pulse">
+                              <div className="flex items-center gap-3">
+                                <Icons.Loader2 className="w-5 h-5 text-cyber-cyan animate-spin" />
+                                <div>
+                                  <span className="text-xs font-bold text-cyber-cyan font-mono block uppercase">● DETECTED CONTRACT ADDRESS</span>
+                                  <p className="text-[10px] text-slate-400 font-mono">Syncing directly with blockchain indexers and live Dex pools...</p>
+                                </div>
+                              </div>
+                              <span className="text-[9px] font-mono text-cyber-cyan/80 font-bold uppercase tracking-wider">MAINNET ACTIVE</span>
+                            </div>
+                          )}
+
+                          {liveTokenInfo && !isFetchingTokenDetails && (
+                            <div className="space-y-2 text-left animate-fade-in">
+                              <header className="flex items-center gap-1.5 px-3 py-1 bg-cyber-cyan/5 w-max rounded border border-cyber-cyan/25">
+                                <span className={`w-1.5 h-1.5 rounded-full ${themeAccent === 'white' ? 'bg-white' : 'bg-[#00ff88]'} animate-ping`}></span>
+                                <span className={`text-[10px] ${themeAccent === 'white' ? 'text-white' : 'text-[#00ff88]'} font-mono font-bold uppercase tracking-wider`}>Live Mainnet Snapshot Connected</span>
+                              </header>
+                              <LiveTokenLedgerCard details={liveTokenInfo} themeAccent={themeAccent} themeMode={themeMode} onClose={() => setLiveTokenInfo(null)} />
+                            </div>
+                          )}
                         </div>
                       )}
-
-                      {liveTokenInfo && !isFetchingTokenDetails && (
-                        <div className="space-y-2 text-left animate-fade-in">
-                          <header className="flex items-center gap-1.5 px-3 py-1 bg-cyber-cyan/5 w-max rounded border border-cyber-cyan/25">
-                            <span className={`w-1.5 h-1.5 rounded-full ${themeAccent === 'white' ? 'bg-white' : 'bg-[#00ff88]'} animate-ping`}></span>
-                            <span className={`text-[10px] ${themeAccent === 'white' ? 'text-white' : 'text-[#00ff88]'} font-mono font-bold uppercase tracking-wider`}>Live Mainnet Snapshot Connected</span>
-                          </header>
-                          <LiveTokenLedgerCard details={liveTokenInfo} themeAccent={themeAccent} themeMode={themeMode} onClose={() => setLiveTokenInfo(null)} />
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {isHomePage && (
-                    <SurchiTokenMetrics 
-                      themeMode={themeMode}
-                      onPriceClick={() => {
-                        setActiveCustomPage('surchi_live');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      onMetricsFetched={(metrics) => {
-                        setSurchiMetrics({
-                          priceUsd: metrics.priceUsd,
-                          marketCap: metrics.marketCap,
-                          volume24h: metrics.volume24h,
-                          isListed: metrics.isListed,
-                        });
-                      }}
-                      hideSocials={true}
-                    />
+                    </>
                   )}
                 </div>
               )}
@@ -6023,7 +6183,7 @@ export default function App() {
               </div>
             </section>
           ) : isHomePage ? (
-            <div id="walkthrough-section" className="space-y-6 w-full max-w-4xl mx-auto">
+            <div id="walkthrough-section" className="space-y-6 w-full max-w-7xl lg:max-w-[1700px] mx-auto">
               {/* ENTRY PORTALS FOR EXPLORATION */}
               <div className="flex justify-center items-center gap-4 pt-2">
                 <button

@@ -171,7 +171,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
   return (
     <div 
       onClick={onPriceClick}
-      className={`w-full max-w-[380px] sm:max-w-lg md:max-w-2xl mx-auto rounded-[20px] border select-none transition-all duration-300 relative group overflow-hidden ${
+      className={`w-full max-w-lg lg:max-w-none mx-auto rounded-[20px] border select-none transition-all duration-300 relative group overflow-hidden ${
         onPriceClick ? 'cursor-pointer hover:shadow-xl hover:scale-[1.002] active:scale-[0.998]' : ''
       } ${
         themeMode === 'light'
@@ -200,7 +200,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
       <div className="p-4 sm:p-5 space-y-4">
         
         {/* HEADER BLOCK - Highly compact & closely arranged */}
-        <div className="flex items-center justify-between gap-2 pr-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-2 pr-6">
           
           {/* Real Surchi Logo & Identity info */}
           <div className="flex items-center gap-3">
@@ -229,14 +229,16 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
           </div>
 
           {/* Price status right: compact, balanced and matching height of the logo block */}
-          <div className="h-11 flex flex-col justify-between items-end text-right">
-            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-              Price
-            </span>
-            <div className={`text-lg sm:text-xl font-black tracking-tight font-sans leading-none ${
-              themeMode === 'light' ? 'text-slate-900' : 'text-white'
-            }`}>
-              $0.000
+          <div className="flex flex-row sm:flex-col justify-between items-center sm:items-end text-left sm:text-right gap-2 sm:gap-1 border-t sm:border-t-0 pt-2 sm:pt-0">
+            <div className="flex flex-col items-start sm:items-end">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                Price
+              </span>
+              <div className={`text-lg sm:text-xl font-black tracking-tight font-sans leading-none mt-1 ${
+                themeMode === 'light' ? 'text-slate-900' : 'text-white'
+              }`}>
+                $0.000
+              </div>
             </div>
             <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/15 text-[8px] sm:text-[9px] font-extrabold tracking-wider text-[#8b5cf6] dark:text-purple-400 uppercase leading-none">
               PRE-LAUNCH
@@ -250,14 +252,14 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             ? 'bg-slate-50/40 border-slate-100 text-slate-800'
             : 'bg-[#030408] border-[#8b5cf6]/5 text-white'
         }`}>
-          <div className="grid grid-cols-3 gap-1 divide-x divide-slate-100 dark:divide-purple-500/5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-1 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 sm:divide-slate-100/50 dark:divide-purple-500/10 dark:sm:divide-purple-500/5">
             
             {/* Market Cap */}
-            <div className="flex flex-col items-center justify-center text-center px-1">
+            <div className="flex flex-col items-center justify-center text-center px-1 py-1.5 sm:py-0">
               <span className="text-[8px] sm:text-[10px] font-medium text-slate-400 tracking-wide uppercase leading-none">
                 Mkt Cap
               </span>
-              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-1 leading-none ${
+              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-2.5 leading-none ${
                 themeMode === 'light' ? 'text-slate-900' : 'text-white'
               }`}>
                 $0.000
@@ -265,11 +267,11 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             </div>
             
             {/* 24H Volume */}
-            <div className="flex flex-col items-center justify-center text-center px-1">
+            <div className="flex flex-col items-center justify-center text-center px-1 py-1.5 sm:py-0">
               <span className="text-[8px] sm:text-[10px] font-medium text-slate-400 tracking-wide uppercase leading-none">
                 24H Vol
               </span>
-              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-1 leading-none ${
+              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-2.5 leading-none ${
                 themeMode === 'light' ? 'text-slate-900' : 'text-white'
               }`}>
                 $0.000
@@ -277,11 +279,11 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             </div>
 
             {/* Liquidity */}
-            <div className="flex flex-col items-center justify-center text-center px-1">
+            <div className="flex flex-col items-center justify-center text-center px-1 py-1.5 sm:py-0">
               <span className="text-[8px] sm:text-[10px] font-medium text-slate-400 tracking-wide uppercase leading-none">
                 Liquidity
               </span>
-              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-1 leading-none ${
+              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-2.5 leading-none ${
                 themeMode === 'light' ? 'text-slate-900' : 'text-white'
               }`}>
                 $0.000
