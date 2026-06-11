@@ -11,6 +11,7 @@ interface TokenMetrics {
   pairAddress: string;
   chainId: string;
   dexId: string;
+  liquidityUsd?: number;
 }
 
 interface SurchiTokenMetricsProps {
@@ -30,6 +31,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
     pairAddress: '',
     chainId: '',
     dexId: '',
+    liquidityUsd: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -86,6 +88,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             pairAddress: bestPair.pairAddress || '',
             chainId: bestPair.chainId || 'solana',
             dexId: bestPair.dexId || 'raydium',
+            liquidityUsd: bestPair.liquidity?.usd || 0,
           };
 
           setMetrics(loadedMetrics);
@@ -103,6 +106,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             pairAddress: "9u9surchi_ecosystem_token_placeholder",
             chainId: "solana",
             dexId: "raydium",
+            liquidityUsd: 0,
           };
           setMetrics(baselineMetrics);
           if (onMetricsFetched) {
@@ -119,6 +123,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
           pairAddress: "9u9surchi_ecosystem_token_placeholder",
           chainId: "solana",
           dexId: "raydium",
+          liquidityUsd: 0,
         };
         setMetrics(baselineMetrics);
         if (onMetricsFetched) {
@@ -136,6 +141,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
         pairAddress: "9u9surchi_ecosystem_token_placeholder",
         chainId: "solana",
         dexId: "raydium",
+        liquidityUsd: 0,
       };
       setMetrics(baselineMetrics);
       if (onMetricsFetched) {
@@ -179,7 +185,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
           : 'bg-[#06070d] border-[#8b5cf6]/10 shadow-[0_8px_30px_rgba(139,92,246,0.015)]'
       }`}
     >
-      {/* 3-Dots Action Menu top right - compact */}
+      {/* 3-Dots Action Menu top right - compact & visible */}
       <div className="absolute top-3.5 right-3.5 z-10 flex items-center justify-center">
         <button 
           onClick={(e) => {
@@ -197,14 +203,14 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
         </button>
       </div>
 
-      <div className="p-4 sm:p-5 space-y-4">
+      <div className="p-3.5 sm:p-5 space-y-3.5 sm:space-y-4">
         
-        {/* HEADER BLOCK - Highly compact & closely arranged */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-2 pr-6">
+        {/* HEADER BLOCK - Responsive side-by-side with safety margin for action buttons */}
+        <div className="flex items-center justify-between gap-2 pr-7 sm:pr-0">
           
           {/* Real Surchi Logo & Identity info */}
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl overflow-hidden border border-purple-500/15 shadow-[0_2px_8px_rgba(139,92,246,0.15)] shrink-0 bg-black">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl overflow-hidden border border-purple-500/15 shadow-[0_2px_8px_rgba(139,92,246,0.15)] shrink-0 bg-black">
               <img
                 src="https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg"
                 alt="SURCHI Logo"
@@ -214,86 +220,84 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             </div>
             
             <div className="flex flex-col text-left justify-center min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h3 className={`text-sm sm:text-base font-black tracking-tight leading-none uppercase truncate ${
+              <div className="flex items-center gap-1">
+                <h3 className={`text-xs sm:text-sm md:text-base font-black tracking-tight leading-none uppercase truncate ${
                   themeMode === 'light' ? 'text-slate-900' : 'text-white'
                 }`}>
                   SURCHI
                 </h3>
-                <Icons.CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                <Icons.CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-500 shrink-0" />
               </div>
-              <p className="text-[10px] sm:text-xs font-mono font-bold text-slate-400 leading-none mt-1">
+              <p className="text-[9px] sm:text-[10px] md:text-xs font-mono font-bold text-slate-400 leading-none mt-1">
                 $SURCHI
               </p>
             </div>
           </div>
 
-          {/* Price status right: compact, balanced and matching height of the logo block */}
-          <div className="flex flex-row sm:flex-col justify-between items-center sm:items-end text-left sm:text-right gap-2 sm:gap-1 border-t sm:border-t-0 pt-2 sm:pt-0">
-            <div className="flex flex-col items-start sm:items-end">
-              <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                Price
-              </span>
-              <div className={`text-lg sm:text-xl font-black tracking-tight font-sans leading-none mt-1 ${
-                themeMode === 'light' ? 'text-slate-900' : 'text-white'
-              }`}>
-                $0.000
-              </div>
+          {/* Price status right: compact column format, secure from 3-dots collision */}
+          <div className="flex flex-col items-end text-right gap-1 shrink-0">
+            <span className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+              Price
+            </span>
+            <div className={`text-sm sm:text-base md:text-lg lg:text-xl font-black tracking-tight font-sans leading-none ${
+              themeMode === 'light' ? 'text-slate-900' : 'text-white'
+            }`}>
+              {metrics.isListed && metrics.priceUsd > 0 ? formatPrice(metrics.priceUsd) : '$0.000'}
             </div>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/15 text-[8px] sm:text-[9px] font-extrabold tracking-wider text-[#8b5cf6] dark:text-purple-400 uppercase leading-none">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/15 text-[7px] sm:text-[8px] font-extrabold tracking-wider text-[#8b5cf6] dark:text-purple-400 uppercase leading-none mt-0.5">
               PRE-LAUNCH
             </span>
           </div>
         </div>
 
-        {/* METRICS THREE-COL GRID - Ultra Compact and highly structured */}
-        <div className={`p-3 rounded-xl border ${
+        {/* METRICS THREE-COL GRID - Perfectly distributed and scaled without stacking or wrapping */}
+        <div className={`p-2.5 sm:p-3 rounded-xl border ${
           themeMode === 'light'
             ? 'bg-slate-50/40 border-slate-100 text-slate-800'
             : 'bg-[#030408] border-[#8b5cf6]/5 text-white'
         }`}>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-1 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 sm:divide-slate-100/50 dark:divide-purple-500/10 dark:sm:divide-purple-500/5">
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1 divide-x divide-slate-100/40 dark:divide-purple-500/10">
             
             {/* Market Cap */}
-            <div className="flex flex-col items-center justify-center text-center px-1 py-1.5 sm:py-0">
-              <span className="text-[8px] sm:text-[10px] font-medium text-slate-400 tracking-wide uppercase leading-none">
+            <div className="flex flex-col items-center justify-center text-center px-0.5 sm:px-1 py-0.5">
+              <span className="text-[7.5px] min-[360px]:text-[8px] min-[400px]:text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase leading-none">
                 Mkt Cap
               </span>
-              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-2.5 leading-none ${
+              <strong className={`text-[10px] min-[360px]:text-[11px] min-[400px]:text-xs sm:text-sm md:text-base font-black font-sans mt-2 leading-none tracking-tight ${
                 themeMode === 'light' ? 'text-slate-900' : 'text-white'
               }`}>
-                $0.000
+                {metrics.isListed && metrics.marketCap > 0 ? formatLargeNum(metrics.marketCap) : '$0.000'}
               </strong>
             </div>
             
             {/* 24H Volume */}
-            <div className="flex flex-col items-center justify-center text-center px-1 py-1.5 sm:py-0">
-              <span className="text-[8px] sm:text-[10px] font-medium text-slate-400 tracking-wide uppercase leading-none">
+            <div className="flex flex-col items-center justify-center text-center px-0.5 sm:px-1 py-0.5">
+              <span className="text-[7.5px] min-[360px]:text-[8px] min-[400px]:text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase leading-none">
                 24H Vol
               </span>
-              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-2.5 leading-none ${
+              <strong className={`text-[10px] min-[360px]:text-[11px] min-[400px]:text-xs sm:text-sm md:text-base font-black font-sans mt-2 leading-none tracking-tight ${
                 themeMode === 'light' ? 'text-slate-900' : 'text-white'
               }`}>
-                $0.000
+                {metrics.isListed && metrics.volume24h > 0 ? formatLargeNum(metrics.volume24h) : '$0.000'}
               </strong>
             </div>
 
             {/* Liquidity */}
-            <div className="flex flex-col items-center justify-center text-center px-1 py-1.5 sm:py-0">
-              <span className="text-[8px] sm:text-[10px] font-medium text-slate-400 tracking-wide uppercase leading-none">
+            <div className="flex flex-col items-center justify-center text-center px-0.5 sm:px-1 py-0.5">
+              <span className="text-[7.5px] min-[360px]:text-[8px] min-[400px]:text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase leading-none">
                 Liquidity
               </span>
-              <strong className={`text-[11px] sm:text-sm md:text-base font-black font-sans mt-2.5 leading-none ${
+              <strong className={`text-[10px] min-[360px]:text-[11px] min-[400px]:text-xs sm:text-sm md:text-base font-black font-sans mt-2 leading-none tracking-tight ${
                 themeMode === 'light' ? 'text-slate-900' : 'text-white'
               }`}>
-                $0.000
+                {metrics.isListed && metrics.liquidityUsd && metrics.liquidityUsd > 0 ? formatLargeNum(metrics.liquidityUsd) : '$0.000'}
               </strong>
             </div>
           </div>
         </div>
 
-        {/* CHART GRID GRAPHICS SECTION - Streamlined height */}
-        <div className={`rounded-lg border p-3 relative h-20 flex flex-col justify-center items-center overflow-hidden ${
+        {/* CHART GRID GRAPHICS SECTION - Streamlined fluid background curve and badge */}
+        <div className={`rounded-xl border p-3 relative h-20 flex flex-col justify-center items-center overflow-hidden ${
           themeMode === 'light'
             ? 'bg-[#fafafc] border-slate-100'
             : 'bg-[#020306] border-[#8b5cf6]/5'
@@ -307,7 +311,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             </div>
           </div>
 
-          {/* Dotted curves in violet */}
+          {/* Dotted curves in violet - fully fluid responsive */}
           <div className="absolute inset-x-0 bottom-0 top-8 select-none opacity-80 pointer-events-none">
             <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
               <defs>
@@ -333,8 +337,8 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             </svg>
           </div>
 
-          {/* Text block */}
-          <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-0.5">
+          {/* Text block & badge overlay */}
+          <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-1">
             <div className="p-1 rounded-full bg-purple-500/10 border border-purple-500/10 flex items-center justify-center">
               <Icons.TrendingUp className="w-3 h-3 text-purple-500" />
             </div>
@@ -345,29 +349,29 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
         </div>
 
         {/* BOTTOM FOOTER STATUS & SOCIALS */}
-        <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100/50 dark:border-purple-500/5">
+        <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100/30 dark:border-purple-500/10">
           
-          {/* Calendar status left - tiny */}
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Icons.Calendar className="w-3.5 h-3.5 text-purple-500 shrink-0" />
-            <span className="text-[9px] font-bold text-slate-400 truncate text-left">
+          {/* Calendar status left - tiny & compact */}
+          <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+            <Icons.Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-500 shrink-0" />
+            <span className="text-[8px] min-[360px]:text-[9px] sm:text-[10px] font-bold text-slate-400 truncate text-left">
               Launch: <span className="text-purple-500 font-extrabold">TBA</span>
             </span>
           </div>
 
-          {/* Perfect compact social icon directory */}
+          {/* Perfect compact social icon directory - scales beautifully */}
           {!hideSocials && (
-            <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-0.5 min-[360px]:gap-1">
                 {/* Website */}
                 <a 
                   href="https://www.surchi.xyz" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="w-5.5 h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
+                  className="w-5 h-5 min-[360px]:w-5.5 min-[360px]:h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
                   title="Website Directory"
                 >
-                  <Icons.Globe className="w-3 h-3" />
+                  <Icons.Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </a>
 
                 {/* Twitter */}
@@ -375,10 +379,10 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
                   href="https://x.com/surchicoin" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="w-5.5 h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
+                  className="w-5 h-5 min-[360px]:w-5.5 min-[360px]:h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
                   title="Twitter Profile"
                 >
-                  <Icons.Twitter className="w-3 h-3" />
+                  <Icons.Twitter className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </a>
 
                 {/* Instagram */}
@@ -386,10 +390,10 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
                   href="https://www.instagram.com/surchiai?igsh=YXlhY2VkZ2lxam9w" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="w-5.5 h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
+                  className="w-5 h-5 min-[360px]:w-5.5 min-[360px]:h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
                   title="Instagram Channel"
                 >
-                  <Icons.Instagram className="w-3 h-3" />
+                  <Icons.Instagram className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </a>
 
                 {/* Discord */}
@@ -397,10 +401,10 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
                   href="https://discord.gg/DtFYCzCUk" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="w-5.5 h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
+                  className="w-5 h-5 min-[360px]:w-5.5 min-[360px]:h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
                   title="Discord Server"
                 >
-                  <Icons.MessageSquare className="w-3 h-3" />
+                  <Icons.MessageSquare className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </a>
 
                 {/* Github */}
@@ -408,10 +412,10 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
                   href="https://github.com/surchiai" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="w-5.5 h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
+                  className="w-5 h-5 min-[360px]:w-5.5 min-[360px]:h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
                   title="Github Repository"
                 >
-                  <Icons.Github className="w-3 h-3" />
+                  <Icons.Github className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </a>
               </div>
             </div>
