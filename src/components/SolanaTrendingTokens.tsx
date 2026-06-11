@@ -1136,10 +1136,11 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
           {/* Desktop Tabular Skeleton */}
           <div className="hidden lg:block w-full space-y-2">
             {/* Header Row */}
-            <div className={`grid grid-cols-[48px_2.5fr_1.2fr_1fr_1.2fr_1.2fr_1.2fr_1.2fr_48px] gap-4 items-center px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
+            <div style={{ gridTemplateColumns: '40px 48px 1fr 120px 100px 120px 120px 120px 160px' }} className={`grid gap-4 items-center px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
               isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
             }`}>
               <div className="text-center">Rank</div>
+              <div className="text-center">Logo</div>
               <div>Token Info / CA</div>
               <div>Price (USD)</div>
               <div>24H Change</div>
@@ -1147,7 +1148,6 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
               <div>24H Volume</div>
               <div>Liquidity</div>
               <div className="pl-2">Trend Trace</div>
-              <div className="text-center">Scan</div>
             </div>
 
             {/* Skeleton rows */}
@@ -1155,19 +1155,20 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
               {Array.from({ length: 12 }).map((_, idx) => (
                 <div
                   key={`skeleton-row-${idx}`}
-                  className={`grid grid-cols-[48px_2.5fr_1.2fr_1fr_1.2fr_1.2fr_1.2fr_1.2fr_48px] gap-4 items-center px-4 py-4 border border-cyber-border/5 rounded-xl ${
+                  style={{ gridTemplateColumns: '40px 48px 1fr 120px 100px 120px 120px 120px 160px' }}
+                  className={`grid gap-4 items-center px-4 py-4 border border-cyber-border/5 rounded-xl ${
                     isLight ? 'bg-white border-slate-100' : 'bg-[#04040a]/80 border-cyber-border/5'
                   }`}
                 >
                   <div className="text-center">
                     <div className="h-4 w-6 bg-slate-300 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" />
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex justify-center shrink-0">
                     <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-cyber-border/25 animate-pulse" />
-                    <div className="flex flex-col gap-1 w-24">
-                      <div className="h-3 w-16 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
-                      <div className="h-2 w-24 bg-slate-300 dark:bg-cyber-border/20 rounded animate-pulse" />
-                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 w-24">
+                    <div className="h-3 w-16 bg-slate-300 dark:bg-[#1a1a38] rounded animate-pulse" />
+                    <div className="h-2 w-24 bg-slate-300 dark:bg-[#15152d]/80 rounded animate-pulse" />
                   </div>
                   <div>
                     <div className="h-4 w-16 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
@@ -1185,10 +1186,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                     <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
                   </div>
                   <div className="pl-1">
-                    <div className="h-6 w-20 bg-slate-300 dark:bg-cyber-border/20 rounded animate-pulse" />
-                  </div>
-                  <div className="text-center">
-                    <div className="h-7 w-7 bg-slate-300 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" />
+                    <div className="h-6 w-20 bg-slate-300 dark:bg-[#1a1a38] rounded animate-pulse" />
                   </div>
                 </div>
               ))}
@@ -1248,18 +1246,18 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
           {/* Desktop Display Format - Multi-Chain Live Trending Hub Grid List */}
           <div className="hidden lg:block w-full space-y-2">
             {/* Header Row */}
-            <div className={`grid grid-cols-[48px_2.5fr_1.2fr_1fr_1.2fr_1.2fr_1.2fr_1.2fr_48px] gap-4 items-center px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
+            <div style={{ gridTemplateColumns: '40px 48px 1fr 120px 100px 120px 120px 120px 160px' }} className={`grid gap-4 items-center px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
               isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
             }`}>
-              <div className="text-center">Rank</div>
-              <div>Token Info / CA</div>
+              <div className="text-center">#</div>
+              <div className="text-center">Logo</div>
+              <div>Name + CA</div>
               <div>Price (USD)</div>
-              <div>24H Change</div>
-              <div>Market Cap</div>
-              <div>24H Volume</div>
+              <div>24h %</div>
+              <div>Mkt Cap</div>
+              <div>Volume</div>
               <div>Liquidity</div>
-              <div className="pl-2">Trend Trace</div>
-              <div className="text-center">Scan</div>
+              <div className="pl-2">Mini Chart</div>
             </div>
 
             {/* List of custom grid rows with sparklines */}
@@ -1277,9 +1275,10 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
 
                 return (
                   <div
-                    key={token.address + '-' + token.chainId}
+                    key={token.address + '-' + token.chainId + '-' + index}
                     onClick={() => onSelectToken(token.address)}
-                    className={`grid grid-cols-[48px_2.5fr_1.2fr_1fr_1.2fr_1.2fr_1.2fr_1.2fr_48px] gap-4 items-center px-4 py-3 border border-cyber-border/5 rounded-xl cursor-pointer transition-all duration-200 text-[11.5px] font-mono ${
+                    style={{ gridTemplateColumns: '40px 48px 1fr 120px 100px 120px 120px 120px 160px' }}
+                    className={`grid gap-4 items-center px-4 py-3 border border-cyber-border/5 rounded-xl cursor-pointer transition-all duration-200 text-[11.5px] font-mono ${
                       isLight 
                         ? 'bg-white hover:bg-slate-50 border-slate-200 hover:shadow-2xs text-slate-800' 
                         : 'bg-[#04040a]/80 hover:bg-[#0c0c24] border-cyber-border/10 hover:border-cyber-cyan/30 text-slate-300'
@@ -1290,10 +1289,9 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                       <span className={rankColor}>#{rank}</span>
                     </div>
 
-                    {/* Token Info & Contract Address & Blockchain badge */}
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/* Token logo */}
-                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-cyber-cyan/5 border border-cyber-border/20 flex items-center justify-center relative">
+                    {/* Logo Column */}
+                    <div className="flex justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-cyber-cyan/5 border border-cyber-border/20 flex items-center justify-center relative">
                         {token.logo ? (
                           <img 
                             src={token.logo} 
@@ -1306,40 +1304,40 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                           />
                         ) : (
                           <div className="text-[10px] font-bold text-cyber-cyan">
-                            {token.symbol.length > 6 ? token.symbol.slice(0, 4) : token.symbol}
+                            {token.symbol.length > 5 ? token.symbol.slice(0, 3) : token.symbol}
                           </div>
                         )}
                       </div>
+                    </div>
 
-                      {/* Display Info */}
-                      <div className="flex flex-col min-w-0 pr-2">
-                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                          <span className={`font-sans font-black tracking-tight truncate ${
-                            isLight ? 'text-slate-900' : 'text-white'
-                          }`}>
-                            {token.symbol}
-                          </span>
-                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.25 text-[8px] font-extrabold font-mono rounded border capitalize ${getChainBadgeColor(token.chainId)}`}>
-                            {getChainDisplayName(token.chainId)}
-                          </span>
-                        </div>
-                        {/* Contract address copy */}
-                        <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-0.5" onClick={e => e.stopPropagation()}>
-                          <span className="truncate">{token.address ? `${token.address.slice(0, 6)}...${token.address.slice(-6)}` : 'N/A'}</span>
-                          {token.address && (
-                            <button
-                              onClick={(e) => handleCopyAddress(e, token.address)}
-                              className="p-1 text-slate-500 hover:text-white transition-colors"
-                              title="Copy Contract Address"
-                            >
-                              {copiedAddress === token.address ? (
-                                <Icons.Check className="w-3 h-3 text-emerald-500" />
-                              ) : (
-                                <Icons.Copy className="w-3 h-3 hover:scale-110 active:scale-90 transition-transform" />
-                              )}
-                            </button>
-                          )}
-                        </div>
+                    {/* Name + CA Info */}
+                    <div className="flex flex-col min-w-0 pr-2">
+                      <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <span className={`font-sans font-black tracking-tight truncate ${
+                          isLight ? 'text-slate-900' : 'text-white'
+                        }`}>
+                          {token.symbol}
+                        </span>
+                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.25 text-[8px] font-extrabold font-mono rounded border capitalize ${getChainBadgeColor(token.chainId)}`}>
+                          {getChainDisplayName(token.chainId)}
+                        </span>
+                      </div>
+                      {/* Contract address copy */}
+                      <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-0.5" onClick={e => e.stopPropagation()}>
+                        <span className="truncate">{token.address ? `${token.address.slice(0, 6)}...${token.address.slice(-6)}` : 'N/A'}</span>
+                        {token.address && (
+                          <button
+                            onClick={(e) => handleCopyAddress(e, token.address)}
+                            className="p-1 text-slate-500 hover:text-white transition-colors"
+                            title="Copy Contract Address"
+                          >
+                            {copiedAddress === token.address ? (
+                              <Icons.Check className="w-3 h-3 text-emerald-500" />
+                            ) : (
+                              <Icons.Copy className="w-3 h-3 hover:scale-110 active:scale-90 transition-transform" />
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -1371,19 +1369,17 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                       {formatVolume(token.liquidityUsd)}
                     </div>
 
-                    {/* Mini Sparkline Chart */}
-                    <div className="pl-1">
-                      <Sparkline seed={token.address} isUp={isUp} />
-                    </div>
-
-                    {/* Scan Action */}
-                    <div className="text-center">
+                    {/* Mini Sparkline Chart + Scan Action inside cell */}
+                    <div className="flex items-center justify-between gap-2 pl-1 pr-1 w-full">
+                      <div className="flex-1 min-w-0">
+                        <Sparkline seed={token.address} isUp={isUp} />
+                      </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           onSelectToken(token.address);
                         }}
-                        className={`p-1.5 rounded cursor-pointer transition-all hover:scale-110 active:scale-95 ${
+                        className={`p-1.5 rounded cursor-pointer transition-all hover:scale-110 active:scale-95 shrink-0 ${
                           isLight
                             ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7]'
                             : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/20'
@@ -1416,7 +1412,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
 
               return (
                 <div
-                  key={token.address + '-' + token.chainId + '-mobile'}
+                  key={token.address + '-' + token.chainId + '-mobile-' + index}
                   onClick={() => onSelectToken(token.address)}
                   className={`p-4 rounded-xl border transition-all cursor-pointer ${
                     isLight 

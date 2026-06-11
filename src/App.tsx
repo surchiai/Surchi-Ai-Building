@@ -33,6 +33,7 @@ import SurchiBuildingStatus from './components/SurchiBuildingStatus';
 import InteractiveSuite from './components/InteractiveSuite';
 import HolderIntelligence from './components/HolderIntelligence';
 import { SurchiTokenMetrics } from './components/SurchiTokenMetrics';
+import { SurchiLiveTicker } from './components/SurchiLiveTicker';
 import SurchiLivePortal from './components/SurchiLivePortal';
 import UniversalTokenAnalyzer from './components/UniversalTokenAnalyzer';
 import CampaignAnalytics from './components/CampaignAnalytics';
@@ -3873,6 +3874,7 @@ export default function App() {
   // Helper to validate standard blockchain addresses (EVM, Solana, TRON)
   const isBlockchainAddress = (value: string): boolean => {
     const clean = value?.trim() || '';
+    if (clean === '9u9surchi_ecosystem_token_placeholder') return true;
     if (/^0x[a-fA-F0-9]{40}$/.test(clean)) return true;
     if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(clean)) return true;
     if (/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(clean)) return true;
@@ -3883,6 +3885,41 @@ export default function App() {
     setIsFetchingTokenDetails(true);
     setLiveTokenInfo(null);
     setTokenNotFoundAddress(null);
+
+    // High fidelity custom statistics response for Surchi's own pre-listed token
+    if (address === '9u9surchi_ecosystem_token_placeholder') {
+      const details = {
+        name: 'Surchi',
+        symbol: 'SURCHI',
+        address: '9u9surchi_ecosystem_token_placeholder',
+        pairAddress: '9u9surchi_ecosystem_token_placeholder',
+        priceUsd: '0.000',
+        liquidityUsd: 150000,
+        liquidityBase: 19897905,
+        liquidityQuote: 150000,
+        priceChange5m: 0.0,
+        priceChange1h: 0.0,
+        priceChange6h: 0.0,
+        priceChange24h: 0.0,
+        volume24h: 0.0,
+        buys24h: 0,
+        sells24h: 0,
+        marketCap: 0,
+        fdv: 0,
+        logoUrl: 'https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg',
+        chainId: 'solana',
+        dexId: 'raydium',
+        pairCreatedAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+        websites: [{ label: 'Website', url: 'https://www.surchi.xyz' }],
+        socials: [
+          { platform: 'twitter', handle: 'surchicoin' },
+          { platform: 'telegram', handle: 'SurchiCommunityChat' }
+        ]
+      };
+      setLiveTokenInfo(details);
+      setIsFetchingTokenDetails(false);
+      return;
+    }
     
     let fetchedDetails: any = null;
     let data : any = null;
@@ -4070,12 +4107,13 @@ export default function App() {
     // Check if input is a blockchain address in Token Analyzer to bypass general quantum report
     if (activeModuleId === 'token_analyzer' && isBlockchainAddress(payloadToSubmit.token || '')) {
       setCurrentResult(null);
-      const finalDetails = customLiveDetails || liveTokenInfo;
-      if (!finalDetails) {
-        if (payloadToSubmit.token !== tokenNotFoundAddress) {
+      const tokenAddress = (payloadToSubmit.token || '').trim();
+      const needsFetch = !liveTokenInfo || liveTokenInfo.address?.toLowerCase() !== tokenAddress.toLowerCase();
+      if (needsFetch) {
+        if (tokenAddress !== tokenNotFoundAddress) {
           setLoading(true);
           setStatusMsg("Establishing connection with decentralized indexers...");
-          await fetchDexScreenerAndAnalyze(payloadToSubmit.token || '');
+          await fetchDexScreenerAndAnalyze(tokenAddress);
         }
       }
       setLoading(false);
@@ -4423,6 +4461,10 @@ export default function App() {
     setActiveCustomPage(null);
     setCurrentResult(null);
     setFormInputs({ token: address });
+    // Trigger run analysis immediately to display exact same coin details card
+    setTimeout(() => {
+      handleRunAnalysis(undefined, { token: address });
+    }, 50);
   };
 
   if (showSplash) {
@@ -5558,6 +5600,7 @@ export default function App() {
                   {/* HIGHLY OPTIMIZED RESPONSIVE FULL-WIDTH LAYOUT */}
                   {isHomePage ? (
                     <div className="flex flex-col w-full gap-6">
+                      <SurchiLiveTicker onSelectCoin={handleSelectTrendingToken} themeMode={themeMode} />
                       {/* Left Block: Search fields and Loading states */}
                       <div className="w-full space-y-4">
                         {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
@@ -6099,7 +6142,7 @@ export default function App() {
               {/* COGNITIVE FLOW CHAT PORTLET (FOLLOW-UP AI CHAT) */}
               <div className="bg-[#090915] rounded-xl border border-cyber-border overflow-hidden shadow-2xl relative">
                 <div className="bg-[#0c0c1e] px-4 sm:px-6 py-4 border-b border-cyber-border flex items-center gap-2">
-                  <Icons.MessageSquareQuote className="w-4.5 h-4.5 text-cyber-purple" />
+                  <Icons.MessageSquare className="w-4.5 h-4.5 text-cyber-purple" />
                   <div>
                     <h4 className="text-xs font-bold text-[#ffffff] font-display uppercase tracking-widest">
                       Follow-up AI Terminal Chat
@@ -6372,7 +6415,7 @@ export default function App() {
                     : 'border-cyber-border hover:border-slate-500 bg-[#050512] hover:bg-[#090924] text-cyber-cyan hover:text-white'
                 }`}
               >
-                <Icons.MessageSquareQuote className="w-4 h-4" />
+                <Icons.MessageSquare className="w-4 h-4" />
               </a>
 
               <a 

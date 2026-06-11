@@ -897,7 +897,7 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
                         : 'border-cyber-border hover:border-slate-500 bg-[#050512] hover:bg-[#090924] text-cyber-cyan hover:text-white'
                     }`}
                   >
-                    <Icons.MessageSquareQuote className="w-4 h-4" />
+                    <Icons.MessageSquare className="w-4 h-4" />
                   </a>
 
                   <a 
