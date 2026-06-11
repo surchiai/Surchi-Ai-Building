@@ -1134,82 +1134,84 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       {(loading || !tokens || tokens.length === 0) ? (
         <div className="w-full relative">
           {/* Desktop Tabular Skeleton */}
-          <div className="hidden lg:block w-full space-y-2">
-            {/* Header Row */}
-            <div 
-              style={{ 
-                display: 'grid',
-                gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 16px'
-              }} 
-              className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
-                isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
-              }`}
-            >
-              <div className="text-center font-mono font-bold">#</div>
-              <div></div>
-              <div className="font-mono">Token</div>
-              <div className="font-mono">Price</div>
-              <div className="font-mono">24h%</div>
-              <div className="font-mono">Mkt Cap</div>
-              <div className="font-mono">Volume</div>
-              <div className="font-mono">Liquidity</div>
-              <div className="pl-2 font-mono">Chart</div>
-            </div>
+          <div className="hidden md:block w-full overflow-x-auto scrollbar-thin pb-1.5">
+            <div className="min-w-[990px] space-y-2">
+              {/* Header Row */}
+              <div 
+                style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 16px'
+                }} 
+                className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
+                  isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
+                }`}
+              >
+                <div className="text-center font-mono font-bold">#</div>
+                <div></div>
+                <div className="font-mono">Token</div>
+                <div className="font-mono">Price</div>
+                <div className="font-mono">24h%</div>
+                <div className="font-mono">Mkt Cap</div>
+                <div className="font-mono">Volume</div>
+                <div className="font-mono">Liquidity</div>
+                <div className="pl-2 font-mono">Chart</div>
+              </div>
 
-            {/* Skeleton rows */}
-            <div className="space-y-2 flex-1">
-              {Array.from({ length: 12 }).map((_, idx) => (
-                <div
-                  key={`skeleton-row-${idx}`}
-                  style={{ 
-                    display: 'grid',
-                    gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px 16px'
-                  }}
-                  className={`border border-cyber-border/5 rounded-xl ${
-                    isLight ? 'bg-white border-slate-100' : 'bg-[#04040a]/80 border-cyber-border/5'
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="h-4 w-6 bg-slate-300 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" />
+              {/* Skeleton rows */}
+              <div className="space-y-2 flex-1">
+                {Array.from({ length: 12 }).map((_, idx) => (
+                  <div
+                    key={`skeleton-row-${idx}`}
+                    style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px 16px'
+                    }}
+                    className={`border border-cyber-border/5 rounded-xl ${
+                      isLight ? 'bg-white border-slate-100' : 'bg-[#04040a]/80 border-cyber-border/5'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="h-4 w-6 bg-slate-300 dark:bg-cyber-border/25 rounded mx-auto animate-pulse" />
+                    </div>
+                    <div className="flex justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-cyber-border/25 animate-pulse" />
+                    </div>
+                    <div className="flex flex-col gap-1 w-24">
+                      <div className="h-3 w-16 bg-slate-300 dark:bg-[#1a1a38] rounded animate-pulse" />
+                      <div className="h-2 w-24 bg-slate-300 dark:bg-[#15152d]/80 rounded animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="h-4 w-16 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="h-4 w-12 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
+                    </div>
+                    <div className="pl-1">
+                      <div className="h-6 w-20 bg-slate-300 dark:bg-[#1a1a38] rounded animate-pulse" />
+                    </div>
                   </div>
-                  <div className="flex justify-center shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-cyber-border/25 animate-pulse" />
-                  </div>
-                  <div className="flex flex-col gap-1 w-24">
-                    <div className="h-3 w-16 bg-slate-300 dark:bg-[#1a1a38] rounded animate-pulse" />
-                    <div className="h-2 w-24 bg-slate-300 dark:bg-[#15152d]/80 rounded animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="h-4 w-16 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="h-4 w-12 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="h-4 w-20 bg-slate-300 dark:bg-cyber-border/25 rounded animate-pulse" />
-                  </div>
-                  <div className="pl-1">
-                    <div className="h-6 w-20 bg-slate-300 dark:bg-[#1a1a38] rounded animate-pulse" />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Mobile List Skeletons */}
-          <div className="lg:hidden block space-y-3">
+          <div className="md:hidden block space-y-3">
             {Array.from({ length: 8 }).map((_, idx) => (
               <div
                 key={`skeleton-card-${idx}`}
@@ -1259,174 +1261,176 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       ) : (
         <div className="w-full space-y-4">
           {/* Desktop Display Format - Multi-Chain Live Trending Hub Grid List */}
-          <div className="hidden lg:block w-full space-y-2">
-            {/* Header Row conforming exactly to requested bug fix spec */}
-            <div 
-              style={{ 
-                display: 'grid',
-                gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 16px'
-              }} 
-              className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
-                isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
-              }`}
-            >
-              <div className="text-center font-bold font-mono">#</div>
-              <div></div>
-              <div className="font-mono">Token</div>
-              <div className="font-mono">Price</div>
-              <div className="font-mono">24h%</div>
-              <div className="font-mono">Mkt Cap</div>
-              <div className="font-mono">Volume</div>
-              <div className="font-mono">Liquidity</div>
-              <div className="font-mono pl-2">Chart</div>
-            </div>
+          <div className="hidden md:block w-full overflow-x-auto scrollbar-thin pb-1.5">
+            <div className="min-w-[990px] space-y-2">
+              {/* Header Row conforming exactly to requested bug fix spec */}
+              <div 
+                style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 16px'
+                }} 
+                className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
+                  isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
+                }`}
+              >
+                <div className="text-center font-bold font-mono">#</div>
+                <div></div>
+                <div className="font-mono">Token</div>
+                <div className="font-mono">Price</div>
+                <div className="font-mono">24h%</div>
+                <div className="font-mono">Mkt Cap</div>
+                <div className="font-mono">Volume</div>
+                <div className="font-mono">Liquidity</div>
+                <div className="font-mono pl-2">Chart</div>
+              </div>
 
-            {/* List of custom grid rows with sparklines */}
-            <div className="space-y-2 flex-1">
-              {pageTokens.map((token, index) => {
-                const rank = startIndex + index + 1;
-                const isUp = token.priceChange24h >= 0;
-                const rankColor = rank === 1 
-                  ? 'text-yellow-500 font-extrabold scale-105' 
-                  : rank === 2 
-                  ? 'text-slate-400 font-extrabold' 
-                  : rank === 3 
-                  ? 'text-amber-600 font-extrabold' 
-                  : 'text-slate-500';
+              {/* List of custom grid rows with sparklines */}
+              <div className="space-y-2 flex-1">
+                {pageTokens.map((token, index) => {
+                  const rank = startIndex + index + 1;
+                  const isUp = token.priceChange24h >= 0;
+                  const rankColor = rank === 1 
+                    ? 'text-yellow-500 font-extrabold scale-105' 
+                    : rank === 2 
+                    ? 'text-slate-400 font-extrabold' 
+                    : rank === 3 
+                    ? 'text-amber-600 font-extrabold' 
+                    : 'text-slate-500';
 
-                return (
-                  <div
-                    key={token.address + '-' + token.chainId + '-' + index}
-                    onClick={() => onSelectToken(token.address)}
-                    style={{ 
-                      display: 'grid',
-                      gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px 16px'
-                    }}
-                    className={`border border-cyber-border/5 rounded-xl cursor-pointer transition-all duration-200 text-[11.5px] font-mono ${
-                      isLight 
-                        ? 'bg-white hover:bg-slate-50 border-slate-200 hover:shadow-2xs text-slate-800' 
-                        : 'bg-[#04040a]/80 hover:bg-[#0c0c24] border-cyber-border/10 hover:border-cyber-cyan/30 text-slate-300'
-                    }`}
-                  >
-                    {/* Rank */}
-                    <div className="text-center font-bold text-xs">
-                      <span className={rankColor}>#{rank}</span>
-                    </div>
-
-                    {/* Logo Column */}
-                    <div className="flex justify-center shrink-0">
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-cyber-cyan/5 border border-cyber-border/20 flex items-center justify-center relative">
-                        {token.logo ? (
-                          <img 
-                            src={token.logo} 
-                            alt={token.symbol} 
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLElement).style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <div className="text-[10px] font-bold text-cyber-cyan">
-                            {token.symbol.length > 5 ? token.symbol.slice(0, 3) : token.symbol}
-                          </div>
-                        )}
+                  return (
+                    <div
+                      key={token.address + '-' + token.chainId + '-' + index}
+                      onClick={() => onSelectToken(token.address)}
+                      style={{ 
+                        display: 'grid',
+                        gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 16px'
+                      }}
+                      className={`border border-cyber-border/5 rounded-xl cursor-pointer transition-all duration-200 text-[11.5px] font-mono ${
+                        isLight 
+                          ? 'bg-white hover:bg-slate-50 border-slate-200 hover:shadow-2xs text-slate-800' 
+                          : 'bg-[#04040a]/80 hover:bg-[#0c0c24] border-cyber-border/10 hover:border-cyber-cyan/30 text-slate-300'
+                      }`}
+                    >
+                      {/* Rank */}
+                      <div className="text-center font-bold text-xs">
+                        <span className={rankColor}>#{rank}</span>
                       </div>
-                    </div>
 
-                    {/* Name + CA Info */}
-                    <div className="flex flex-col min-w-0 pr-2">
-                      <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                        <span className={`font-sans font-black tracking-tight truncate ${
-                          isLight ? 'text-slate-900' : 'text-white'
-                        }`}>
-                          {token.symbol}
+                      {/* Logo Column */}
+                      <div className="flex justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-cyber-cyan/5 border border-cyber-border/20 flex items-center justify-center relative">
+                          {token.logo ? (
+                            <img 
+                              src={token.logo} 
+                              alt={token.symbol} 
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="text-[10px] font-bold text-cyber-cyan">
+                              {token.symbol.length > 5 ? token.symbol.slice(0, 3) : token.symbol}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Name + CA Info */}
+                      <div className="flex flex-col min-w-0 pr-2">
+                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                          <span className={`font-sans font-black tracking-tight truncate ${
+                            isLight ? 'text-slate-900' : 'text-white'
+                          }`}>
+                            {token.symbol}
+                          </span>
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.25 text-[8px] font-extrabold font-mono rounded border capitalize ${getChainBadgeColor(token.chainId)}`}>
+                            {getChainDisplayName(token.chainId)}
+                          </span>
+                        </div>
+                        {/* Contract address copy */}
+                        <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-0.5" onClick={e => e.stopPropagation()}>
+                          <span className="truncate">{token.address ? `${token.address.slice(0, 6)}...${token.address.slice(-6)}` : 'N/A'}</span>
+                          {token.address && (
+                            <button
+                              onClick={(e) => handleCopyAddress(e, token.address)}
+                              className="p-1 text-slate-500 hover:text-white transition-colors"
+                              title="Copy Contract Address"
+                            >
+                              {copiedAddress === token.address ? (
+                                <Icons.Check className="w-3 h-3 text-emerald-500" />
+                              ) : (
+                                <Icons.Copy className="w-3 h-3 hover:scale-110 active:scale-90 transition-transform" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Price */}
+                      <div className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-slate-200'}`}>
+                        ${formatPrice(token.priceUsd)}
+                      </div>
+
+                      {/* 24H Change */}
+                      <div className={`font-extrabold ${isUp ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        <span className="inline-flex items-center gap-0.5">
+                          {isUp ? <Icons.ArrowUpRight className="w-3.5 h-3.5" /> : <Icons.ArrowDownRight className="w-3.5 h-3.5" />}
+                          {isUp ? '+' : ''}{token.priceChange24h.toFixed(2)}%
                         </span>
-                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.25 text-[8px] font-extrabold font-mono rounded border capitalize ${getChainBadgeColor(token.chainId)}`}>
-                          {getChainDisplayName(token.chainId)}
-                        </span>
                       </div>
-                      {/* Contract address copy */}
-                      <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-0.5" onClick={e => e.stopPropagation()}>
-                        <span className="truncate">{token.address ? `${token.address.slice(0, 6)}...${token.address.slice(-6)}` : 'N/A'}</span>
-                        {token.address && (
-                          <button
-                            onClick={(e) => handleCopyAddress(e, token.address)}
-                            className="p-1 text-slate-500 hover:text-white transition-colors"
-                            title="Copy Contract Address"
-                          >
-                            {copiedAddress === token.address ? (
-                              <Icons.Check className="w-3 h-3 text-emerald-500" />
-                            ) : (
-                              <Icons.Copy className="w-3 h-3 hover:scale-110 active:scale-90 transition-transform" />
-                            )}
-                          </button>
-                        )}
+
+                      {/* Market Cap */}
+                      <div className={`font-medium ${token.marketCap ? (isLight ? 'text-slate-700' : 'text-slate-400') : 'text-slate-500 text-[10px] italic'}`}>
+                        {formatMarketCap(token.marketCap)}
+                      </div>
+
+                      {/* Volume */}
+                      <div className={`font-medium ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
+                        {formatVolume(token.volume24h)}
+                      </div>
+
+                      {/* Liquidity */}
+                      <div className={`font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        {formatVolume(token.liquidityUsd)}
+                      </div>
+
+                      {/* Mini Sparkline Chart + Scan Action inside cell */}
+                      <div className="flex items-center justify-between gap-2 pl-1 pr-1 w-full">
+                        <div className="flex-1 min-w-0">
+                          <Sparkline seed={token.address} isUp={isUp} />
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectToken(token.address);
+                          }}
+                          className={`p-1.5 rounded cursor-pointer transition-all hover:scale-110 active:scale-95 shrink-0 ${
+                            isLight
+                              ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7]'
+                              : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/20'
+                          }`}
+                          title={`Run instant security scan for ${token.symbol}`}
+                        >
+                          <Icons.Cpu className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
-
-                    {/* Price */}
-                    <div className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-slate-200'}`}>
-                      ${formatPrice(token.priceUsd)}
-                    </div>
-
-                    {/* 24H Change */}
-                    <div className={`font-extrabold ${isUp ? 'text-emerald-500' : 'text-rose-500'}`}>
-                      <span className="inline-flex items-center gap-0.5">
-                        {isUp ? <Icons.ArrowUpRight className="w-3.5 h-3.5" /> : <Icons.ArrowDownRight className="w-3.5 h-3.5" />}
-                        {isUp ? '+' : ''}{token.priceChange24h.toFixed(2)}%
-                      </span>
-                    </div>
-
-                    {/* Market Cap */}
-                    <div className={`font-medium ${token.marketCap ? (isLight ? 'text-slate-700' : 'text-slate-400') : 'text-slate-500 text-[10px] italic'}`}>
-                      {formatMarketCap(token.marketCap)}
-                    </div>
-
-                    {/* Volume */}
-                    <div className={`font-medium ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>
-                      {formatVolume(token.volume24h)}
-                    </div>
-
-                    {/* Liquidity */}
-                    <div className={`font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                      {formatVolume(token.liquidityUsd)}
-                    </div>
-
-                    {/* Mini Sparkline Chart + Scan Action inside cell */}
-                    <div className="flex items-center justify-between gap-2 pl-1 pr-1 w-full">
-                      <div className="flex-1 min-w-0">
-                        <Sparkline seed={token.address} isUp={isUp} />
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectToken(token.address);
-                        }}
-                        className={`p-1.5 rounded cursor-pointer transition-all hover:scale-110 active:scale-95 shrink-0 ${
-                          isLight
-                            ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7]'
-                            : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/20'
-                        }`}
-                        title={`Run instant security scan for ${token.symbol}`}
-                      >
-                        <Icons.Cpu className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* Adaptive/Mobile & Tablet Display Format */}
-          <div className="lg:hidden block space-y-3.5">
+          <div className="md:hidden block space-y-3.5">
             {pageTokens.map((token, index) => {
               const rank = startIndex + index + 1;
               const isUp = token.priceChange24h >= 0;
