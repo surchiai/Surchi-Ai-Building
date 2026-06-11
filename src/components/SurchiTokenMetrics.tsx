@@ -206,7 +206,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
       <div className="p-3.5 sm:p-5 space-y-3.5 sm:space-y-4">
         
         {/* HEADER BLOCK - Responsive side-by-side with safety margin for action buttons */}
-        <div className="flex items-center justify-between gap-2 pr-7 sm:pr-0">
+        <div className="flex items-center justify-between gap-6 px-0 lg:px-6">
           
           {/* Real Surchi Logo & Identity info */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -234,8 +234,8 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
             </div>
           </div>
 
-          {/* Price status right: compact column format, secure from 3-dots collision */}
-          <div className="flex flex-col items-end text-right gap-1 shrink-0">
+          {/* Price status right: compact column format, secure from 3-dots collision with minimum 48px padding (pr-12) */}
+          <div className="flex flex-col items-start text-left gap-1 shrink-0 pr-12 lg:pr-14 relative">
             <span className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">
               Price
             </span>

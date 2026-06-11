@@ -1136,18 +1136,27 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
           {/* Desktop Tabular Skeleton */}
           <div className="hidden lg:block w-full space-y-2">
             {/* Header Row */}
-            <div style={{ gridTemplateColumns: '40px 48px 1fr 120px 100px 120px 120px 120px 160px' }} className={`grid gap-4 items-center px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
-              isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
-            }`}>
-              <div className="text-center">Rank</div>
-              <div className="text-center">Logo</div>
-              <div>Token Info / CA</div>
-              <div>Price (USD)</div>
-              <div>24H Change</div>
-              <div>Market Cap</div>
-              <div>24H Volume</div>
-              <div>Liquidity</div>
-              <div className="pl-2">Trend Trace</div>
+            <div 
+              style={{ 
+                display: 'grid',
+                gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px'
+              }} 
+              className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
+                isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
+              }`}
+            >
+              <div className="text-center font-mono font-bold">#</div>
+              <div></div>
+              <div className="font-mono">Token</div>
+              <div className="font-mono">Price</div>
+              <div className="font-mono">24h%</div>
+              <div className="font-mono">Mkt Cap</div>
+              <div className="font-mono">Volume</div>
+              <div className="font-mono">Liquidity</div>
+              <div className="pl-2 font-mono">Chart</div>
             </div>
 
             {/* Skeleton rows */}
@@ -1155,8 +1164,14 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
               {Array.from({ length: 12 }).map((_, idx) => (
                 <div
                   key={`skeleton-row-${idx}`}
-                  style={{ gridTemplateColumns: '40px 48px 1fr 120px 100px 120px 120px 120px 160px' }}
-                  className={`grid gap-4 items-center px-4 py-4 border border-cyber-border/5 rounded-xl ${
+                  style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px'
+                  }}
+                  className={`border border-cyber-border/5 rounded-xl ${
                     isLight ? 'bg-white border-slate-100' : 'bg-[#04040a]/80 border-cyber-border/5'
                   }`}
                 >
@@ -1245,19 +1260,28 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
         <div className="w-full space-y-4">
           {/* Desktop Display Format - Multi-Chain Live Trending Hub Grid List */}
           <div className="hidden lg:block w-full space-y-2">
-            {/* Header Row */}
-            <div style={{ gridTemplateColumns: '40px 48px 1fr 120px 100px 120px 120px 120px 160px' }} className={`grid gap-4 items-center px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
-              isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
-            }`}>
-              <div className="text-center">#</div>
-              <div className="text-center">Logo</div>
-              <div>Name + CA</div>
-              <div>Price (USD)</div>
-              <div>24h %</div>
-              <div>Mkt Cap</div>
-              <div>Volume</div>
-              <div>Liquidity</div>
-              <div className="pl-2">Mini Chart</div>
+            {/* Header Row conforming exactly to requested bug fix spec */}
+            <div 
+              style={{ 
+                display: 'grid',
+                gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px'
+              }} 
+              className={`text-[10px] font-mono font-bold uppercase tracking-wider border-b border-cyber-border/20 rounded-md select-none ${
+                isLight ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-[#060613]/80'
+              }`}
+            >
+              <div className="text-center font-bold font-mono">#</div>
+              <div></div>
+              <div className="font-mono">Token</div>
+              <div className="font-mono">Price</div>
+              <div className="font-mono">24h%</div>
+              <div className="font-mono">Mkt Cap</div>
+              <div className="font-mono">Volume</div>
+              <div className="font-mono">Liquidity</div>
+              <div className="font-mono pl-2">Chart</div>
             </div>
 
             {/* List of custom grid rows with sparklines */}
@@ -1277,8 +1301,14 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                   <div
                     key={token.address + '-' + token.chainId + '-' + index}
                     onClick={() => onSelectToken(token.address)}
-                    style={{ gridTemplateColumns: '40px 48px 1fr 120px 100px 120px 120px 120px 160px' }}
-                    className={`grid gap-4 items-center px-4 py-3 border border-cyber-border/5 rounded-xl cursor-pointer transition-all duration-200 text-[11.5px] font-mono ${
+                    style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: '32px 48px 1.5fr 130px 110px 130px 130px 130px 180px',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px 16px'
+                    }}
+                    className={`border border-cyber-border/5 rounded-xl cursor-pointer transition-all duration-200 text-[11.5px] font-mono ${
                       isLight 
                         ? 'bg-white hover:bg-slate-50 border-slate-200 hover:shadow-2xs text-slate-800' 
                         : 'bg-[#04040a]/80 hover:bg-[#0c0c24] border-cyber-border/10 hover:border-cyber-cyan/30 text-slate-300'
